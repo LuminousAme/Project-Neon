@@ -1,4 +1,4 @@
-// GENERATED AUTOMATICALLY FROM 'Assets/Project-Neon/PlayerControls.inputactions'
+// GENERATED AUTOMATICALLY FROM 'Assets/Project-Neon/Input/PlayerControls.inputactions'
 
 using System;
 using System.Collections;
