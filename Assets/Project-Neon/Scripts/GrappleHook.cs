@@ -79,10 +79,11 @@ public class GrappleHook : MonoBehaviour
             //float distFromPoint = Vector3.Distance(player.position, hookPos);
 
             //transform.position
+
             //joint parameter stuff
-            joint.spring = 4.5f;
-            joint.damper = 7f;
-            joint.massScale = 5.5f;
+            joint.spring = 2.5f; //spring force used to keep the 2 objects together (higher means faster hook in, lower means slower)
+            joint.damper = 6f; // damper force used to dampen the spring force. (lower means faster hook, higher means slower)
+            joint.massScale = 1.5f; //scale to apply to the inverse mass and inertia tensor of the body (seems to affect momentum)
 
             hook.positionCount = 2;
             //the player is grappling
@@ -96,7 +97,7 @@ public class GrappleHook : MonoBehaviour
     {
         float distFromPoint = Vector3.Distance(player.position, hookPos);
         //when it reaches the end
-        if (distFromPoint <= 0.1)
+        if (distFromPoint <= 0.2)
         {
             // hookPos = null;
             EndGrapple();
