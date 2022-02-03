@@ -11,63 +11,101 @@ public class GrappleHook : MonoBehaviour
 
     private LineRenderer hook;
 
+    //bool for if hook has been deployed
+    private bool Grappling;
+
+    //delay for hooking again
+    private float hookDelay;
+
+    //cooldown for grapple hook
+    private float hookCD;
+
     // Start is called before the first frame update
     private void Start()
     {
         //   playerCam = this.GetComponent<Camera>();
-        hook = GetComponent<LineRenderer>();
+        hook = GetComponent<LineRenderer>(); //placeholder visual
         hook.SetPosition(0, player.transform.position);
+        Grappling = false;
+        hookDelay = 0.25f;
+        hookCD = 0f;
     }
 
     // Update is called once per frame
     private void Update()
     {
+        //incremeent cooldown timer
+        hookCD = hookCD - Time.deltaTime;
+        if (hookCD < 0f)
+        {
+            hookCD = 0f;
+        }
+
         DrawGrapple();
+        //press key to grapple
+        if (Input.GetKeyDown(KeyCode.E) && !Grappling && (hookCD <= 0f))
+        {
+            Debug.Log("HOOKING");
 
-        StartGrapple();
+            StartGrapple();
+            //hookCD = hookDelay;
+        }
+        //press again to cnacel
+        else if (Input.GetKeyDown(KeyCode.E) && Grappling)
+        {
+            Debug.Log("NOT HOOKING");
 
-        GrappleEnd();
+            EndGrapple();
+            hookCD = hookDelay;
+        }
+
+        //if the player has reached the grapple hook
+        GrappleOver();
     }
 
     private void StartGrapple()
     {
         //help form: https://www.youtube.com/watch?v=Xgh4v1w5DxU
-        if (Input.GetKeyDown(KeyCode.E))
+        //if (Input.GetKeyDown(KeyCode.E) && !Grappling)
+        //{
+        if (Physics.Raycast(playerCam.transform.position, playerCam.transform.forward, out RaycastHit rayHit))
         {
-            if (Physics.Raycast(playerCam.transform.position, playerCam.transform.forward, out RaycastHit rayHit))
-            {
-                //hit something
-                hookPos = rayHit.point;
-                joint = player.gameObject.AddComponent<SpringJoint>();
-                joint.autoConfigureConnectedAnchor = false;
-                joint.connectedAnchor = hookPos;
-                Debug.Log("HIT");
-                //float distFromPoint = Vector3.Distance(player.position, hookPos);
+            //hit something
+            hookPos = rayHit.point;
+            joint = player.gameObject.AddComponent<SpringJoint>();
+            joint.autoConfigureConnectedAnchor = false;
+            joint.connectedAnchor = hookPos;
+            // Debug.Log("HIT");
+            //float distFromPoint = Vector3.Distance(player.position, hookPos);
 
-                //transform.position
+            //transform.position
+            //joint parameter stuff
+            joint.spring = 4.5f;
+            joint.damper = 7f;
+            joint.massScale = 5.5f;
 
-                joint.spring = 4.5f;
-                joint.damper = 7f;
-                joint.massScale = 5.5f;
-
-                hook.positionCount = 2;
-            }
+            hook.positionCount = 2;
+            //the player is grappling
+            Grappling = true;
         }
+        // }
     }
 
-    private void GrappleEnd()
+    //grapple hook reaches it's destination
+    private void GrappleOver()
     {
         float distFromPoint = Vector3.Distance(player.position, hookPos);
-        if (distFromPoint <= 0.01)
+        //when it reaches the end
+        if (distFromPoint <= 0.1)
         {
             // hookPos = null;
             EndGrapple();
         }
 
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            EndGrapple();
-        }
+        //if (Input.GetKeyDown(KeyCode.E))
+        //{
+        //    EndGrapple();
+        //}
     }
 
     private void DrawGrapple()
@@ -82,6 +120,7 @@ public class GrappleHook : MonoBehaviour
     {
         hook.positionCount = 0;
         Destroy(joint);
+        Grappling = false;
         Debug.Log("NED  grappling");
     }
 }
