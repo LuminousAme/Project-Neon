@@ -156,9 +156,17 @@ public class BasicPlayerController : MonoBehaviour
         float rotR = rotD * Mathf.Deg2Rad;
 
         //calculate the torque needed to move it
-        Vector3 torque = (axis * (rotR * rotationSpringDamp) - (rb.angularVelocity));
-        rb.AddTorque(torque);
-
+        if(lookInput.x != 0.0f)
+        {
+            Vector3 torque = (axis * (rotR * rotationSpringDamp) - (rb.angularVelocity));
+            rb.AddTorque(torque);
+        }
+        else
+        {
+            rb.AddTorque(-rb.angularVelocity, ForceMode.VelocityChange);
+            targetRotation = transform.rotation;
+        }
+           
         //transform.rotation = targetRotation;
         //rb.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpringDamp * Time.fixedDeltaTime);
         //transform.localRotation = 
