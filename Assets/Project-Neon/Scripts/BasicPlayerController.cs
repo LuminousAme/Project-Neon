@@ -44,11 +44,25 @@ public class BasicPlayerController : MonoBehaviour
     private float gravityGoingDown;
     private Vector3 currentGravity;
 
-    private void OnEnable()
+    [Space]
+    [Header("Camera Controls")]
+    [SerializeField] private float horizontalLookSpeed = 10f;
+    [SerializeField] private float verticalLookSpeed = 10f;
+    [SerializeField] private float vertMaxAngle = 80f;
+    [SerializeField] private float vertMinAngle = -80f;
+    [SerializeField] Transform lookAtTarget;
+    private Vector2 lookInput;
+    private Vector3 eulerAngles;
+
+    private void Awake()
     {
         //create the player controls asset, and enable the default player controls
         controls = new PlayerControls();
-        controls.Player.Enable();
+    }
+
+    private void OnEnable()
+    {
+        controls.Enable();
 
         //assign the jump function to the performed event of the jump action
         controls.Player.Jump.started += ctx => Jump();
@@ -75,6 +89,11 @@ public class BasicPlayerController : MonoBehaviour
         gravityGoingUp = (-2f * baseJumpHeight * (baseMaxSpeed * baseMaxSpeed) / (horiDistanceToPeak * horiDistanceToPeak));
         gravityGoingDown = (-2f * baseJumpHeight * (baseMaxSpeed * baseMaxSpeed) / (horiDistanceWhileFalling * horiDistanceWhileFalling));
         currentGravity = Vector3.down * gravityGoingDown;
+
+        eulerAngles = lookAtTarget.localRotation.eulerAngles;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     // Update is called once per frame
@@ -82,7 +101,14 @@ public class BasicPlayerController : MonoBehaviour
     {
         //grab the input direction from the controls and update the current input direction
         Vector2 inputVec2 = controls.Player.Move.ReadValue<Vector2>();
-        inputDirection = new Vector3(inputVec2.x, 0.0f, inputVec2.y).normalized;
+        inputDirection = transform.forward * inputVec2.y + transform.right * inputVec2.x;
+        inputDirection.Normalize();
+
+        //update the rotation for the camera
+        lookInput = controls.Player.Look.ReadValue<Vector2>();
+
+        float t = 1;
+      
     }
 
     private void FixedUpdate()
@@ -102,8 +128,20 @@ public class BasicPlayerController : MonoBehaviour
 
     void FixedRotatePlayer()
     {
+        //handle rotation from player input
+        eulerAngles.y -= lookInput.y * verticalLookSpeed * Time.deltaTime;
+        eulerAngles.y = Mathf.Clamp(eulerAngles.y, vertMinAngle, vertMaxAngle);
+        lookAtTarget.localPosition = new Vector3(0.0f, 0.0f, 1.0f);
+        lookAtTarget.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        lookAtTarget.RotateAround(lookAtTarget.parent.position, lookAtTarget.right, eulerAngles.y);
+
+        //update the rotation for the rigidbody
+        float horiRot = lookInput.x * horizontalLookSpeed * Time.deltaTime;
+        Quaternion yaw = Quaternion.AngleAxis(horiRot, transform.up);
+        targetRotation = yaw * targetRotation;
+
         //get the target rotation such that it tries to orient the player to stay upright 
-        targetRotation = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
+        targetRotation = Quaternion.FromToRotation(transform.up, Vector3.up) * targetRotation;
 
         //find the rotation needed to move the player's current rotation to the target rotation
         Quaternion deltaRot = targetRotation * Quaternion.Inverse(transform.rotation);
@@ -120,6 +158,10 @@ public class BasicPlayerController : MonoBehaviour
         //calculate the torque needed to move it
         Vector3 torque = (axis * (rotR * rotationSpringDamp) - (rb.angularVelocity));
         rb.AddTorque(torque);
+
+        //transform.rotation = targetRotation;
+        //rb.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpringDamp * Time.fixedDeltaTime);
+        //transform.localRotation = 
     }
 
     void FixedRaiseCapsule()
@@ -198,7 +240,7 @@ public class BasicPlayerController : MonoBehaviour
 
     }
 
-    void Jump()
+    private void Jump()
     {
         //if the number of jumps the user has taken is less than the maximum, do a jump
         if(grounded || coyoteTimer <= coyoteTime || airJumpsTaken < airjumps)
@@ -216,4 +258,6 @@ public class BasicPlayerController : MonoBehaviour
         Gizmos.DrawRay(transform.position, Vector3.down * rideHeight);
         Gizmos.color = Color.white;
     }
+
+    public Vector3 GetCamEulerAngles() => eulerAngles;
 }
