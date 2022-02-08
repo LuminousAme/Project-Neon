@@ -52,10 +52,6 @@ public class LeanTweenHelper : MonoBehaviour
         public float angle;
 
         [Space]
-        public Vector2 startOverrideVector2;
-        public Vector2 endVector2;
-
-        [Space]
         public float startOverrideFloat;
         public float endFloat;
     }
@@ -113,8 +109,10 @@ public class LeanTweenHelper : MonoBehaviour
 
                 case TweenType.UISIZE:
                     RectTransform trans = this.GetComponent<RectTransform>();
-                    if (effects[index].overrideStartValue) trans.SetSize(effects[index].startOverrideVector2);
-                    tween = LeanTween.size(trans, effects[index].endVector2, effects[index].duration).setDelay(effects[index].startDelay);
+                    Vector2 newStart = effects[index].startOverrideVector;
+                    Vector2 newEnd = effects[index].endVector;
+                    if (effects[index].overrideStartValue) trans.SetSize(newStart);
+                    tween = LeanTween.size(trans, newEnd, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
 
                 case TweenType.ALPHA:
