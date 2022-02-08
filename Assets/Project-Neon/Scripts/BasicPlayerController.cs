@@ -9,48 +9,19 @@ public class BasicPlayerController : MonoBehaviour
 {
     private Rigidbody rb;
 
-    [Header("Floating Capsule Controls")]
-    [SerializeField] private float rideHeight = 0.5f;
-    [SerializeField] private float rideSpringStr = 1f;
-    [SerializeField] private float rideSpringDamp = 1f;
-    [SerializeField] private LayerMask walkableMask;
-
-    [Space]
-    [Header("Rotation Correction Controls")]
     private Quaternion targetRotation;
-    [SerializeField] private float rotationSpringDamp = 1f;
 
-    [Space]
-    [Header("Running Controls")]
-    [SerializeField] private float baseMaxSpeed = 1f;
-    [SerializeField] private float baseAcceleration = 1f;
-    [SerializeField] private float baseMaxAccelForce = 1f;
     private Vector3 targetVelocity = Vector3.zero;
     private Vector3 inputDirection;
     private PlayerControls controls;
 
-    [Space]
-    [Header("Jump Controls")]
-    [SerializeField] private float baseJumpHeight = 2f;
-    [SerializeField] private float horiDistanceToPeak = 1f;
-    [SerializeField] private float horiDistanceWhileFalling = 0.5f;
-    [SerializeField] private uint airjumps = 1;
-    [SerializeField] private float coyoteTime = 0.1f;
     private float coyoteTimer;
     private uint airJumpsTaken;
     private bool grounded;
-    private float jumpInitialVerticalVelo;
-    private float gravityGoingUp;
-    private float gravityGoingDown;
     private Vector3 currentGravity;
 
-    [Space]
-    [Header("Camera Controls")]
-    [SerializeField] private float horizontalLookSpeed = 10f;
-    [SerializeField] private float verticalLookSpeed = 10f;
-    [SerializeField] private float vertMaxAngle = 80f;
-    [SerializeField] private float vertMinAngle = -80f;
-    [SerializeField] Transform lookAtTarget;
+    [SerializeField] private PlayerMoveSettings movementSettings;
+    [SerializeField] private Transform lookAtTarget;
     private Vector2 lookInput;
     private Vector3 eulerAngles;
 
@@ -83,12 +54,7 @@ public class BasicPlayerController : MonoBehaviour
         grounded = false;
         coyoteTimer = 0.0f;
 
-        //jump calculations based on the building a better jump GDC talk, source: https://youtu.be/hG9SzQxaCm8
-        jumpInitialVerticalVelo = (2f * baseJumpHeight * baseMaxSpeed) / horiDistanceToPeak;
-        //calculate the gravity using the same variables (note two different gravities to allow for enhanced game feel)
-        gravityGoingUp = (-2f * baseJumpHeight * (baseMaxSpeed * baseMaxSpeed) / (horiDistanceToPeak * horiDistanceToPeak));
-        gravityGoingDown = (-2f * baseJumpHeight * (baseMaxSpeed * baseMaxSpeed) / (horiDistanceWhileFalling * horiDistanceWhileFalling));
-        currentGravity = Vector3.down * gravityGoingDown;
+        currentGravity = Vector3.down * movementSettings.GetGravityGoingDown();
 
         eulerAngles = lookAtTarget.localRotation.eulerAngles;
 
@@ -106,9 +72,6 @@ public class BasicPlayerController : MonoBehaviour
 
         //update the rotation for the camera
         lookInput = controls.Player.Look.ReadValue<Vector2>();
-
-        float t = 1;
-      
     }
 
     private void FixedUpdate()
@@ -129,14 +92,14 @@ public class BasicPlayerController : MonoBehaviour
     void FixedRotatePlayer()
     {
         //handle rotation from player input
-        eulerAngles.y -= lookInput.y * verticalLookSpeed * Time.deltaTime;
-        eulerAngles.y = Mathf.Clamp(eulerAngles.y, vertMinAngle, vertMaxAngle);
+        eulerAngles.y -= lookInput.y * movementSettings.GetVerticalLookSpeed() * Time.deltaTime;
+        eulerAngles.y = Mathf.Clamp(eulerAngles.y, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
         lookAtTarget.localPosition = new Vector3(0.0f, 0.0f, 1.0f);
         lookAtTarget.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
         lookAtTarget.RotateAround(lookAtTarget.parent.position, lookAtTarget.right, eulerAngles.y);
 
         //update the rotation for the rigidbody
-        float horiRot = lookInput.x * horizontalLookSpeed * Time.deltaTime;
+        float horiRot = lookInput.x * movementSettings.GetHorizontalLookSpeed() * Time.deltaTime;
         Quaternion yaw = Quaternion.AngleAxis(horiRot, transform.up);
         targetRotation = yaw * targetRotation;
 
@@ -158,7 +121,7 @@ public class BasicPlayerController : MonoBehaviour
         //calculate the torque needed to move it
         if(lookInput.x != 0.0f)
         {
-            Vector3 torque = (axis * (rotR * rotationSpringDamp) - (rb.angularVelocity));
+            Vector3 torque = (axis * (rotR * movementSettings.GetRotationSpringDamp()) - (rb.angularVelocity));
             rb.AddTorque(torque);
         }
         else
@@ -166,10 +129,6 @@ public class BasicPlayerController : MonoBehaviour
             rb.AddTorque(-rb.angularVelocity, ForceMode.VelocityChange);
             targetRotation = transform.rotation;
         }
-           
-        //transform.rotation = targetRotation;
-        //rb.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpringDamp * Time.fixedDeltaTime);
-        //transform.localRotation = 
     }
 
     void FixedRaiseCapsule()
@@ -178,8 +137,9 @@ public class BasicPlayerController : MonoBehaviour
         RaycastHit rayHit;
         Vector3 rayDir = Vector3.down;
 
+        Debug.Log(movementSettings.GetRideHeight());
         //if it hit something calculate the force that should be applied as a result
-        if (Physics.Raycast(transform.position, rayDir, out rayHit, rideHeight, walkableMask))
+        if (Physics.Raycast(transform.position, rayDir, out rayHit, movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
         {
             grounded = true;
             airJumpsTaken = 0;
@@ -195,12 +155,13 @@ public class BasicPlayerController : MonoBehaviour
 
             //calculate how much force needs to be used to keep the player out of the ground
             float relativeSpeed = speedAlongRayDir - otherVelAlongRayDir;
-            float x = rayHit.distance - rideHeight;
-            float springForce = (x * rideSpringStr) - (relativeSpeed * rideSpringDamp);
+            float x = rayHit.distance - movementSettings.GetRideHeight();
+            float springForce = (x * movementSettings.GetSpringStr()) - (relativeSpeed * movementSettings.GetSpringDamp());
 
             //apply that force to the player
             rb.AddForce(rayDir * springForce);
 
+            //uncomment if we want the player to be able to apply force to object below them
             /*
             //and if it's collided with another rigidbody, apply to it the same force in the opposite direction at the point of collision
             if (rayHit.rigidbody != null)
@@ -220,20 +181,20 @@ public class BasicPlayerController : MonoBehaviour
     void FixedCharacterMove()
     {
         //calculate the ideal velocity for the character this frame
-        Vector3 desiredVelocity = inputDirection * baseMaxSpeed;
+        Vector3 desiredVelocity = inputDirection * movementSettings.GetBaseMaxSpeed();
 
         //calculate what the velocity should be, adjusted for the fact it needs to be faster if the player is moving away from the direction they were in the last physics update
         float moveDirectionDot = Vector3.Dot(targetVelocity.normalized, desiredVelocity.normalized);
         float ReMappedAccelFromDot = MathUlits.SmoothStepFromValue(1.0f, 2.0f, MathUlits.ReMapClamped(-1.0f, 0.0f, 2.0f, 1.0f, moveDirectionDot, 1.0f, 2.0f));
-        float accel = baseAcceleration * ReMappedAccelFromDot;
+        float accel = movementSettings.GetBaseAcceleration() * ReMappedAccelFromDot;
 
         //claculate the acutal new target velocity, based on the acceleration
-        targetVelocity = Vector3.MoveTowards(targetVelocity, desiredVelocity, baseAcceleration * Time.fixedDeltaTime);
+        targetVelocity = Vector3.MoveTowards(targetVelocity, desiredVelocity, movementSettings.GetBaseAcceleration() * Time.fixedDeltaTime);
 
         //figure out how much force it would take to get to that velocity
         Vector3 forceRequired = (targetVelocity - new Vector3(rb.velocity.x, 0.0f, rb.velocity.z)) / Time.fixedDeltaTime;
         //clamp the magnitude of the force to the maximum
-        float maxForce = baseMaxAccelForce * ReMappedAccelFromDot;
+        float maxForce = movementSettings.GetBaseMaxAccelForce() * ReMappedAccelFromDot;
         forceRequired = Vector3.ClampMagnitude(forceRequired, maxForce);
 
         //apply that force to the rigidbody
@@ -243,28 +204,30 @@ public class BasicPlayerController : MonoBehaviour
     void FixedCalculateGravity()
     {
         //set gravity based on player velocity - will see how this works with the floating capsule, we'll have to see
-        if (rb.velocity.y >= 0) currentGravity = Vector3.up * gravityGoingUp;
-        else if (rb.velocity.y < 0) currentGravity = Vector3.up * gravityGoingDown;
-
+        if (rb.velocity.y >= 0) currentGravity = Vector3.up * movementSettings.GetGravityGoingUp();
+        else if (rb.velocity.y < 0) currentGravity = Vector3.up * movementSettings.GetGravityGoingDown();
     }
 
     private void Jump()
     {
         //if the number of jumps the user has taken is less than the maximum, do a jump
-        if(grounded || coyoteTimer <= coyoteTime || airJumpsTaken < airjumps)
+        if(grounded || coyoteTimer <= movementSettings.GetCoyoteTime() || airJumpsTaken < movementSettings.GetAirJumps())
         {
             //add the force - The - rb.velocity.y term here negates any existing y velocity when jumping mid air, making that feel better
-            rb.AddForce(Vector3.up * (jumpInitialVerticalVelo - rb.velocity.y), ForceMode.VelocityChange); 
+            rb.AddForce(Vector3.up * (movementSettings.GetJumpInitialVerticalVelo() - rb.velocity.y), ForceMode.VelocityChange); 
             //and if not on the ground, increase the number of air jumps taken
-            if(!(grounded && coyoteTimer <= coyoteTime)) airJumpsTaken++;
+            if(!(grounded && coyoteTimer <= movementSettings.GetCoyoteTime())) airJumpsTaken++;
         }
     }
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawRay(transform.position, Vector3.down * rideHeight);
-        Gizmos.color = Color.white;
+        if(movementSettings != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(transform.position, Vector3.down * movementSettings.GetRideHeight());
+            Gizmos.color = Color.white;
+        }
     }
 
     public Vector3 GetCamEulerAngles() => eulerAngles;

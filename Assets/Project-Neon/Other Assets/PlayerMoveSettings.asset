@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 788f3f75daada2a4c97e3640d33eebb5, type: 3}
+  m_Name: PlayerMoveSettings
+  m_EditorClassIdentifier: 
+  rideHeight: 1
+  rideSpringStr: 160
+  rideSpringDamp: 30
+  walkableMask:
+    serializedVersion: 2
+    m_Bits: 55
+  rotationSpringDamp: 4
+  baseMaxSpeed: 8
+  baseAcceleration: 200
+  baseMaxAccelForce: 150
+  baseJumpHeight: 2
+  horiDistanceToPeak: 2
+  horiDistanceWhileFalling: 2
+  airjumps: 1
+  coyoteTime: 0.35
+  horizontalLookSpeed: 100
+  verticalLookSpeed: 100
+  vertMaxAngle: 80
+  vertMinAngle: -80
