@@ -43,37 +43,21 @@ public class LeanTweenHelper : MonoBehaviour
         public bool beginOnStart;
 
         [Space]
-        [Header("Move & Move Local Settings")]
-        public bool overrideStartPosition;
-        public Vector3 startPositionOverride;
-        public Vector3 MoveTarget;
+        public bool overrideStartValue;
 
         [Space]
-        [Header("Rotate and Rotate Local Settings")]
-        public bool overrideStartRotation;
-        public Vector3 startRotationOverride;
-        public Vector3 targetRotation;
-        [Header("Rotate Around and Rotate Around Local Settings")]
-        public Vector3 aroundAxis;
+        public Vector3 startOverrideVector;
+        public Vector3 endVector;
+        public Vector3 aroundaxis;
         public float angle;
 
         [Space]
-        [Header("Scale Settings")]
-        public bool overrideStartScale;
-        public Vector3 startScaleOverride;
-        public Vector3 targetScale;
+        public Vector2 startOverrideVector2;
+        public Vector2 endVector2;
 
         [Space]
-        [Header("UI Size Settings, Note: Requires RectTransform")]
-        public bool overrideStartUISize;
-        public Vector2 startUISizeOverride;
-        public Vector2 targetUISize;
-
-        [Space]
-        [Header("UI Alpha Settings: Note Requires CanvasGroup")]
-        public bool overrideStartAlpha;
-        public float startAlphaOverride;
-        public float targetAlpha;
+        public float startOverrideFloat;
+        public float endFloat;
     }
 
 
@@ -93,50 +77,50 @@ public class LeanTweenHelper : MonoBehaviour
             switch (effects[index].type)
             {
                 case TweenType.MOVE:
-                    if (effects[index].overrideStartPosition) transform.position = effects[index].startPositionOverride;
-                    tween = LeanTween.move(gameObject, effects[index].MoveTarget, effects[index].duration).setDelay(effects[index].startDelay);
+                    if (effects[index].overrideStartValue) transform.position = effects[index].startOverrideVector;
+                    tween = LeanTween.move(gameObject, effects[index].endVector, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
 
                 case TweenType.MOVELOCAL:
-                    if (effects[index].overrideStartPosition) transform.localPosition = effects[index].startPositionOverride;
-                    tween = LeanTween.moveLocal(gameObject, effects[index].MoveTarget, effects[index].duration).setDelay(effects[index].startDelay);
+                    if (effects[index].overrideStartValue) transform.localPosition = effects[index].startOverrideVector;
+                    tween = LeanTween.moveLocal(gameObject, effects[index].endVector, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
 
                 case TweenType.ROTATE:
-                    if (effects[index].overrideStartRotation) transform.rotation = Quaternion.Euler(effects[index].startRotationOverride);
-                    tween = LeanTween.rotate(gameObject, effects[index].targetRotation, effects[index].duration).setDelay(effects[index].startDelay);
+                    if (effects[index].overrideStartValue) transform.rotation = Quaternion.Euler(effects[index].startOverrideVector);
+                    tween = LeanTween.rotate(gameObject, effects[index].endVector, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
 
                 case TweenType.ROTATELOCAL:
-                    if (effects[index].overrideStartRotation) transform.localRotation = Quaternion.Euler(effects[index].startRotationOverride);
-                    tween = LeanTween.rotateLocal(gameObject, effects[index].targetRotation, effects[index].duration).setDelay(effects[index].startDelay);
+                    if (effects[index].overrideStartValue) transform.localRotation = Quaternion.Euler(effects[index].startOverrideVector);
+                    tween = LeanTween.rotateLocal(gameObject, effects[index].endVector, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
 
                 case TweenType.ROTATEAROUNDAXIS:
-                    if (effects[index].overrideStartRotation) transform.rotation = Quaternion.Euler(effects[index].startRotationOverride);
-                    tween = LeanTween.rotateAround(gameObject, effects[index].aroundAxis, effects[index].angle, effects[index].duration).setDelay(effects[index].startDelay);
+                    if (effects[index].overrideStartValue) transform.rotation = Quaternion.Euler(effects[index].startOverrideVector);
+                    tween = LeanTween.rotateAround(gameObject, effects[index].aroundaxis, effects[index].angle, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
 
                 case TweenType.ROTATEAROUNDAXISLOCAL:
-                    if (effects[index].overrideStartRotation) transform.localRotation = Quaternion.Euler(effects[index].startRotationOverride);
-                    tween = LeanTween.rotateAroundLocal(gameObject, effects[index].aroundAxis, effects[index].angle, effects[index].duration).setDelay(effects[index].startDelay);
+                    if (effects[index].overrideStartValue) transform.localRotation = Quaternion.Euler(effects[index].startOverrideVector);
+                    tween = LeanTween.rotateAroundLocal(gameObject, effects[index].aroundaxis, effects[index].angle, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
 
                 case TweenType.SCALE:
-                    if (effects[index].overrideStartScale) transform.localScale = effects[index].startScaleOverride;
-                    tween = LeanTween.scale(gameObject, effects[index].targetScale, effects[index].duration).setDelay(effects[index].startDelay);
+                    if (effects[index].overrideStartValue) transform.localScale = effects[index].startOverrideVector;
+                    tween = LeanTween.scale(gameObject, effects[index].endVector, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
 
                 case TweenType.UISIZE:
                     RectTransform trans = this.GetComponent<RectTransform>();
-                    if (effects[index].overrideStartUISize) trans.SetSize(effects[index].startUISizeOverride);
-                    tween = LeanTween.size(trans, effects[index].targetUISize, effects[index].duration).setDelay(effects[index].startDelay);
+                    if (effects[index].overrideStartValue) trans.SetSize(effects[index].startOverrideVector2);
+                    tween = LeanTween.size(trans, effects[index].endVector2, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
 
                 case TweenType.ALPHA:
                     CanvasGroup canvasGroup = this.GetComponent<CanvasGroup>();
-                    if (effects[index].overrideStartAlpha) canvasGroup.alpha = effects[index].startAlphaOverride;
-                    tween = LeanTween.alphaCanvas(canvasGroup, effects[index].targetAlpha, effects[index].duration).setDelay(effects[index].startDelay);
+                    if (effects[index].overrideStartValue) canvasGroup.alpha = effects[index].startOverrideFloat;
+                    tween = LeanTween.alphaCanvas(canvasGroup, effects[index].endFloat, effects[index].duration).setDelay(effects[index].startDelay);
                     break;
             }
 
