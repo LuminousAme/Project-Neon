@@ -27,6 +27,9 @@ MonoBehaviour:
   horiDistanceWhileFalling: 2
   airjumps: 1
   coyoteTime: 0.35
+  AdditionalSpeedForDash: 24
+  DashLenght: 0.2
+  DashCooldown: 2
   horizontalLookSpeed: 100
   verticalLookSpeed: 100
   vertMaxAngle: 80

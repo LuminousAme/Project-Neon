@@ -25,6 +25,9 @@ public class BasicPlayerController : MonoBehaviour
     private Vector2 lookInput;
     private Vector3 eulerAngles;
 
+    private float timeRemainingInDash = 0.0f;
+    private float timeSinceLastDash = 0.0f;
+
     private void Awake()
     {
         //create the player controls asset, and enable the default player controls
@@ -35,8 +38,10 @@ public class BasicPlayerController : MonoBehaviour
     {
         controls.Enable();
 
-        //assign the jump function to the performed event of the jump action
+        //assign the jump function to the started event of the jump action
         controls.Player.Jump.started += ctx => Jump();
+        //assign the startdash function to the started event of the dash action
+        controls.Player.Dash.started += ctx => StartDash();
     }
 
     private void OnDisable()
@@ -72,6 +77,10 @@ public class BasicPlayerController : MonoBehaviour
 
         //update the rotation for the camera
         lookInput = controls.Player.Look.ReadValue<Vector2>();
+
+        //reduce the time remaining in a dash
+        if (timeRemainingInDash > 0.0) timeRemainingInDash -= Time.deltaTime;
+        if (timeSinceLastDash > 0.0) timeSinceLastDash -= Time.deltaTime;
     }
 
     private void FixedUpdate()
@@ -180,8 +189,11 @@ public class BasicPlayerController : MonoBehaviour
 
     void FixedCharacterMove()
     {
+        //figure out if the player's dash speed should be
+        float dashSpeed = (timeRemainingInDash > 0.0) ? movementSettings.GetDashSpeed() : 0.0f;
+
         //calculate the ideal velocity for the character this frame
-        Vector3 desiredVelocity = inputDirection * movementSettings.GetBaseMaxSpeed();
+        Vector3 desiredVelocity = inputDirection * (movementSettings.GetBaseMaxSpeed() + dashSpeed);
 
         //calculate what the velocity should be, adjusted for the fact it needs to be faster if the player is moving away from the direction they were in the last physics update
         float moveDirectionDot = Vector3.Dot(targetVelocity.normalized, desiredVelocity.normalized);
@@ -217,6 +229,15 @@ public class BasicPlayerController : MonoBehaviour
             rb.AddForce(Vector3.up * (movementSettings.GetJumpInitialVerticalVelo() - rb.velocity.y), ForceMode.VelocityChange); 
             //and if not on the ground, increase the number of air jumps taken
             if(!(grounded && coyoteTimer <= movementSettings.GetCoyoteTime())) airJumpsTaken++;
+        }
+    }
+
+    private void StartDash()
+    {
+        if(timeSinceLastDash <= 0.0)
+        {
+            timeSinceLastDash = movementSettings.GetDashCooldown();
+            timeRemainingInDash = movementSettings.GetDashLenght();
         }
     }
 

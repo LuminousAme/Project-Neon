@@ -49,6 +49,15 @@ public class PlayerMoveSettings : ScriptableObject
     public float GetGravityGoingDown() => gravityGoingDown;
 
     [Space]
+    [Header("Dash Controls")]
+    [SerializeField] private float AdditionalSpeedForDash = 8f;
+    public float GetDashSpeed() => AdditionalSpeedForDash;
+    [SerializeField] private float DashLenght = 0.1f;
+    public float GetDashLenght() => DashLenght;
+    [SerializeField] private float DashCooldown = 2f;
+    public float GetDashCooldown() => DashCooldown;
+
+    [Space]
     [Header("Camera Controls")]
     [SerializeField] private float horizontalLookSpeed = 100f;
     public float GetHorizontalLookSpeed() => horizontalLookSpeed;
@@ -58,6 +67,8 @@ public class PlayerMoveSettings : ScriptableObject
     public float GetVertMaxAngle() => vertMaxAngle;
     [SerializeField] private float vertMinAngle = -80f;
     public float GetVertMinAngle() => vertMinAngle;
+
+    
 
     private void OnEnable()
     {
