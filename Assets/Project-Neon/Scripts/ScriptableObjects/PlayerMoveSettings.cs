@@ -58,6 +58,25 @@ public class PlayerMoveSettings : ScriptableObject
     public float GetDashCooldown() => DashCooldown;
 
     [Space]
+    [Header("Grappling Controls")]
+    [SerializeField] private LayerMask grappleableMask;
+    public LayerMask GetGrappleableMask() => grappleableMask;
+    [SerializeField] private float maxGrappleRange = 100f;
+    public float GetMaxGrappleRange() => maxGrappleRange;
+    [SerializeField] private float grappleJointSpring = 2.5f;
+    public float GetGrappleJointSpring() => grappleJointSpring;
+    [SerializeField] private float grappleJointDamp = 6.0f;
+    public float GetGrappleJointDamp() => grappleJointDamp;
+    [SerializeField] private float grappleJointMassScale = 1.0f;
+    public float GetGrappleJointMassScale() => grappleJointMassScale;
+    [SerializeField] private float grappleCloseDistance = 0.2f;
+    public float GetGrappleCloseDistance() => grappleCloseDistance;
+    [SerializeField] private float grapplePullSpeed = 8.0f;
+    public float GetGrapplePullSpeed() => grapplePullSpeed;
+    [SerializeField] private float grapplingCoolDown = 2f;
+    public float GetGrappleCooldown() => grapplingCoolDown;
+
+    [Space]
     [Header("Camera Controls")]
     [SerializeField] private float horizontalLookSpeed = 100f;
     public float GetHorizontalLookSpeed() => horizontalLookSpeed;
@@ -67,8 +86,6 @@ public class PlayerMoveSettings : ScriptableObject
     public float GetVertMaxAngle() => vertMaxAngle;
     [SerializeField] private float vertMinAngle = -80f;
     public float GetVertMinAngle() => vertMinAngle;
-
-    
 
     private void OnEnable()
     {
