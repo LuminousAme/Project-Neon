@@ -27,6 +27,19 @@ MonoBehaviour:
   horiDistanceWhileFalling: 2
   airjumps: 1
   coyoteTime: 0.35
+  AdditionalSpeedForDash: 24
+  DashLenght: 0.2
+  DashCooldown: 2
+  grappleableMask:
+    serializedVersion: 2
+    m_Bits: 55
+  maxGrappleRange: 100
+  grappleJointSpring: 16
+  grappleJointDamp: 6
+  grappleJointMassScale: 1
+  grappleCloseDistance: 0.2
+  grapplePullSpeed: 8
+  grapplingCoolDown: 2
   horizontalLookSpeed: 100
   verticalLookSpeed: 100
   vertMaxAngle: 80
