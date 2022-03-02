@@ -25,6 +25,16 @@ public class BasicPlayerController : MonoBehaviour
     private Vector2 lookInput;
     private Vector3 eulerAngles;
 
+    private float timeRemainingInDash = 0.0f;
+    private float timeSinceLastDash = 0.0f;
+
+    private bool isGrappling = false, isRidingMommentum = false;
+    private float timeSinceLastGrappleEnd = 0.0f;
+    private Vector3 hookPosition;
+    private SpringJoint grapplingHookJoint;
+    private Vector3 grapplingMomentum;
+    [SerializeField] private LineRenderer grapplingLine;
+
     private void Awake()
     {
         //create the player controls asset, and enable the default player controls
@@ -35,8 +45,12 @@ public class BasicPlayerController : MonoBehaviour
     {
         controls.Enable();
 
-        //assign the jump function to the performed event of the jump action
+        //assign the jump function to the started event of the jump action
         controls.Player.Jump.started += ctx => Jump();
+        //assign the startdash function to the started event of the dash action
+        controls.Player.Dash.started += ctx => StartDash();
+        //assign the handlegrapple function to the started event of the grapple action
+        controls.Player.Grapple.started += ctx => HandleGrapplePressed();
     }
 
     private void OnDisable()
@@ -60,6 +74,9 @@ public class BasicPlayerController : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        isGrappling = false;
+        grapplingMomentum = Vector3.zero;
     }
 
     // Update is called once per frame
@@ -72,6 +89,22 @@ public class BasicPlayerController : MonoBehaviour
 
         //update the rotation for the camera
         lookInput = controls.Player.Look.ReadValue<Vector2>();
+
+        //reduce the time and cooldown remaining for dashing
+        if (timeRemainingInDash > 0.0) timeRemainingInDash -= Time.deltaTime;
+        if (timeSinceLastDash > 0.0) timeSinceLastDash -= Time.deltaTime;
+
+        //do the update for the grappling hook if it is active
+        if (isGrappling) GrapplingHookUpdate();
+
+        //reduce the cooldown remaing for the grappling hook
+        if (timeSinceLastGrappleEnd > 0.0f && !isGrappling) timeSinceLastGrappleEnd -= Time.deltaTime;
+    }
+
+    //Late update is called after every gameobject has had their update called
+    private void LateUpdate()
+    {
+        DrawGrapplingHook();
     }
 
     private void FixedUpdate()
@@ -83,7 +116,10 @@ public class BasicPlayerController : MonoBehaviour
         FixedRaiseCapsule();
 
         //apply the 2 dimensional (forward, and side to side) basic character motion
-        FixedCharacterMove();
+        if(!isGrappling && !isRidingMommentum) FixedCharacterMove();
+
+        //apply any mommentum from the grappling hook
+        FixedGrapplingHookPull();
 
         //rotate the player towards their target rotation using the
         FixedRotatePlayer();
@@ -137,7 +173,6 @@ public class BasicPlayerController : MonoBehaviour
         RaycastHit rayHit;
         Vector3 rayDir = Vector3.down;
 
-        Debug.Log(movementSettings.GetRideHeight());
         //if it hit something calculate the force that should be applied as a result
         if (Physics.Raycast(transform.position, rayDir, out rayHit, movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
         {
@@ -161,6 +196,18 @@ public class BasicPlayerController : MonoBehaviour
             //apply that force to the player
             rb.AddForce(rayDir * springForce);
 
+            if(!isGrappling)
+            {
+                //apply drag onto the grappling hook momentum
+                float currentGrapplingMag = grapplingMomentum.magnitude;
+                if (currentGrapplingMag <= movementSettings.GetGrappleDrag())
+                {
+                    grapplingMomentum = Vector3.zero;
+                    isRidingMommentum = false;
+                }
+                else grapplingMomentum -= grapplingMomentum.normalized * movementSettings.GetGrappleDrag();
+            }
+
             //uncomment if we want the player to be able to apply force to object below them
             /*
             //and if it's collided with another rigidbody, apply to it the same force in the opposite direction at the point of collision
@@ -170,7 +217,7 @@ public class BasicPlayerController : MonoBehaviour
             }*/
         }
         //if the player is not on the ground, apply the force of gravity to them
-        else
+        else if (!isGrappling) 
         {
             rb.AddForce(currentGravity, ForceMode.Acceleration);
             grounded = false;
@@ -180,8 +227,11 @@ public class BasicPlayerController : MonoBehaviour
 
     void FixedCharacterMove()
     {
+        //figure out if the player's dash speed should be
+        float dashSpeed = (timeRemainingInDash > 0.0) ? movementSettings.GetDashSpeed() : 0.0f;
+
         //calculate the ideal velocity for the character this frame
-        Vector3 desiredVelocity = inputDirection * movementSettings.GetBaseMaxSpeed();
+        Vector3 desiredVelocity = inputDirection * (movementSettings.GetBaseMaxSpeed() + dashSpeed);
 
         //calculate what the velocity should be, adjusted for the fact it needs to be faster if the player is moving away from the direction they were in the last physics update
         float moveDirectionDot = Vector3.Dot(targetVelocity.normalized, desiredVelocity.normalized);
@@ -191,8 +241,9 @@ public class BasicPlayerController : MonoBehaviour
         //claculate the acutal new target velocity, based on the acceleration
         targetVelocity = Vector3.MoveTowards(targetVelocity, desiredVelocity, movementSettings.GetBaseAcceleration() * Time.fixedDeltaTime);
 
-        //figure out how much force it would take to get to that velocity
-        Vector3 forceRequired = (targetVelocity - new Vector3(rb.velocity.x, 0.0f, rb.velocity.z)) / Time.fixedDeltaTime;
+        //figure out how much force it would take to get to that velocity       
+        Vector3 existingVelocity = new Vector3(rb.velocity.x, 0.0f, rb.velocity.z);
+        Vector3 forceRequired = (targetVelocity - existingVelocity) / Time.fixedDeltaTime;
         //clamp the magnitude of the force to the maximum
         float maxForce = movementSettings.GetBaseMaxAccelForce() * ReMappedAccelFromDot;
         forceRequired = Vector3.ClampMagnitude(forceRequired, maxForce);
@@ -208,15 +259,140 @@ public class BasicPlayerController : MonoBehaviour
         else if (rb.velocity.y < 0) currentGravity = Vector3.up * movementSettings.GetGravityGoingDown();
     }
 
+    //grappling hook mechanics based on this video https://www.youtube.com/watch?v=Xgh4v1w5DxU
+    void TryStartGrappling()
+    {
+        //check if we even hit something we can grapple too
+        RaycastHit rayHit;
+        if (Physics.Raycast(lookAtTarget.parent.position, lookAtTarget.forward, out rayHit, 
+            movementSettings.GetMaxGrappleRange(), movementSettings.GetGrappleableMask()))
+        {
+            //if we did set the point we hit to the anchor point
+            hookPosition = rayHit.point;
+
+
+            //code that handles setting up the joint and stuff, uncomment later
+            {
+                //and set up a spring joint to connect the player to that point
+                grapplingHookJoint = this.gameObject.AddComponent<SpringJoint>();
+                grapplingHookJoint.autoConfigureConnectedAnchor = false;
+                grapplingHookJoint.connectedAnchor = hookPosition;
+                //spring force used to keep the 2 objects together (higher means faster hook in, lower means slower)
+                grapplingHookJoint.spring = movementSettings.GetGrappleJointSpring();
+                //damper force used to dampen the spring force. (lower means faster hook, higher means slower)
+                grapplingHookJoint.damper = movementSettings.GetGrappleJointDamp();
+                //scale to apply to the inverse mass and inertia tensor of the body (seems to affect momentum)
+                grapplingHookJoint.massScale = movementSettings.GetGrappleJointMassScale();
+
+                //setting the starting distances to grapple between
+                float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
+                grapplingHookJoint.maxDistance = distanceFromHookPoint * 0.8f;
+                grapplingHookJoint.minDistance = distanceFromHookPoint * 0.25f;
+                //grapplingHookJoint.minDistance = movementSettings.GetGrappleCloseDistance();
+                
+
+                //if a line renderer for the grappling line exists then set it to have 2 points
+                if (grapplingLine != null) grapplingLine.positionCount = 2;
+            }
+           
+
+            //finally mark the player as actively grappling
+            isGrappling = true;
+            rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
+        }
+    }
+
+    void StopGrappling()
+    {
+        if (grapplingLine != null) grapplingLine.positionCount = 0;
+        if (grapplingHookJoint != null) Destroy(grapplingHookJoint);
+        isGrappling = false;
+        timeSinceLastGrappleEnd = movementSettings.GetGrappleCooldown();
+        //rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
+    }
+
+    void GrapplingHookUpdate()
+    {
+        //if (!grapplingHookJoint) return;
+
+        //reduce the current maximum distance so the grappling hook pulls the user towards the hook point
+        //float currentMaxDist = grapplingHookJoint.maxDistance;
+        //grapplingHookJoint.maxDistance = currentMaxDist - movementSettings.GetGrapplePullSpeed() * Time.deltaTime;
+
+        //adjust the area that you can swing in 
+        float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
+        if (grapplingHookJoint != null) {
+            grapplingHookJoint.maxDistance = distanceFromHookPoint * 0.8f;
+            grapplingHookJoint.minDistance = distanceFromHookPoint * 0.25f;
+        }
+
+        //if the distance between the player and the hooked point is less than the minimum, stop grappling
+        if (distanceFromHookPoint <= movementSettings.GetGrappleCloseDistance()) StopGrappling();
+    }
+
+    void FixedGrapplingHookPull()
+    {
+        if(isGrappling)
+        {
+            Vector3 GrappleDir = hookPosition - this.transform.position;
+            grapplingMomentum = GrappleDir * movementSettings.GetGrapplePullSpeed() * Time.fixedDeltaTime;
+            isRidingMommentum = true;
+        }
+
+        if(isRidingMommentum)
+        {
+            rb.AddForce(grapplingMomentum, ForceMode.VelocityChange);
+
+            Vector3 inputMove = inputDirection.normalized * movementSettings.GetGrappleHoriInputForce();
+            rb.AddForce(inputMove);
+        }
+    }
+
+    void DrawGrapplingHook()
+    {
+        //if (!grapplingHookJoint) return;
+
+        if(grapplingLine != null && grapplingLine.positionCount > 0)
+        {
+            grapplingLine.SetPosition(0, grapplingLine.transform.position);
+            grapplingLine.SetPosition(1, hookPosition);
+        }
+    }
+
     private void Jump()
     {
         //if the number of jumps the user has taken is less than the maximum, do a jump
-        if(grounded || coyoteTimer <= movementSettings.GetCoyoteTime() || airJumpsTaken < movementSettings.GetAirJumps())
+        if( isGrappling || grounded || coyoteTimer <= movementSettings.GetCoyoteTime() || airJumpsTaken < movementSettings.GetAirJumps())
         {
             //add the force - The - rb.velocity.y term here negates any existing y velocity when jumping mid air, making that feel better
             rb.AddForce(Vector3.up * (movementSettings.GetJumpInitialVerticalVelo() - rb.velocity.y), ForceMode.VelocityChange); 
             //and if not on the ground, increase the number of air jumps taken
-            if(!(grounded && coyoteTimer <= movementSettings.GetCoyoteTime())) airJumpsTaken++;
+            if(!(grounded && coyoteTimer <= movementSettings.GetCoyoteTime()) || !isGrappling) airJumpsTaken++;
+        }
+
+        if (isGrappling) StopGrappling();
+    }
+
+    private void StartDash()
+    {
+        if(timeSinceLastDash <= 0.0)
+        {
+            timeSinceLastDash = movementSettings.GetDashCooldown();
+            timeRemainingInDash = movementSettings.GetDashLenght();
+        }
+    }
+
+    private void HandleGrapplePressed()
+    {
+        if(isGrappling)
+        {
+            //end grappling
+            StopGrappling();
+        }
+        else if (timeSinceLastGrappleEnd <= 0.0f)
+        {
+            //try to start a grapple
+            TryStartGrappling();
         }
     }
 
