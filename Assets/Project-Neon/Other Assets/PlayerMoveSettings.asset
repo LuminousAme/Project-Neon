@@ -34,11 +34,13 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 55
   maxGrappleRange: 100
-  grappleJointSpring: 16
+  grappleJointSpring: 6
   grappleJointDamp: 6
   grappleJointMassScale: 1
-  grappleCloseDistance: 0.2
-  grapplePullSpeed: 8
+  grappleCloseDistance: 1
+  grapplePullSpeed: 2
+  grappleDrag: 1
+  grapplingHoriInputForce: 16
   grapplingCoolDown: 2
   horizontalLookSpeed: 100
   verticalLookSpeed: 100
