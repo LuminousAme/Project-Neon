@@ -73,6 +73,10 @@ public class PlayerMoveSettings : ScriptableObject
     public float GetGrappleCloseDistance() => grappleCloseDistance;
     [SerializeField] private float grapplePullSpeed = 8.0f;
     public float GetGrapplePullSpeed() => grapplePullSpeed;
+    [SerializeField] private float grappleDrag = 3f;
+    public float GetGrappleDrag() => grappleDrag;
+    [SerializeField] private float grapplingHoriInputForce = 2f;
+    public float GetGrappleHoriInputForce() => grapplingHoriInputForce;
     [SerializeField] private float grapplingCoolDown = 2f;
     public float GetGrappleCooldown() => grapplingCoolDown;
 
