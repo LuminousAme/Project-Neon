@@ -39,8 +39,10 @@ MonoBehaviour:
   grappleJointMassScale: 1
   grappleCloseDistance: 0.2
   grapplePullSpeed: 8
+  grappleDrag: 3
+  grapplingHoriInputForce: 2
   grapplingCoolDown: 2
-  horizontalLookSpeed: 100
-  verticalLookSpeed: 100
+  horizontalLookSpeed: 200
+  verticalLookSpeed: 200
   vertMaxAngle: 80
   vertMinAngle: -80
