@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "PlayerMoveSettings", menuName = "ProjectNeon/Player/Movement")]
+[CreateAssetMenu(fileName = "PlayerMoveSettings", menuName = "ProjectNeon/Player")]
 public class PlayerMoveSettings : ScriptableObject
 {
     [Header("Floating Capsule Controls")]

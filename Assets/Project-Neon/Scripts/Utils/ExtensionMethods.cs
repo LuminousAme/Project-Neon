@@ -12,4 +12,10 @@ public static class ExtensionMethods
         trans.offsetMin = trans.offsetMin - new Vector2(deltaSize.x * trans.pivot.x, deltaSize.y * trans.pivot.y);
         trans.offsetMax = trans.offsetMax + new Vector2(deltaSize.x * (1f - trans.pivot.x), deltaSize.y * (1f - trans.pivot.y));
     }
+
+    public static void AlignUp(this Transform trans, Vector3 newUp)
+    {
+        Quaternion newRot = Quaternion.FromToRotation(trans.up, newUp) * trans.rotation;
+        trans.rotation = newRot;
+    }
 }
