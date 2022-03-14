@@ -58,6 +58,8 @@ public class LeanTweenHelper : MonoBehaviour
 
 
     public List<TweenEffect> effects;
+    public delegate void onTweenCompleteFunc(LeanTweenHelper obj, int index);
+    public static event onTweenCompleteFunc onTweenComplete;
 
     private void Start()
     {
@@ -170,8 +172,13 @@ public class LeanTweenHelper : MonoBehaviour
                         break;
                 }
             }
-        }
-      
+
+            //when the tween finishes it will fire off the event with a rerefence to this helper and the index of the tween
+            tween.setOnComplete(delegate ()
+            {
+                onTweenComplete?.Invoke(this, index);
+            });
+        } 
     }
 
     public void BeginAll()

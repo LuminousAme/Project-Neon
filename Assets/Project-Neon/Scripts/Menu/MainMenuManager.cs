@@ -20,6 +20,8 @@ public class MainMenuManager : MonoBehaviour
     List<FlickerInfo> buttonsFlickering = new List<FlickerInfo>();
 
     [SerializeField] TMP_InputField nameField;
+    [SerializeField] SceneTransition sceneTransition;
+    [SerializeField] float startDelay = 0f;
 
     [SerializeField] float minTimeBetweenLogoFlickers = 5f, maxTimeBetweenLogoFlickers = 10f;
     float currentTimeBetweenLogoFlickers;
@@ -72,7 +74,7 @@ public class MainMenuManager : MonoBehaviour
             buttonsFlickering.Add(flicker);
         }
 
-        timeSinceStart = 0f;
+        timeSinceStart = -startDelay;
 
         currentTimeBetweenLogoFlickers = Random.Range(minTimeBetweenLogoFlickers, maxTimeBetweenLogoFlickers);
         currentTimeBetweenButtonFlickers = Random.Range(minTimeBetweenButtonFlickers, maxTimeBetweenButtonFlickers);
@@ -240,17 +242,17 @@ public class MainMenuManager : MonoBehaviour
 
     public void PlayButtonPressed()
     {
-
+        //sceneTransition.beginTransition(playSceneIndex);
     }
 
     public void OptionsButtonPressed()
     {
-
+        //sceneTransition.beginTransition(optionsSceneIndex);
     }
 
     public void CreditsButtonPressed()
     {
-
+        sceneTransition.beginTransition(1);
     }
 
     public void QuitButtonPressed()
