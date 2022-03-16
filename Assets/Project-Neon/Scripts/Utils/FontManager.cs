@@ -124,4 +124,20 @@ public class FontManager : MonoBehaviour
         }
         else if (!alwaysFont1) fontIndex = currentFontIndex;
     }
+
+    public void SelectInputField(string input)
+    {
+        Vector3 scale = inputField.transform.localScale;
+        scale.x = 1.2f;
+        scale.y = 1.2f;
+        inputField.transform.localScale = scale;
+    }
+
+    public void DeselectInputField(string input)
+    {
+        Vector3 scale = inputField.transform.localScale;
+        scale.x = 1f;
+        scale.y = 1f;
+        inputField.transform.localScale = scale;
+    }
 }
