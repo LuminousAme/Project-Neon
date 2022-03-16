@@ -243,6 +243,9 @@ public class MainMenuManager : MonoBehaviour
     public void PlayButtonPressed()
     {
         //sceneTransition.beginTransition(playSceneIndex);
+        //go to lobby
+
+        sceneTransition.beginTransition(2);
     }
 
     public void OptionsButtonPressed()
