@@ -1,0 +1,52 @@
+{
+    "name": "DebugControls",
+    "maps": [
+        {
+            "name": "DebugCommands",
+            "id": "515941f3-485c-4db6-8d39-6451d57f67a5",
+            "actions": [
+                {
+                    "name": "ToogleDebugBox",
+                    "type": "Button",
+                    "id": "683101f0-be00-49b8-98a5-037bd77f0eb2",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "UseCommand",
+                    "type": "Button",
+                    "id": "9977e52f-65be-4e72-8c85-d7d08a6ca860",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "fab21c1b-81c6-4175-8117-0cda57f6a412",
+                    "path": "<Keyboard>/backquote",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToogleDebugBox",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "22332274-87e1-4776-ae31-646b3076a05c",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "UseCommand",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

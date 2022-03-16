@@ -10,6 +10,7 @@ public class DebugController : MonoBehaviour
     bool showHelp = false;
     Vector2 scroll;
     string input;
+    private DebugControls controls;
 
 
     public static DebugCommand HELP;
@@ -17,8 +18,37 @@ public class DebugController : MonoBehaviour
 
     public List<object> commandList;
 
+    private void OnEnable()
+    {
+        controls.Enable();
+
+        controls.DebugCommands.ToogleDebugBox.started += ctx => ToogleShowConsole();
+        controls.DebugCommands.UseCommand.started += ctx => EnterCommand();
+    }
+
+    private void OnDisable()
+    {
+        controls.Disable();
+    }
+
+    void ToogleShowConsole()
+    {
+        showConsole = !showConsole;
+        showHelp = false;
+    }
+
+    void EnterCommand()
+    {
+        if(showConsole)
+        {
+            HandleInput();
+            input = "";
+        }
+    }
+
     private void Awake()
     {
+        controls = new DebugControls();
         commandList = new List<object>();
 
         HELP = new DebugCommand("help", "shows lists of all commands and their data", "help", () => {
@@ -34,20 +64,6 @@ public class DebugController : MonoBehaviour
         });
 
         commandList.Add(SET_IP_ADDRESS);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if(Input.GetKeyDown(KeyCode.BackQuote)) {
-            showConsole = !showConsole;
-            showHelp = false;
-        }
-        if(showConsole && Input.GetKeyDown(KeyCode.Return))
-        {
-            HandleInput();
-            input = "";
-        }
     }
 
     private void OnGUI()
