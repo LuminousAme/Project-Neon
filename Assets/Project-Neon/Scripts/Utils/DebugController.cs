@@ -12,7 +12,6 @@ public class DebugController : MonoBehaviour
     string input;
     private DebugControls controls;
 
-
     public static DebugCommand HELP;
     public static DebugCommand<string> SET_IP_ADDRESS;
 
@@ -61,6 +60,7 @@ public class DebugController : MonoBehaviour
         SET_IP_ADDRESS = new DebugCommand<string>("set_ip_address", "Sets the IP Address of the Server", "set_ip_address <ip>", (newIP) =>
         {
             //use new ip to update the ip address here
+
         });
 
         commandList.Add(SET_IP_ADDRESS);
