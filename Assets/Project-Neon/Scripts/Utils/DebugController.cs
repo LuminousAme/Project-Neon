@@ -19,9 +19,14 @@ public class DebugController : MonoBehaviour
 
     private void Awake()
     {
+        commandList = new List<object>();
+
         HELP = new DebugCommand("help", "shows lists of all commands and their data", "help", () => {
             showHelp = true;
+            Debug.Log("helping");
         });
+
+        commandList.Add(HELP);
 
         SET_IP_ADDRESS = new DebugCommand<string>("set_ip_address", "Sets the IP Address of the Server", "set_ip_address <ip>", (newIP) =>
         {
@@ -38,7 +43,7 @@ public class DebugController : MonoBehaviour
             showConsole = !showConsole;
             showHelp = false;
         }
-        if(Input.GetKeyDown(KeyCode.Return))
+        if(showConsole && Input.GetKeyDown(KeyCode.Return))
         {
             HandleInput();
             input = "";
@@ -79,7 +84,7 @@ public class DebugController : MonoBehaviour
 
 
         GUI.Box(new Rect(0, y, Screen.width, 30), "");
-        GUI.backgroundColor = new Color(0, 0, 0, 0);
+        GUI.backgroundColor = new Color(1, 1, 1, 0.5f);
 
         input = GUI.TextField(new Rect(10f, y + 5f, Screen.width - 20f, 20f), input);
     }
