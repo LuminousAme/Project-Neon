@@ -2989,6 +2989,22 @@ PrefabInstance:
       propertyPath: onClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
+    - target: {fileID: 4481426757232420367, guid: 48ed9cbed37ac03439e836c34b77cb6f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 250
+      objectReference: {fileID: 0}
+    - target: {fileID: 4481426757232420367, guid: 48ed9cbed37ac03439e836c34b77cb6f, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -16
+      objectReference: {fileID: 0}
+    - target: {fileID: 4481426757232420367, guid: 48ed9cbed37ac03439e836c34b77cb6f, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4636395773906584000, guid: 48ed9cbed37ac03439e836c34b77cb6f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5266113933741760656, guid: 48ed9cbed37ac03439e836c34b77cb6f, type: 3}
       propertyPath: m_text
       value: Back
