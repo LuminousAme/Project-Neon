@@ -65,7 +65,7 @@ public class FontManager : MonoBehaviour
         }
 
 
-        changeFont();
+        ChangeFont();
     }
 
     // Update is called once per frame
@@ -74,11 +74,11 @@ public class FontManager : MonoBehaviour
         //handle font settings change
         if (fontIndex != currentFontIndex)
         {
-            changeFont();
+            ChangeFont();
         }
     }
 
-    void changeFont()
+    void ChangeFont()
     {
         if (alwaysFont1 && currentFontIndex != 1)
         {
@@ -139,5 +139,12 @@ public class FontManager : MonoBehaviour
         scale.x = 1f;
         scale.y = 1f;
         inputField.transform.localScale = scale;
+    }
+
+    public void ChangeFontColor(int color)
+    {
+        textColor = color;
+        currentFontIndex = -1; //force a font update
+        ChangeFont();
     }
 }
