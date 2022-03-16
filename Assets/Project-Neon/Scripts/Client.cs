@@ -3,6 +3,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+using System.Collections.Generic;
+
 
 //using PeertoPeer;
 public class Client : MonoBehaviour
@@ -12,18 +14,21 @@ public class Client : MonoBehaviour
 
     // List<PeertoPeer.Peers> peers = new List<PeertoPeer.Peers>();
 
-    private Socket client;
+    private static Socket client;
 
-    private IPEndPoint clientEP;
+    private static IPEndPoint clientEP;
 
-    private IPEndPoint localEP;
+    private static IPEndPoint localEP;
 
-    private EndPoint remoteClient;
-    private byte[] buffer = new byte[512];
+    private static EndPoint remoteClient;
+    private static byte[] buffer = new byte[512];
 
+    //public playerIps
+
+    List<IPAddress> addresses = new List<IPAddress>();
     // Start is called before the first frame update
     //starts client
-    private void Start()
+    private static void StartClient()
     {
         //get ip
         IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
@@ -59,6 +64,11 @@ public class Client : MonoBehaviour
         {
             Console.WriteLine("SocketException: {0}", se.ToString());
         }
+    }
+    private void Start()
+    {
+        StartClient();
+     
     }
 
     // Update is called once per frame
