@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+using Unity.Collections;
 
 public class Server : MonoBehaviour
 {
@@ -18,24 +19,25 @@ public class Server : MonoBehaviour
     {
         byte[] buffer = new byte[512];
         IPHostEntry hostInfo = Dns.GetHostEntry(Dns.GetHostName());
-        // IPAddress ip = hostInfo.AddressList[1];//[0] ipv6
-        IPAddress ip = null;
+        IPAddress ip = hostInfo.AddressList[1];//[0] ipv6
+        
+        //IPAddress ip = null;
 
-        for (int i = 0; i < hostInfo.AddressList.Length; ++i)
-        {
-            //check for IPv4 address and add it to list
-            if (hostInfo.AddressList[i].AddressFamily == AddressFamily.InterNetwork)
-                ip = hostInfo.AddressList[i];
-        }
+        //for (int i = 0; i < hostInfo.AddressList.Length; ++i)
+        //{
+        //    //check for IPv4 address and add it to list
+        //    if (hostInfo.AddressList[i].AddressFamily == AddressFamily.InterNetwork)
+        //        ip = hostInfo.AddressList[i];
+        //}
 
         Debug.Log("Server name: " + hostInfo.HostName + "   IP:" + ip);
         IPEndPoint localEP = new IPEndPoint(ip, 11111);
 
         server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        server.Blocking = false;
 
         //client = new IPEndPoint(IPAddress.Any, 0);
         // remoteClient = (EndPoint)client;
+        server.Blocking = false;
 
         try
         {
@@ -51,14 +53,17 @@ public class Server : MonoBehaviour
             //Print Client info (IP and PORT)
             Debug.Log("Client {0} connected at port {1}" + clientEP.Address + clientEP.Port);
 
-      
+
             //handler.Shutdown(SocketShutdown.Both);
             //handler.Close();
         }
 
         catch (SocketException e)
         {
-            Debug.Log("Exception: " + e.ToString());
+            if (e.SocketErrorCode != SocketError.WouldBlock)
+            {
+                Debug.Log("Exception: " + e.ToString());
+            }
         }
     }
 

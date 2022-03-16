@@ -35,6 +35,7 @@ public class LobbyMenu : MonoBehaviour
     [SerializeField] List<FontManager> playerList = new List<FontManager>();
     [SerializeField] MenuButton readyButton, joinButton, createButton, backButton;
     [SerializeField] TMP_InputField lobbyCode;
+    [SerializeField] TMP_Text ipLobby;
 
     // Start is called before the first frame update
     void Start()
@@ -185,8 +186,8 @@ public class LobbyMenu : MonoBehaviour
     public void JoinLobby()
     {
         string targetLobby = lobbyCode.text;
-        lobbyCode.text = "";
-        //acutally use that targetlobby to connect to the lobby
+       // lobbyCode.text = "";
+        //acutally use that target lobby to connect to the lobby
         Debug.Log(targetLobby);
         EnterLobby();
     }
@@ -201,6 +202,7 @@ public class LobbyMenu : MonoBehaviour
         inRoomPanel.SetActive(true);
         createOrJoinPanel.SetActive(false);
         readyButton.lightOff = false;
+        ipLobby.text = "Lobby Code: " + lobbyCode.text;
     }
 
     public void LaunchGame()
