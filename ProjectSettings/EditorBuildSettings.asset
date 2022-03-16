@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project-Neon/Scenes/Lobby.unity
     guid: 8394a3f5c69baa045abdbab03c99e965
+  - enabled: 1
+    path: Assets/Project-Neon/Map Prototype/Map Prototype.unity
+    guid: f53597b8ac0852544ab14c7010e63a08
   m_configObjects: {}
