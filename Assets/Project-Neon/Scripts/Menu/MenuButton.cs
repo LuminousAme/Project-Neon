@@ -16,7 +16,8 @@ public class MenuButton : MonoBehaviour
     [SerializeField] TMP_Text unlitText;
     int currentlyOn = 3;
     [HideInInspector] public bool hovering = false, lightOff = true;
-    bool clicked = false;
+    public bool neverOff = false;
+    bool clicked = false, clickedDelayOneFrame = false;
 
     public UnityEvent onClick = new UnityEvent();
 
@@ -67,7 +68,7 @@ public class MenuButton : MonoBehaviour
             selectedText.GetComponent<LeanTweenHelper>().BeginAll();
         }
         //handle if it's not
-        if (!hovering && !clicked && !lightOff)
+        if (!hovering && !clicked && (!lightOff || neverOff))
         {
             UnselectedActive();
         }
@@ -75,6 +76,8 @@ public class MenuButton : MonoBehaviour
         {
             UnlitActive();
         }
+
+        clickedDelayOneFrame = clicked;
     }
 
     public void OnHover()
@@ -149,5 +152,15 @@ public class MenuButton : MonoBehaviour
         clickedText.gameObject.SetActive(false);
         unlitText.gameObject.SetActive(true);
         currentlyOn = 3;
+    }
+
+    public void UnClick()
+    {
+        clicked = false;
+    }
+
+    public bool GetClicked()
+    {
+        return clickedDelayOneFrame;
     }
 }

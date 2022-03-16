@@ -242,7 +242,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void PlayButtonPressed()
     {
-        //sceneTransition.beginTransition(playSceneIndex);
+        sceneTransition.beginTransition(2);
     }
 
     public void OptionsButtonPressed()
