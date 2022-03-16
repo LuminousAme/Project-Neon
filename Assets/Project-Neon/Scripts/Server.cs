@@ -1,11 +1,14 @@
+using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using UnityEngine;
 
 public class Server : MonoBehaviour
 {
-    private GameObject myCube;
+    //private GameObject myCube;
     private static byte[] buffer = new byte[512];
+
     private static Socket server;
     private static IPEndPoint client;
     private static EndPoint remoteClient;
@@ -20,7 +23,7 @@ public class Server : MonoBehaviour
 
         for (int i = 0; i < hostInfo.AddressList.Length; ++i)
         {
-            //check for IPv4 address adn add it to list
+            //check for IPv4 address and add it to list
             if (hostInfo.AddressList[i].AddressFamily == AddressFamily.InterNetwork)
                 ip = hostInfo.AddressList[i];
         }
@@ -28,36 +31,57 @@ public class Server : MonoBehaviour
         Debug.Log("Server name: " + hostInfo.HostName + "   IP:" + ip);
         IPEndPoint localEP = new IPEndPoint(ip, 11111);
 
+        server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        server.Blocking = false;
+
+        //client = new IPEndPoint(IPAddress.Any, 0);
+        // remoteClient = (EndPoint)client;
+
         try
         {
-            server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            client = new IPEndPoint(IPAddress.Any, 0);
-
-            remoteClient = (EndPoint)client;
             server.Bind(localEP);
+            server.Listen(10);
 
-            Debug.Log("Waiting for data...");
+            Debug.Log("Waiting for a connection...");
+            Socket handler = server.Accept();
+
+            Debug.Log("Client Connected!!!");
+
+            IPEndPoint clientEP = (IPEndPoint)handler.RemoteEndPoint;
+            //Print Client info (IP and PORT)
+            Debug.Log("Client {0} connected at port {1}" + clientEP.Address + clientEP.Port);
+
+      
+            //handler.Shutdown(SocketShutdown.Both);
+            //handler.Close();
         }
 
         catch (SocketException e)
         {
             Debug.Log("Exception: " + e.ToString());
         }
-
-
-
     }
 
     // Start is called before the first frame update
     private void Start()
     {
         RunServer();
+        server.Blocking = false;
+
     }
 
     // Update is called once per frame
     private void Update()
     {
-
+        //try
+        //{
+        //    rec = server.Receive(buffer);
+        //    // rec = server.ReceiveFrom(buffer, ref remoteClient);
+        //}
+        //catch (SocketException e)
+        //{
+        //    Debug.Log("Exception: " + e.ToString());
+        //}
     }
 }
 

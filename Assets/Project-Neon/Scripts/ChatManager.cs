@@ -40,6 +40,9 @@ public class ChatManager : MonoBehaviour
             chatInput.DeactivateInputField();
             ChangeSelectionStatus(false);
         }
+
+
+
     }
 
     public void ChangeSelectionStatus(bool status)
