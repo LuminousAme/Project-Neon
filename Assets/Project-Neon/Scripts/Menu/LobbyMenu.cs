@@ -35,7 +35,7 @@ public class LobbyMenu : MonoBehaviour
     [SerializeField] List<FontManager> playerList = new List<FontManager>();
     [SerializeField] MenuButton readyButton, joinButton, createButton, backButton;
     [SerializeField] TMP_InputField lobbyCode;
-    [SerializeField] TMP_Text ipLobby;
+    [SerializeField] TMP_Text ipLobby, ipLobbyUnlit;
 
     // Start is called before the first frame update
     void Start()
@@ -89,6 +89,11 @@ public class LobbyMenu : MonoBehaviour
 
         //handle existing flickers
         HandleExistingFlickers();
+
+        if(inRoomPanel.activeSelf)
+        {
+            GetLobbyCode();
+        }
     }
 
     void LobbyFirstStageUpdate()
@@ -186,7 +191,12 @@ public class LobbyMenu : MonoBehaviour
     public void JoinLobby()
     {
         string targetLobby = lobbyCode.text;
-       // lobbyCode.text = "";
+        if (Client.instance != null)
+        {
+            Client.instance.roomCode = targetLobby;
+            Client.instance.EnterGame(1);
+        }
+        // lobbyCode.text = "";
         //acutally use that target lobby to connect to the lobby
         Debug.Log(targetLobby);
         EnterLobby();
@@ -194,6 +204,7 @@ public class LobbyMenu : MonoBehaviour
 
     public void CreateLobby()
     {
+        if (Client.instance != null) Client.instance.EnterGame(0);
         EnterLobby();
     }
 
@@ -203,6 +214,19 @@ public class LobbyMenu : MonoBehaviour
         createOrJoinPanel.SetActive(false);
         readyButton.lightOff = false;
         ipLobby.text = "Lobby Code: " + lobbyCode.text;
+        ipLobbyUnlit.text = "Lobby Code: " + lobbyCode.text;
+    }
+
+    public void GetLobbyCode()
+    {
+        string newCode = "";
+        if (Client.instance != null)
+        {
+            newCode = Client.instance.roomCode;
+        }
+
+        ipLobby.text = newCode;
+        ipLobbyUnlit.text = newCode;
     }
 
     public void LaunchGame()
@@ -216,5 +240,10 @@ public class LobbyMenu : MonoBehaviour
         {
             readyButton.UnClick();
         }
+    }
+
+    public void SetRoomCode(string newCode)
+    {
+        if (Client.instance != null) Client.instance.roomCode = newCode;
     }
 }
