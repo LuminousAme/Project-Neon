@@ -36,6 +36,7 @@ public class LobbyMenu : MonoBehaviour
     [SerializeField] MenuButton readyButton, joinButton, createButton, backButton;
     [SerializeField] TMP_InputField lobbyCode;
     [SerializeField] TMP_Text ipLobby, ipLobbyUnlit;
+    [SerializeField] List<TMP_Text> playerNames = new List<TMP_Text>();
 
     // Start is called before the first frame update
     void Start()
@@ -93,6 +94,23 @@ public class LobbyMenu : MonoBehaviour
         if(inRoomPanel.activeSelf)
         {
             GetLobbyCode();
+
+            if (Client.instance != null)
+            {
+                List<Player> players = Client.instance.GetPlayers();
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if (i >= 4) break;
+                    playerNames[i].gameObject.SetActive(true);
+                    playerNames[i].text = players[i].name;
+                    if (players[i].ready) playerNames[i].GetComponent<FontManager>().ChangeFontColor(1);
+                    else playerNames[i].GetComponent<FontManager>().ChangeFontColor(0);
+                }
+                for(int i = 3; i > players.Count; i--)
+                {
+                    playerNames[i].gameObject.SetActive(false);
+                }
+            }
         }
     }
 
@@ -231,6 +249,18 @@ public class LobbyMenu : MonoBehaviour
 
     public void LaunchGame()
     {
+        if (Client.instance != null)
+        {
+            if(Client.instance.GetAllPlayersReady())
+            {
+                Client.instance.LaunchGameForAll();
+                StartGame();
+            }
+        }
+    }
+
+    public void StartGame()
+    {
         sceneTransition.beginTransition(3);
     }
 
@@ -239,7 +269,9 @@ public class LobbyMenu : MonoBehaviour
         if(readyButton.GetClicked())
         {
             readyButton.UnClick();
+            if (Client.instance != null) Client.instance.SetReady(false);
         }
+        else if (Client.instance != null) Client.instance.SetReady(true);
     }
 
     public void SetRoomCode(string newCode)
