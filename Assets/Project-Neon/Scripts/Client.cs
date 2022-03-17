@@ -30,6 +30,7 @@ public class Client : MonoBehaviour
     //public playerIps
 
     private List<Player> players = new List<Player>();
+    public List<Player> GetPlayers() => players;
 
     //starts client
 
@@ -163,7 +164,44 @@ public class Client : MonoBehaviour
                     int recv = client.Receive(recieveBuffer);
                     string data = Encoding.ASCII.GetString(recieveBuffer, 0, recv);
                     Debug.Log(data);
-                    //string[] splitData = data.Split('$');
+                    string[] splitData = data.Split('$');
+
+                    if(int.Parse(splitData[0]) == 0)
+                    {
+                        for(int i = 1; i < splitData.Length; i++)
+                        {
+                            bool exists = false;
+                            foreach(Player player in players)
+                            {
+                                if (player.name == splitData[i]) exists = true;
+                            }
+
+                            if(!exists)
+                            {
+                                Player newplayer = new Player();
+                                newplayer.name = splitData[i];
+                                players.Add(newplayer);
+                            }
+                        }
+                    }
+                    else if (int.Parse(splitData[0]) == 2)
+                    {
+                        string username = splitData[1];
+                        string msg = splitData[2];
+
+                        ChatManager chat = FindObjectOfType<ChatManager>();
+                        if (chat != null) chat.AddMessageToChat(username, msg);
+                    }
+                    else if (int.Parse(splitData[0]) == 3)
+                    {
+                        Player player = players.Find(p => p.name == splitData[1]);
+                        player.ready = (int.Parse(splitData[2]) == 0) ? false : true;
+                    }
+                    else if (int.Parse(splitData[0]) == 4)
+                    {
+                        LobbyMenu lobby = FindObjectOfType<LobbyMenu>();
+                        if (lobby != null) lobby.StartGame();
+                    }
                 }
                 catch (SocketException e)
                 {
@@ -281,30 +319,46 @@ public class Client : MonoBehaviour
         string toSend = "2$" + PlayerPrefs.GetString("DisplayName") + "$" + msg;
         sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
+        client.Send(sendBuffer);
+    }
+
+    public void SetReady(bool ready)
+    {
+        Player thisPlayer = players.Find(p => p.name == PlayerPrefs.GetString("DisplayName"));
+        thisPlayer.ready = ready;
+
+        string toSend = "3$" + PlayerPrefs.GetString("DisplayName") + "$";
+        toSend += (ready) ? "1" : "0";
+        sendBuffer = Encoding.ASCII.GetBytes(toSend);
+
+        client.Send(sendBuffer);
+    }
+
+    public void LaunchGameForAll()
+    {
+        string toSend = "4";
+        sendBuffer = Encoding.ASCII.GetBytes(toSend);
+
+        client.Send(sendBuffer);
+    }
+
+    public bool GetAllPlayersReady()
+    {
+        bool ready = true;
         foreach(Player player in players)
         {
-            server.SendTo(sendBuffer, player.remoteEndPoint);
+            if (!player.ready)
+            {
+                ready = false;
+                break;
+            }
         }
+
+        return ready;
     }
 }
 
-
-
-class Player
-{
-    public IPAddress ip;
-    public IPEndPoint clientEndPoint;
-    public EndPoint remoteEndPoint;
-    public Socket socket;
-    public string name;
-    public bool thisClient = false;
-
-    public Player(IPAddress ip, string name, Socket socket, IPEndPoint clientEndPoint, EndPoint remoteEndPoint)
-    {
-        this.ip = ip;
-        this.name = name;
-        this.socket = socket;
-        this.clientEndPoint = clientEndPoint;
-        this.remoteEndPoint = remoteEndPoint;
-    }
+public class Player {
+    public string name = "";
+    public bool ready = false;
 }
