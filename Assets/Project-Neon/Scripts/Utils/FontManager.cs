@@ -144,7 +144,9 @@ public class FontManager : MonoBehaviour
     public void ChangeFontColor(int color)
     {
         textColor = color;
-        currentFontIndex = -1; //force a font update
+        //force a font update
+        if (fontIndex == 0 && !alwaysFont1) currentFontIndex = 1;
+        else currentFontIndex = 0;
         ChangeFont();
     }
 }

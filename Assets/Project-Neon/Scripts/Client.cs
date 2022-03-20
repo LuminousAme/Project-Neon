@@ -16,9 +16,7 @@ public class Client : MonoBehaviour
     bool isStarted = false;
 
     private Socket client;
-    private Socket server;
 
-    private IPEndPoint remoteEP;
     private IPEndPoint localEP;
 
     private IPAddress thisPlayerIp;
@@ -30,10 +28,12 @@ public class Client : MonoBehaviour
 
     private List<Player> players = new List<Player>();
     public List<Player> GetPlayers() => players;
+    private float timeBetweenConnectionChecks = 1f, elapsedTime = 0f;
 
     //starts client
     private void StartClient(int type)
     {
+        elapsedTime = 0f;
         //get ip
         //IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
         //IPAddress ip = host.AddressList[1];// user's ipv4
@@ -43,6 +43,8 @@ public class Client : MonoBehaviour
 
         //create
         client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        //setting it up to handle ungraceful disconnecting, checks every second, and waits half a second before trying again if it failed
+        client.SetKeepAliveValues(1000, 500);
         client.Blocking = true;
 
         // Attempt a connection
@@ -98,7 +100,7 @@ public class Client : MonoBehaviour
 
     public bool IsConnected(Socket socket)
     {
-        return socket.Connected;
+        return socket.IsConnected();
     }
 
     private void Start()
@@ -106,8 +108,6 @@ public class Client : MonoBehaviour
         if (instance != null) Destroy(this.gameObject);
         instance = this;
         DontDestroyOnLoad(this.gameObject);
-
-
     }
 
     // Update is called once per frame
@@ -115,67 +115,99 @@ public class Client : MonoBehaviour
     {
         if (isStarted)
         {
-            //check for connection
-            connection = IsConnected(client);
-            if (!connection)
+            elapsedTime += Time.deltaTime;
+            if (elapsedTime >= timeBetweenConnectionChecks)
             {
-                //if not connected release the socket
-                client.Shutdown(SocketShutdown.Both);
-                client.Close();
-            }
-            else
-            {
-                try
+                //check for connection
+                connection = IsConnected(client);
+                if (!connection)
                 {
-                    int recv = client.Receive(recieveBuffer);
-                    string data = Encoding.ASCII.GetString(recieveBuffer, 0, recv);
-                    Debug.Log(data);
-                    string[] splitData = data.Split('$');
+                    //if not connected release the socket
+                    client.Shutdown(SocketShutdown.Both);
+                    client.Close();
+                    isStarted = false;
+                    return;
+                }
+            }
+            try
+            {
+                int recv = client.Receive(recieveBuffer);
+                string data = Encoding.ASCII.GetString(recieveBuffer, 0, recv);
+                Debug.Log(data);
+                string[] splitData = data.Split('$');
 
-                    if(int.Parse(splitData[0]) == 0)
+                if (int.Parse(splitData[0]) == 0)
+                {
+                    List <Player> newPlayerList = new List<Player>();
+                    for (int i = 1; i < splitData.Length; i++)
                     {
-                        for(int i = 1; i < splitData.Length; i++)
-                        {
-                            bool exists = false;
-                            foreach(Player player in players)
-                            {
-                                if (player.name == splitData[i]) exists = true;
-                            }
 
-                            if(!exists)
-                            {
-                                Player newplayer = new Player();
-                                newplayer.name = splitData[i];
-                                players.Add(newplayer);
-                            }
+                        newPlayerList.Add(new Player(splitData[i]));
+
+                        bool exists = false;
+                        foreach (Player player in players)
+                        {
+                            if (player.name == splitData[i]) exists = true;
+                        }
+
+                        if (!exists)
+                        {
+                            Player newplayer = new Player();
+                            newplayer.name = splitData[i];
+                            players.Add(newplayer);
                         }
                     }
-                    else if (int.Parse(splitData[0]) == 2)
-                    {
-                        string username = splitData[1];
-                        string msg = splitData[2];
 
-                        ChatManager chat = FindObjectOfType<ChatManager>();
-                        if (chat != null) chat.AddMessageToChat(username, msg);
-                    }
-                    else if (int.Parse(splitData[0]) == 3)
+                    //if a player has disconnected, remove them from the list of players
+
+                    if(newPlayerList.Count != players.Count)
                     {
-                        Player player = players.Find(p => p.name == splitData[1]);
-                        player.ready = (int.Parse(splitData[2]) == 0) ? false : true;
-                    }
-                    else if (int.Parse(splitData[0]) == 4)
-                    {
-                        LobbyMenu lobby = FindObjectOfType<LobbyMenu>();
-                        if (lobby != null) lobby.StartGame();
+                        List<Player> noLongerHere = new List<Player>();
+
+                        foreach (Player player in players)
+                        {
+                            if(!newPlayerList.Exists(p => p.name == player.name)) {
+                                noLongerHere.Add(player);
+                            }
+                        }
+
+                        foreach (var player in noLongerHere) players.Remove(player);
                     }
                 }
-                catch (SocketException e)
+                else if (int.Parse(splitData[0]) == 2)
                 {
-                    if (e.SocketErrorCode != SocketError.WouldBlock) Debug.Log(e.ToString());
+                    string username = splitData[1];
+                    string msg = splitData[2];
+
+                    ChatManager chat = FindObjectOfType<ChatManager>();
+                    if (chat != null) chat.AddMessageToChat(username, msg);
                 }
+                else if (int.Parse(splitData[0]) == 3)
+                {
+                    Player player = players.Find(p => p.name == splitData[1]);
+                    player.ready = (int.Parse(splitData[2]) == 0) ? false : true;
+                }
+                else if (int.Parse(splitData[0]) == 4)
+                {
+                    LobbyMenu lobby = FindObjectOfType<LobbyMenu>();
+                    if (lobby != null) lobby.StartGame();
+                }
+            }
+            catch (SocketException e)
+            {
+                if (e.SocketErrorCode != SocketError.WouldBlock) Debug.Log(e.ToString());
             }
         }
     }
+
+    public void Disconnect()
+    {
+        client.Shutdown(SocketShutdown.Both);
+        client.Close();
+        isStarted = false;
+        players.Clear();
+    }
+
 
     public void EnterGame(int type)
     {
@@ -214,7 +246,7 @@ public class Client : MonoBehaviour
     public bool GetAllPlayersReady()
     {
         bool ready = true;
-        foreach(Player player in players)
+        foreach (Player player in players)
         {
             if (!player.ready)
             {
@@ -225,9 +257,30 @@ public class Client : MonoBehaviour
 
         return ready;
     }
+
+    private void OnDestroy()
+    {
+        if(isStarted)
+        {
+            Disconnect();
+        }
+    }
 }
 
-public class Player {
+public class Player
+{
     public string name = "";
     public bool ready = false;
+
+    public Player()
+    {
+        name = "";
+        ready = false;
+    }
+
+    public Player(string name)
+    {
+        this.name = name;
+        ready = false;
+    }
 }

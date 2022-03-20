@@ -56,6 +56,15 @@ namespace ProjectNeonServer
                 {
                     sendBuffer = Encoding.ASCII.GetBytes("1$" + code);
                     joiningPlayer.socket.Send(sendBuffer);
+
+                    string sendData = "0";
+                    for (int i = 0; i < allRooms[code].connectedPlayers.Count; i++)
+                    {
+                        sendData += "$" + allRooms[code].connectedPlayers[i].name;
+                    }
+
+                    sendBuffer = Encoding.ASCII.GetBytes(sendData);
+                    joiningPlayer.socket.Send(sendBuffer);
                 }
                 catch (SocketException e)
                 {
@@ -74,6 +83,35 @@ namespace ProjectNeonServer
             {
                 allRooms[code].connectedPlayers.Remove(leavingPlayer);
             }
+        }
+
+        //check if a socket is connected
+        static bool IsConnected(Socket s)
+        {
+            //taken from here https://stackoverflow.com/questions/2661764/how-to-check-if-a-socket-is-connected-disconnected-in-c/2661876#2661876
+            try
+            {
+                return !((s.Poll(1000, SelectMode.SelectRead) && (s.Available == 0)) || !s.Connected);
+            } catch (SocketException e)
+            {
+                if (e.SocketErrorCode == SocketError.WouldBlock) return true;
+                else return false;
+            }
+        }
+
+        //control how long a socket can stay alive
+        static void SetKeepAliveValues(Socket s, int keepAliveTime, int keepAliveInterval)
+        {
+            int size = sizeof(uint);
+            byte[] values = new byte[size * 3];
+
+            BitConverter.GetBytes((uint)(1)).CopyTo(values, 0);
+            BitConverter.GetBytes((uint)keepAliveTime).CopyTo(values, size);
+            BitConverter.GetBytes((uint)keepAliveInterval).CopyTo(values, size * 2);
+
+            byte[] outvalues = BitConverter.GetBytes(0);
+
+            s.IOControl(IOControlCode.KeepAliveValues, values, outvalues);
         }
 
         static void Main(string[] args)
@@ -116,6 +154,8 @@ namespace ProjectNeonServer
                 {
                     server.Listen(10);
                     Socket newConnection = server.Accept();
+                    //setting it up to handle ungraceful disconnecting, checks every second, and waits half a second before trying again if it failed
+                    SetKeepAliveValues(newConnection, 1000, 500);
                     IPEndPoint newIPEndPoint = (IPEndPoint)newConnection.RemoteEndPoint;
                     EndPoint endPoint = (EndPoint)newIPEndPoint;
                     Console.WriteLine("connected: " + newIPEndPoint.Address.ToString());
@@ -150,15 +190,22 @@ namespace ProjectNeonServer
                     stopwatch.Restart();
                     try
                     {
+                        List<string> toDelete = new List<string>();
                         foreach(var roomdata in allRooms)
                         {
                             Room room = roomdata.Value;
                             Console.WriteLine(room.connectedPlayers.Count);
 
+                            if(room.connectedPlayers.Count == 0)
+                            {
+                                toDelete.Add(roomdata.Key);
+                                continue;
+                            }
+
                             List<int> toRemove = new List<int>();
                             for(int i = 0; i < room.connectedPlayers.Count; i++)
                             {
-                                if(!room.connectedPlayers[i].socket.Connected)
+                                if(!IsConnected(room.connectedPlayers[i].socket))
                                 {
                                     toRemove.Add(i);
                                 }
@@ -179,6 +226,9 @@ namespace ProjectNeonServer
                                 room.connectedPlayers[i].socket.Send(sendBuffer);
                             }
                         }
+
+                        //delete any empty rooms
+                        foreach (var room in toDelete) allRooms.Remove(room);
                     }
                     catch (SocketException e)
                     {
