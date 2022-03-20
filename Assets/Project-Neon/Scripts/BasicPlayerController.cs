@@ -30,10 +30,12 @@ public class BasicPlayerController : MonoBehaviour
 
     private bool isGrappling = false, isRidingMommentum = false;
     private float timeSinceLastGrappleEnd = 0.0f;
-    private Vector3 hookPosition;
+    private Vector3 hookPosition, adjustedHookPosition, startingPosition;
     private SpringJoint grapplingHookJoint;
     private Vector3 grapplingMomentum;
     [SerializeField] private LineRenderer grapplingLine;
+    [SerializeField] Transform grappleLatch, grappleLaunch, acutalGraple, grapleRest, grapleParent;
+    Quaternion desiredRotForGrapple;
 
     private void Awake()
     {
@@ -97,6 +99,15 @@ public class BasicPlayerController : MonoBehaviour
 
         //do the update for the grappling hook if it is active
         if (isGrappling) GrapplingHookUpdate();
+        else
+        {
+            adjustedHookPosition = grapleRest.position;
+            desiredRotForGrapple = Quaternion.LookRotation(Camera.main.transform.forward);
+        }
+
+        acutalGraple.position = MathUlits.LerpClamped(acutalGraple.position, adjustedHookPosition, movementSettings.GetGrapplePullSpeed() * 2.0f);
+        grapleParent.rotation = Quaternion.Slerp(grapleParent.rotation, desiredRotForGrapple, Time.deltaTime * 5f);
+
 
         //reduce the cooldown remaing for the grappling hook
         if (timeSinceLastGrappleEnd > 0.0f && !isGrappling) timeSinceLastGrappleEnd -= Time.deltaTime;
@@ -270,7 +281,7 @@ public class BasicPlayerController : MonoBehaviour
         {
             //if we did set the point we hit to the anchor point
             hookPosition = rayHit.point;
-
+            adjustedHookPosition = hookPosition - grappleLaunch.localPosition;
 
             //code that handles setting up the joint and stuff, uncomment later
             {
@@ -309,6 +320,7 @@ public class BasicPlayerController : MonoBehaviour
         if (grapplingHookJoint != null) Destroy(grapplingHookJoint);
         isGrappling = false;
         timeSinceLastGrappleEnd = movementSettings.GetGrappleCooldown();
+        startingPosition = acutalGraple.position;
         //rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
     }
 
@@ -319,6 +331,9 @@ public class BasicPlayerController : MonoBehaviour
         //reduce the current maximum distance so the grappling hook pulls the user towards the hook point
         //float currentMaxDist = grapplingHookJoint.maxDistance;
         //grapplingHookJoint.maxDistance = currentMaxDist - movementSettings.GetGrapplePullSpeed() * Time.deltaTime;
+
+        startingPosition = grapleRest.position;
+        desiredRotForGrapple = Quaternion.LookRotation(acutalGraple.position - grapleRest.position);
 
         //adjust the area that you can swing in 
         float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
@@ -353,8 +368,8 @@ public class BasicPlayerController : MonoBehaviour
     {
         if(grapplingLine != null && grapplingLine.positionCount > 0)
         {
-            grapplingLine.SetPosition(0, grapplingLine.transform.position);
-            grapplingLine.SetPosition(1, hookPosition);
+            grapplingLine.SetPosition(0, grappleLaunch.position);
+            grapplingLine.SetPosition(1, grappleLatch.position);
         }
     }
 
