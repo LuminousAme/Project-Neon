@@ -106,7 +106,8 @@ public class LobbyMenu : MonoBehaviour
                     if (players[i].ready) playerNames[i].GetComponent<FontManager>().ChangeFontColor(1);
                     else playerNames[i].GetComponent<FontManager>().ChangeFontColor(0);
                 }
-                for(int i = 3; i > players.Count; i--)
+                Debug.Log("Number of players: " + players.Count);
+                for(int i = 3; i > players.Count-1; i--)
                 {
                     playerNames[i].gameObject.SetActive(false);
                 }
@@ -204,6 +205,7 @@ public class LobbyMenu : MonoBehaviour
         joinButton.OnStopHover();
         createButton.UnClick();
         createButton.OnStopHover();
+        Client.instance.Disconnect();
     }
 
     public void JoinLobby()

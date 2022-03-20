@@ -14,7 +14,7 @@ public class MenuButton : MonoBehaviour
     [SerializeField] TMP_Text selectedText;
     [SerializeField] TMP_Text clickedText;
     [SerializeField] TMP_Text unlitText;
-    int currentlyOn = 3;
+    public int currentlyOn = 3;
     [HideInInspector] public bool hovering = false, lightOff = true;
     public bool neverOff = false;
     bool clicked = false, clickedDelayOneFrame = false;
@@ -88,6 +88,12 @@ public class MenuButton : MonoBehaviour
     public void OnStopHover()
     {
         hovering = false;
+    }
+
+    public void OnStopHoverUnClick()
+    {
+        OnStopHover();
+        UnClick();
     }
 
     public void OnClick()

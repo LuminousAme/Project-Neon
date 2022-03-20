@@ -12,6 +12,7 @@ public class FontManager : MonoBehaviour
     TMP_Text text;
     TMP_InputField inputField;
     int textColor = -1; //0 red font, 1 blue font, 2 yellow font, 3 dark font, 4 regular font
+    bool ready = false;
 
     public struct Fonts
     {
@@ -64,6 +65,7 @@ public class FontManager : MonoBehaviour
             else if (inputField.fontAsset == fonts[0].regularFont || inputField.fontAsset == fonts[1].regularFont) textColor = 4;
         }
 
+        ready = true;
 
         ChangeFont();
     }
@@ -144,7 +146,9 @@ public class FontManager : MonoBehaviour
     public void ChangeFontColor(int color)
     {
         textColor = color;
-        currentFontIndex = -1; //force a font update
-        ChangeFont();
+        //force a font update
+        if (fontIndex == 0 && !alwaysFont1) currentFontIndex = 1;
+        else currentFontIndex = 0;
+        if(ready) ChangeFont();
     }
 }

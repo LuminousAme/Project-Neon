@@ -38,7 +38,8 @@ public class BasicPlayerController : MonoBehaviour
     private void Awake()
     {
         //create the player controls asset, and enable the default player controls
-        controls = new PlayerControls();
+        controls = InputManager.controls;
+        InputManager.LoadAllBindingOverrides();
     }
 
     private void OnEnable()
@@ -350,8 +351,6 @@ public class BasicPlayerController : MonoBehaviour
 
     void DrawGrapplingHook()
     {
-        //if (!grapplingHookJoint) return;
-
         if(grapplingLine != null && grapplingLine.positionCount > 0)
         {
             grapplingLine.SetPosition(0, grapplingLine.transform.position);
