@@ -14,6 +14,12 @@ public static class MathUlits
         return (1.0f - t) * a + b * t;
     }
 
+    public static Vector3 LerpClamped(Vector3 a, Vector3 b, float t)
+    {
+        t = Mathf.Clamp(t, 0.0f, 1.0f);
+        return Vector3.Lerp(a, b, t);
+    }
+
     public static float ReMap(float oldMin, float oldMax, float newMin, float newMax, float value)
     {
         float t = InverseLerp(oldMin, oldMax, value);

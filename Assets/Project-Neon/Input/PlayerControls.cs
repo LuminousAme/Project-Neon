@@ -169,7 +169,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""id"": ""0fec01e0-9c90-4a0e-9bd3-9c9b9ca05780"",
                     ""path"": ""<Mouse>/delta"",
                     ""interactions"": """",
-                    ""processors"": ""ScaleVector2(x=0.05,y=0.05)"",
+                    ""processors"": ""ScreenScalingForInput(scaleX=0.05,scaleY=0.05)"",
                     ""groups"": ""Keyboard & Mouse"",
                     ""action"": ""Look"",
                     ""isComposite"": false,
