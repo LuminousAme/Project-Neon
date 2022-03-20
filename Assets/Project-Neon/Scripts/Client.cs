@@ -106,8 +106,11 @@ public class Client : MonoBehaviour
     private void Start()
     {
         if (instance != null) Destroy(this.gameObject);
-        instance = this;
-        DontDestroyOnLoad(this.gameObject);
+        else
+        {
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
     }
 
     // Update is called once per frame
