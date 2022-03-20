@@ -476,6 +476,37 @@ MonoBehaviour:
   acutalGraple: {fileID: 1064942033352451107}
   grapleRest: {fileID: 6046087142744461906}
   grapleParent: {fileID: 6536878775320332}
+  quality: 500
+  strength: 800
+  damper: 14
+  target: 0
+  velocity: 15
+  waveCount: 3
+  waveHeight: 1
+  affectCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 5.9553127
+      outSlope: 5.9553127
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.028557887
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &7563106830568889548
 GameObject:
   m_ObjectHideFlags: 0

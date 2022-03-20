@@ -37,6 +37,19 @@ public class BasicPlayerController : MonoBehaviour
     [SerializeField] Transform grappleLatch, grappleLaunch, acutalGraple, grapleRest, grapleParent;
     Quaternion desiredRotForGrapple;
 
+    [Header("Grappling Line Animation")]
+    //based on this video https://youtu.be/8nENcDnxeVE
+    [SerializeField] int quality;
+    [SerializeField] float strength;
+    [SerializeField] float damper;
+    [SerializeField] float target;
+    [SerializeField] float velocity;
+    float acutalVelocity;
+    private float value;
+    [SerializeField] float waveCount;
+    [SerializeField] float waveHeight;
+    [SerializeField] AnimationCurve affectCurve;
+
     private void Awake()
     {
         //create the player controls asset, and enable the default player controls
@@ -282,6 +295,8 @@ public class BasicPlayerController : MonoBehaviour
             //if we did set the point we hit to the anchor point
             hookPosition = rayHit.point;
             adjustedHookPosition = hookPosition - grappleLaunch.localPosition;
+            value = 0;
+            acutalVelocity = velocity;
 
             //code that handles setting up the joint and stuff, uncomment later
             {
@@ -304,7 +319,7 @@ public class BasicPlayerController : MonoBehaviour
                 
 
                 //if a line renderer for the grappling line exists then set it to have 2 points
-                if (grapplingLine != null) grapplingLine.positionCount = 2;
+                if (grapplingLine != null) grapplingLine.positionCount = quality + 1;
             }
            
 
@@ -368,8 +383,26 @@ public class BasicPlayerController : MonoBehaviour
     {
         if(grapplingLine != null && grapplingLine.positionCount > 0)
         {
-            grapplingLine.SetPosition(0, grappleLaunch.position);
-            grapplingLine.SetPosition(1, grappleLatch.position);
+            // based on this video https://youtu.be/8nENcDnxeVE
+            Vector3 startPoint = grappleLaunch.position;
+            Vector3 endPoint = grappleLatch.position;
+            Vector3 up = Quaternion.LookRotation(endPoint - startPoint).normalized * Vector3.up;
+
+            float dir = target - value >= 0 ? 1f : -1f;
+            float force = Mathf.Abs(target - value) * strength;
+            acutalVelocity += (force * dir - acutalVelocity * damper) * Time.deltaTime;
+            value += acutalVelocity * Time.deltaTime;
+
+            for(int i = 0; i < quality + 1; i++)
+            {
+                float delta = (float)i / (float)quality;
+                Vector3 offset = up * waveHeight * Mathf.Sin(delta * waveCount * Mathf.PI * value * affectCurve.Evaluate(delta));
+
+                grapplingLine.SetPosition(i, Vector3.Lerp(startPoint, endPoint, delta) + offset);
+            }
+
+            //grapplingLine.SetPosition(0, grappleLaunch.position);
+            //grapplingLine.SetPosition(1, grappleLatch.position);
         }
     }
 
