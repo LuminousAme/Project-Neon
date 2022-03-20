@@ -247,7 +247,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void OptionsButtonPressed()
     {
-        //sceneTransition.beginTransition(optionsSceneIndex);
+        sceneTransition.beginTransition(4);
     }
 
     public void CreditsButtonPressed()

@@ -18,4 +18,10 @@ public static class ExtensionMethods
         Quaternion newRot = Quaternion.FromToRotation(trans.up, newUp) * trans.rotation;
         trans.rotation = newRot;
     }
+
+    public static bool Compare(this Resolution resolution, Resolution other)
+    {
+        if (resolution.width == other.width && resolution.height == other.height) return true;
+        return false;
+    }
 }

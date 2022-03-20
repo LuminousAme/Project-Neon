@@ -38,7 +38,8 @@ public class BasicPlayerController : MonoBehaviour
     private void Awake()
     {
         //create the player controls asset, and enable the default player controls
-        controls = new PlayerControls();
+        controls = InputManager.controls;
+        InputManager.LoadAllBindingOverrides();
     }
 
     private void OnEnable()
