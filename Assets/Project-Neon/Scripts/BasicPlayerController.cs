@@ -351,9 +351,6 @@ public class BasicPlayerController : MonoBehaviour
 
     void DrawGrapplingHook()
     {
-        //if (!grapplingHookJoint) return;
-        if (grapplingLine == null) Debug.Log("grappling line null");
-
         if(grapplingLine != null && grapplingLine.positionCount > 0)
         {
             grapplingLine.SetPosition(0, grapplingLine.transform.position);
