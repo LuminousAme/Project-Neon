@@ -286,7 +286,7 @@ LineRenderer:
   m_Positions: []
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.3
+    widthMultiplier: 0.03
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -471,6 +471,42 @@ MonoBehaviour:
   movementSettings: {fileID: 11400000, guid: d8fe1107ccd6f5842a5121a63c5cc0db, type: 2}
   lookAtTarget: {fileID: 5445837640227708548}
   grapplingLine: {fileID: 5445837641611176884}
+  grappleLatch: {fileID: 4397470258216387380}
+  grappleLaunch: {fileID: 404853091305567318}
+  acutalGraple: {fileID: 1064942033352451107}
+  grapleRest: {fileID: 6046087142744461906}
+  grapleParent: {fileID: 6536878775320332}
+  quality: 500
+  strength: 800
+  damper: 14
+  target: 0
+  velocity: 15
+  waveCount: 3
+  waveHeight: 1
+  affectCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 5.9553127
+      outSlope: 5.9553127
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.028557887
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &7563106830568889548
 GameObject:
   m_ObjectHideFlags: 0
@@ -499,7 +535,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7563106830568889548}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.11, y: -5.28, z: 15.929999}
+  m_LocalPosition: {x: 5.11, y: -0.19999999, z: 18.21}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 5445837641611176883}
@@ -576,9 +612,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   volumeAnchorOverride: {fileID: 0}
-  antialiasing: 2
+  antialiasing: 1
   SMAAQuality: 2
-  dithering: 0
+  dithering: 1
   stopNaNs: 0
   taaSharpenStrength: 0.5
   TAAQuality: 1
@@ -811,7 +847,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8056162709846006998}
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: 0, y: 0.08200006, z: 0.37700003}
+  m_LocalPosition: {x: 0, y: 0.08200006, z: 0.4264}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6046087142744461906}
@@ -1005,7 +1041,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9190414035237670727}
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: 0, y: 0.082, z: 0.377}
+  m_LocalPosition: {x: 0, y: 0.082, z: 0.3689}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1064942033352451107}
