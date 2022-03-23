@@ -27,7 +27,7 @@ public class Score : MonoBehaviour
     public void AddScore(int amount)
     {
         scoreNum = scoreNum + amount;
-        score.text = "Score: "+ scoreNum;
+        score.text = "Score: "+ scoreNum.ToString();
     }
 
 
