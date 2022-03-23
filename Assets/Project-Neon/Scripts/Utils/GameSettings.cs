@@ -60,6 +60,10 @@ public class GameSettings : MonoBehaviour
 
         resolutions = Screen.resolutions;
         resolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", resolutions.Length - 1);
+        if (resolutionIndex >= resolutions.Length) {
+            resolutionIndex = resolutions.Length - 1;
+            SaveValuesToFile();
+        }
         Resolution newResolution = resolutions[resolutionIndex];
         Screen.SetResolution(newResolution.width, newResolution.height, Screen.fullScreen);
     }
