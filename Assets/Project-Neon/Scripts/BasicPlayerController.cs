@@ -443,6 +443,13 @@ public class BasicPlayerController : MonoBehaviour
         }
     }
 
+    //getter
+    public bool GetIsGrappling()
+    {
+        return isGrappling;
+
+    }
+
     private void OnDrawGizmosSelected()
     {
         if(movementSettings != null)
