@@ -456,7 +456,13 @@ public class BasicPlayerController : MonoBehaviour
     public bool GetIsGrappling()
     {
         return isGrappling;
+    }
 
+    public bool GetGrappleOnCooldown()
+    {
+        if (isGrappling) return false;
+        else if (timeSinceLastGrappleEnd > 0.0f) return true;
+        return false;
     }
 
     private void OnDrawGizmosSelected()

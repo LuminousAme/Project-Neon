@@ -32,6 +32,8 @@ public class HUDManager : MonoBehaviour
         healthBar.SetHealth(player.GetHP());
         fakeScore = Mathf.RoundToInt(Mathf.Lerp(fakeScore, player.GetBounty(), Time.deltaTime * scoreUpdateRate));
         scoreText.text = "Bounty: $" + fakeScore;
+
+        if (Input.GetKeyDown(KeyCode.F1)) player.TakeDamage(10);
     }
 
     void HandleHPOnRespawn(PlayerState p)

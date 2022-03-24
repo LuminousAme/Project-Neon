@@ -32,7 +32,8 @@ public class HealthBar : MonoBehaviour
 
     private void Update()
     {
-        healthBar.value = Mathf.RoundToInt(Mathf.Lerp(healthBar.value, acutalHealth, Time.deltaTime * healthBarFadeSpeed));
+        //healthBar.value = Mathf.RoundToInt(Mathf.Lerp(healthBar.value, acutalHealth, Time.deltaTime * healthBarFadeSpeed));
+        healthBar.value = acutalHealth;
         healthImage.color = barColor.Evaluate(healthBar.normalizedValue);
     }
 }

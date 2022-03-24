@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class MatchManager : MonoBehaviour
 {
@@ -12,11 +13,13 @@ public class MatchManager : MonoBehaviour
     private void OnEnable()
     {
         if(!SceneManager.GetSceneByBuildIndex(5).isLoaded) SceneManager.LoadScene(5, LoadSceneMode.Additive);
+        PlayerState.onRespawn += RespawnPlayer;
     }
 
     private void OnDisable()
     {
         if (SceneManager.GetSceneByBuildIndex(5).isLoaded) SceneManager.UnloadSceneAsync(5);
+        PlayerState.onRespawn -= RespawnPlayer;
     }
 
     private void Start()
@@ -35,9 +38,20 @@ public class MatchManager : MonoBehaviour
         {
             if(players[i].transform.position.y <= deathHeight)
             {
-                //kill the player and respawn them at their starting position
+                //kill the player so they respawn at their starting position
                 players[i].TakeDamage(100);
+            }
+        }
+    }
+
+    private void RespawnPlayer(PlayerState player)
+    {
+        for(int i = 0; i < players.Length; i++)
+        {
+            if(player.GetDisplayName() == players[i].GetDisplayName())
+            {
                 players[i].transform.position = startingPositions[i];
+                break;
             }
         }
     }
