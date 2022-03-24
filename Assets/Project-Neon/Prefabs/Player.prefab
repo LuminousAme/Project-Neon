@@ -644,6 +644,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  attackCooldownTime: 1
+  weaponHandAnimator: {fileID: 1198059530714571093}
 --- !u!114 &7808391533682837763
 MonoBehaviour:
   m_ObjectHideFlags: 0

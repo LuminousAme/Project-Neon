@@ -9,6 +9,7 @@ public class MatchManager : MonoBehaviour
     PlayerState[] players;
     List<Vector3> startingPositions = new List<Vector3>();
     [SerializeField] float deathHeight;
+    public static MatchManager instance = null; //non-persistant singleton
 
     private void OnEnable()
     {
@@ -24,12 +25,20 @@ public class MatchManager : MonoBehaviour
 
     private void Start()
     {
+        if (instance == null) instance = this;
+        else Destroy(this.gameObject);
+
         players = FindObjectsOfType<PlayerState>();
         startingPositions.Clear();
         for (int i = 0; i < players.Length; i++)
         {
             startingPositions.Add(players[i].transform.position);
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this) instance = null;
     }
 
     private void Update()

@@ -50,6 +50,13 @@ public class BasicPlayerController : MonoBehaviour
     [SerializeField] float waveHeight;
     [SerializeField] AnimationCurve affectCurve;
 
+    [Header("Combat Controls")]
+    private float timeSinceAttackDown = 0f;
+    private bool attackDown = false;
+    [SerializeField] private float attackCooldownTime = 1f;
+    private float timeSinceAttackRelease = 0f;
+    [SerializeField] private Animator weaponHandAnimator;
+
     private void Awake()
     {
         //create the player controls asset, and enable the default player controls
@@ -67,6 +74,11 @@ public class BasicPlayerController : MonoBehaviour
         controls.Player.Dash.started += ctx => StartDash();
         //assign the handlegrapple function to the started event of the grapple action
         controls.Player.Grapple.started += ctx => HandleGrapplePressed();
+
+        //assign the attack donw function to the start event of the attack action
+        controls.Player.Attack.started += ctx => PressedDownAttack();
+        //assigned the attack release function to the finish event of the attack action
+        controls.Player.Attack.canceled += ctx => ReleasedAttack();
 
         ChatManager.onStartType += HandleTypingStart;
         ChatManager.onStopType += HandleTpyingEnd;
@@ -102,6 +114,10 @@ public class BasicPlayerController : MonoBehaviour
 
         isGrappling = false;
         grapplingMomentum = Vector3.zero;
+
+        timeSinceAttackDown = 0f;
+        timeSinceAttackRelease = 0f;
+        attackDown = false;
     }
 
     // Update is called once per frame
@@ -133,6 +149,9 @@ public class BasicPlayerController : MonoBehaviour
 
         //reduce the cooldown remaing for the grappling hook
         if (timeSinceLastGrappleEnd > 0.0f && !isGrappling) timeSinceLastGrappleEnd -= Time.deltaTime;
+
+        if (attackDown) timeSinceAttackDown += Time.deltaTime;
+        if (timeSinceAttackRelease <= attackCooldownTime) timeSinceAttackRelease += Time.deltaTime;
     }
 
     //Late update is called after every gameobject has had their update called
@@ -463,6 +482,25 @@ public class BasicPlayerController : MonoBehaviour
         if (isGrappling) return false;
         else if (timeSinceLastGrappleEnd > 0.0f) return true;
         return false;
+    }
+
+    public void PressedDownAttack()
+    {
+        if(timeSinceAttackRelease > attackCooldownTime)
+        {
+            attackDown = true;
+            timeSinceAttackDown = 0f;
+        }
+    }
+
+    public void ReleasedAttack()
+    {
+        if(attackDown)
+        {
+            attackDown = false;
+            timeSinceAttackRelease = 0;
+            weaponHandAnimator.SetTrigger("Quick Attack");
+        }
     }
 
     private void OnDrawGizmosSelected()
