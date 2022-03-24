@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System;
 
 public class ChatManager : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class ChatManager : MonoBehaviour
     string thisClientDisplayName;
     bool selectionStatus = false;
     [SerializeField] bool shouldLockCursor = false;
+
+    public static Action onStartType, onStopType;
 
     private void Start()
     {
@@ -34,16 +37,15 @@ public class ChatManager : MonoBehaviour
             chatInput.ActivateInputField();
             chatInput.Select();
             ChangeSelectionStatus(true);
+            onStartType?.Invoke();
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             chatInput.ReleaseSelection();
             chatInput.DeactivateInputField();
             ChangeSelectionStatus(false);
+            onStopType?.Invoke();
         }
-
-
-
     }
 
     public void ChangeSelectionStatus(bool status)

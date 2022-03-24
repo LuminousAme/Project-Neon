@@ -67,12 +67,21 @@ public class BasicPlayerController : MonoBehaviour
         controls.Player.Dash.started += ctx => StartDash();
         //assign the handlegrapple function to the started event of the grapple action
         controls.Player.Grapple.started += ctx => HandleGrapplePressed();
+
+        ChatManager.onStartType += HandleTypingStart;
+        ChatManager.onStopType += HandleTpyingEnd;
     }
 
     private void OnDisable()
     {
         controls.Disable();
+        ChatManager.onStartType -= HandleTypingStart;
+        ChatManager.onStopType -= HandleTpyingEnd;
     }
+
+    void HandleTypingStart() => controls.Disable();
+
+    void HandleTpyingEnd() => controls.Enable();
 
     // Start is called before the first frame update
     void Start()

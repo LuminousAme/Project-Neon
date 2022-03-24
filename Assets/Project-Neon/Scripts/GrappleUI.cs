@@ -7,10 +7,9 @@ public class GrappleUI : MonoBehaviour
 {
     [SerializeField] private GameObject Grappling;
     [SerializeField] private GameObject notGrappling;
+    private BasicPlayerController player;
 
-
-    [SerializeField] private BasicPlayerController player;
-
+    public void SetPlayer(BasicPlayerController p) => player = p;
 
     // Start is called before the first frame update
     void Start()
@@ -18,7 +17,6 @@ public class GrappleUI : MonoBehaviour
         //start of game player is not grappling
         Grappling.SetActive(false);
         notGrappling.SetActive(true);
-
     }
 
     // Update is called once per frame
@@ -35,7 +33,5 @@ public class GrappleUI : MonoBehaviour
             Grappling.SetActive(false);
             notGrappling.SetActive(true);
         }
-
-
     }
 }

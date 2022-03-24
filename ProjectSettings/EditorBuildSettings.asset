@@ -20,4 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project-Neon/Scenes/Options.unity
     guid: feee72373ead6354bbf99243a0a7faa1
+  - enabled: 1
+    path: Assets/Project-Neon/Scenes/HUD.unity
+    guid: 928029f53abbb8f4ab385c8b690f518e
   m_configObjects: {}

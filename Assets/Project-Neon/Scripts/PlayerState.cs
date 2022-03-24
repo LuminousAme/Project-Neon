@@ -23,6 +23,11 @@ public class PlayerState : MonoBehaviour
     public int GetTimesDied() => timesDied;
     public string GetDisplayName() => playerName;
 
+    private void Awake()
+    {
+        ReadNameFromFile();
+    }
+
     void Start()
     {
         RestartGame();
@@ -51,7 +56,7 @@ public class PlayerState : MonoBehaviour
     public bool TakeDamage(int damage)
     {
         hp = Mathf.Clamp(hp - damage, 0, basicData.GetMaxHealth());
-        if(hp == 0)
+        if (hp == 0)
         {
             Respawn();
             onRespawn?.Invoke(this);
@@ -71,5 +76,10 @@ public class PlayerState : MonoBehaviour
             killsObtained++;
             onNewKill?.Invoke(this);
         }
+    }
+
+    public int GetBounty()
+    {
+        return killsObtained * 100 + damageDealt;
     }
 }
