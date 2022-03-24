@@ -51,6 +51,13 @@ public class MatchManager : MonoBehaviour
                 players[i].TakeDamage(100);
             }
         }
+
+        /*
+        if(Input.GetKeyDown(KeyCode.F2))
+        {
+            if (!SceneManager.GetSceneByBuildIndex(4).isLoaded) SceneManager.LoadScene(4, LoadSceneMode.Additive);
+            else if (SceneManager.GetSceneByBuildIndex(4).isLoaded) SceneManager.UnloadSceneAsync(4);
+        }*/
     }
 
     private void RespawnPlayer(PlayerState player)
