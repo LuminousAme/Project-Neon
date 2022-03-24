@@ -26,7 +26,8 @@ public class BasicPlayerController : MonoBehaviour
     private Vector3 eulerAngles;
 
     private float timeRemainingInDash = 0.0f;
-    private float timeSinceLastDash = 0.0f;
+    private List<float> timeSinceLastDash = new List<float>();
+    private uint numberOfDashesTaken = 0;
 
     private bool isGrappling = false, isRidingMommentum = false;
     private float timeSinceLastGrappleEnd = 0.0f;
@@ -35,6 +36,7 @@ public class BasicPlayerController : MonoBehaviour
     private Vector3 grapplingMomentum;
     [SerializeField] private LineRenderer grapplingLine;
     [SerializeField] Transform grappleLatch, grappleLaunch, acutalGraple, grapleRest, grapleParent;
+    [SerializeField] bool useJoint = true;
     Quaternion desiredRotForGrapple;
 
     [Header("Grappling Line Animation")]
@@ -118,6 +120,8 @@ public class BasicPlayerController : MonoBehaviour
         timeSinceAttackDown = 0f;
         timeSinceAttackRelease = 0f;
         attackDown = false;
+
+        for (int i = 0; i < movementSettings.GetNumOfDashes(); i++) timeSinceLastDash.Add(0.0f);
     }
 
     // Update is called once per frame
@@ -133,7 +137,14 @@ public class BasicPlayerController : MonoBehaviour
 
         //reduce the time and cooldown remaining for dashing
         if (timeRemainingInDash > 0.0) timeRemainingInDash -= Time.deltaTime;
-        if (timeSinceLastDash > 0.0) timeSinceLastDash -= Time.deltaTime;
+        for(int i = 0; i < timeSinceLastDash.Count; i++)
+        {
+            if(timeSinceLastDash[i] > 0.0)
+            {
+                timeSinceLastDash[i] -= Time.deltaTime;
+                if (timeSinceLastDash[i] <= 0.0) numberOfDashesTaken--;
+            }
+        }
 
         //do the update for the grappling hook if it is active
         if (isGrappling) GrapplingHookUpdate();
@@ -328,23 +339,25 @@ public class BasicPlayerController : MonoBehaviour
 
             //code that handles setting up the joint and stuff, uncomment later
             {
-                //and set up a spring joint to connect the player to that point
-                grapplingHookJoint = this.gameObject.AddComponent<SpringJoint>();
-                grapplingHookJoint.autoConfigureConnectedAnchor = false;
-                grapplingHookJoint.connectedAnchor = hookPosition;
-                //spring force used to keep the 2 objects together (higher means faster hook in, lower means slower)
-                grapplingHookJoint.spring = movementSettings.GetGrappleJointSpring();
-                //damper force used to dampen the spring force. (lower means faster hook, higher means slower)
-                grapplingHookJoint.damper = movementSettings.GetGrappleJointDamp();
-                //scale to apply to the inverse mass and inertia tensor of the body (seems to affect momentum)
-                grapplingHookJoint.massScale = movementSettings.GetGrappleJointMassScale();
+                if(useJoint)
+                {
+                    //and set up a spring joint to connect the player to that point
+                    grapplingHookJoint = this.gameObject.AddComponent<SpringJoint>();
+                    grapplingHookJoint.autoConfigureConnectedAnchor = false;
+                    grapplingHookJoint.connectedAnchor = hookPosition;
+                    //spring force used to keep the 2 objects together (higher means faster hook in, lower means slower)
+                    grapplingHookJoint.spring = movementSettings.GetGrappleJointSpring();
+                    //damper force used to dampen the spring force. (lower means faster hook, higher means slower)
+                    grapplingHookJoint.damper = movementSettings.GetGrappleJointDamp();
+                    //scale to apply to the inverse mass and inertia tensor of the body (seems to affect momentum)
+                    grapplingHookJoint.massScale = movementSettings.GetGrappleJointMassScale();
 
-                //setting the starting distances to grapple between
-                float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
-                grapplingHookJoint.maxDistance = distanceFromHookPoint * 0.8f;
-                grapplingHookJoint.minDistance = distanceFromHookPoint * 0.25f;
-                //grapplingHookJoint.minDistance = movementSettings.GetGrappleCloseDistance();
-                
+                    //setting the starting distances to grapple between
+                    float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
+                    grapplingHookJoint.maxDistance = distanceFromHookPoint * 0.8f;
+                    grapplingHookJoint.minDistance = distanceFromHookPoint * 0.25f;
+                    //grapplingHookJoint.minDistance = movementSettings.GetGrappleCloseDistance();
+                }
 
                 //if a line renderer for the grappling line exists then set it to have 2 points
                 if (grapplingLine != null) grapplingLine.positionCount = quality + 1;
@@ -391,19 +404,24 @@ public class BasicPlayerController : MonoBehaviour
 
     void FixedGrapplingHookPull()
     {
-        if(isGrappling)
+        if (isGrappling)
         {
             Vector3 GrappleDir = hookPosition - this.transform.position;
-            grapplingMomentum = GrappleDir * movementSettings.GetGrapplePullSpeed() * Time.fixedDeltaTime;
+            grapplingMomentum = GrappleDir.normalized * movementSettings.GetGrapplePullSpeed() * Time.fixedDeltaTime;
             isRidingMommentum = true;
         }
+        else isRidingMommentum = false;
 
         if(isRidingMommentum)
         {
+            rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
             rb.AddForce(grapplingMomentum, ForceMode.VelocityChange);
 
-            Vector3 inputMove = inputDirection.normalized * movementSettings.GetGrappleHoriInputForce();
-            rb.AddForce(inputMove);
+            if(useJoint)
+            {
+                Vector3 inputMove = inputDirection.normalized * movementSettings.GetGrappleHoriInputForce();
+                rb.AddForce(inputMove, ForceMode.VelocityChange);
+            }
         }
     }
 
@@ -450,9 +468,10 @@ public class BasicPlayerController : MonoBehaviour
 
     private void StartDash()
     {
-        if(timeSinceLastDash <= 0.0)
+        if(numberOfDashesTaken < movementSettings.GetNumOfDashes() && timeRemainingInDash <= 0.0f) //timeSinceLastDash <= 0.0)
         {
-            timeSinceLastDash = movementSettings.GetDashCooldown();
+            timeSinceLastDash[(int)numberOfDashesTaken] = movementSettings.GetDashCooldown();
+            numberOfDashesTaken++;
             timeRemainingInDash = movementSettings.GetDashLenght();
         }
     }

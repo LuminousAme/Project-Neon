@@ -437,6 +437,10 @@ PrefabInstance:
       value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 5445837641831642010, guid: 5a4d93148be2f784e8300ba53d9d5262, type: 3}
+      propertyPath: useJoint
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5445837641831642010, guid: 5a4d93148be2f784e8300ba53d9d5262, type: 3}
       propertyPath: waveHeight
       value: 1
       objectReference: {fileID: 0}
@@ -520,7 +524,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 1.7775229, y: 1}
+    m_SensorSize: {x: 1.7785088, y: 1}
     Iso: 200
     ShutterSpeed: 0.005
     Aperture: 16

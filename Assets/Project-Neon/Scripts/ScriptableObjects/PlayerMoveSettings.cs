@@ -56,6 +56,8 @@ public class PlayerMoveSettings : ScriptableObject
     public float GetDashLenght() => DashLenght;
     [SerializeField] private float DashCooldown = 2f;
     public float GetDashCooldown() => DashCooldown;
+    [SerializeField] private int numberOfDashes = 2;
+    public int GetNumOfDashes() => numberOfDashes;
 
     [Space]
     [Header("Grappling Controls")]

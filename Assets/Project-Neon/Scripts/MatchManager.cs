@@ -60,6 +60,8 @@ public class MatchManager : MonoBehaviour
             if(player.GetDisplayName() == players[i].GetDisplayName())
             {
                 players[i].transform.position = startingPositions[i];
+                Rigidbody rb = players[i].GetComponent<Rigidbody>();
+                if (rb != null) rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
                 break;
             }
         }

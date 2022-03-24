@@ -37,10 +37,10 @@ MonoBehaviour:
   grappleJointSpring: 6
   grappleJointDamp: 6
   grappleJointMassScale: 1
-  grappleCloseDistance: 0.2
-  grapplePullSpeed: 8
+  grappleCloseDistance: 1
+  grapplePullSpeed: 1800
   grappleDrag: 3
-  grapplingHoriInputForce: 2
+  grapplingHoriInputForce: 10
   grapplingCoolDown: 2
   horizontalLookSpeed: 200
   verticalLookSpeed: 200
