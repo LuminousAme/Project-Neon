@@ -59,6 +59,7 @@ public class BasicPlayerController : MonoBehaviour
     [SerializeField] private float beginHeavyAttackTime = 0.5f;
     private float timeSinceAttackRelease = 0f;
     [SerializeField] private Animator weaponHandAnimator;
+    [SerializeField] private QuickAttack quickAttack;
 
     private void Awake()
     {
@@ -535,7 +536,7 @@ public class BasicPlayerController : MonoBehaviour
         {
             attackDown = false;
             timeSinceAttackRelease = 0f;
-            if (!heavyAttackInProcess) weaponHandAnimator.SetTrigger("Quick Attack");
+            if (!heavyAttackInProcess) quickAttack.BeginAttack();
             else weaponHandAnimator.SetTrigger("EndHeavy");
             heavyAttackInProcess = false;
         }
