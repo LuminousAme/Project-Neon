@@ -28,6 +28,8 @@ public class Client : MonoBehaviour
 
     private List<Player> players = new List<Player>();
     public List<Player> GetPlayers() => players;
+    private int thisClientId = 0;
+    public int GetThisClientID() => thisClientId;
     private float timeBetweenConnectionChecks = 1f, elapsedTime = 0f;
 
     //starts client
@@ -268,12 +270,18 @@ public class Client : MonoBehaviour
             Disconnect();
         }
     }
+
+    private void OnApplicationQuit()
+    {
+        if (isStarted) Disconnect();
+    }
 }
 
 public class Player
 {
     public string name = "";
     public bool ready = false;
+    public int id = 0;
 
     public Player()
     {
@@ -284,6 +292,13 @@ public class Player
     public Player(string name)
     {
         this.name = name;
+        ready = false;
+    }
+
+    public Player(string name, int id)
+    {
+        this.name = name;
+        this.id = id;
         ready = false;
     }
 }

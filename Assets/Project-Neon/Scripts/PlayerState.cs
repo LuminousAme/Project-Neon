@@ -5,11 +5,13 @@ using UnityEngine;
 public class PlayerState : MonoBehaviour
 {
     [SerializeField] private PlayerData basicData;
+    [SerializeField] private bool useSavedName;
     private int hp;
     private int damageDealt;
     private int killsObtained;
     private int timesDied;
     private string playerName;
+    private int playerId;
 
     public delegate void HandleRespawn(PlayerState player);
     public static event HandleRespawn onRespawn;
@@ -22,6 +24,8 @@ public class PlayerState : MonoBehaviour
     public int GetKillCount() => killsObtained;
     public int GetTimesDied() => timesDied;
     public string GetDisplayName() => playerName;
+    public int GetPlayerID() => playerId;
+    public void SetPlayerID(int id) => playerId = id;
 
     private void Awake()
     {

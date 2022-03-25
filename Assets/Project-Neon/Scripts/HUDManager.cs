@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using System.Linq;
+using System;
 
 public class HUDManager : MonoBehaviour
 {
@@ -13,10 +14,15 @@ public class HUDManager : MonoBehaviour
     float scoreElapsedtime;
     [SerializeField] HealthBar healthBar;
     [SerializeField] GrappleUI GrappleUI;
+    [SerializeField] TMP_Text timeText;
 
     private void OnEnable()
     {
-        player = FindObjectsOfType<PlayerState>().ToList().Find(p => p.GetDisplayName() == PlayerPrefs.GetString("DisplayName"));
+        if(Client.instance != null)
+            player = FindObjectsOfType<PlayerState>().ToList().Find(p => p.GetPlayerID() == Client.instance.GetThisClientID());
+        else 
+            player = FindObjectsOfType<PlayerState>().ToList().Find(p => p.GetPlayerID() == 0);
+
         PlayerState.onRespawn += HandleHPOnRespawn;
         fakeScore = player.GetBounty();
         actualScore = player.GetBounty();
@@ -46,6 +52,19 @@ public class HUDManager : MonoBehaviour
         scoreElapsedtime = Mathf.Clamp(scoreElapsedtime + Time.deltaTime, 0f, scoreUpdateTime);
         if (scoreElapsedtime >= scoreUpdateTime) fakeScore = actualScore;
 
+        if(MatchManager.instance != null)
+        {
+            TimeSpan time = TimeSpan.FromSeconds(MatchManager.instance.GetTimeRemaining());
+            float minutes = time.Minutes;
+            float seconds = time.Seconds;
+            string minutesText = $"{minutes}";
+            string secondsText = (seconds >= 10) ? $"{seconds}" : $"0{seconds}";
+            timeText.text = minutesText + ":" + secondsText;
+        }
+        else
+        {
+            timeText.text = "";
+        }
         
         if (Input.GetKeyDown(KeyCode.F1)) player.TakeDamage(10);
     }
