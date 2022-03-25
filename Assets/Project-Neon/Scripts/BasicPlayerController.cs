@@ -54,8 +54,9 @@ public class BasicPlayerController : MonoBehaviour
 
     [Header("Combat Controls")]
     private float timeSinceAttackDown = 0f;
-    private bool attackDown = false;
+    private bool attackDown = false, heavyAttackInProcess = false;
     [SerializeField] private float attackCooldownTime = 1f;
+    [SerializeField] private float beginHeavyAttackTime = 0.5f;
     private float timeSinceAttackRelease = 0f;
     [SerializeField] private Animator weaponHandAnimator;
 
@@ -120,6 +121,7 @@ public class BasicPlayerController : MonoBehaviour
         timeSinceAttackDown = 0f;
         timeSinceAttackRelease = 0f;
         attackDown = false;
+        heavyAttackInProcess = false;
 
         for (int i = 0; i < movementSettings.GetNumOfDashes(); i++) timeSinceLastDash.Add(0.0f);
     }
@@ -161,8 +163,23 @@ public class BasicPlayerController : MonoBehaviour
         //reduce the cooldown remaing for the grappling hook
         if (timeSinceLastGrappleEnd > 0.0f && !isGrappling) timeSinceLastGrappleEnd -= Time.deltaTime;
 
-        if (attackDown) timeSinceAttackDown += Time.deltaTime;
-        if (timeSinceAttackRelease <= attackCooldownTime) timeSinceAttackRelease += Time.deltaTime;
+        if (attackDown)
+        {
+            if(!heavyAttackInProcess && timeSinceAttackDown >= beginHeavyAttackTime)
+            {
+                heavyAttackInProcess = true;
+                weaponHandAnimator.SetTrigger("BeginHeavy");
+            }
+            timeSinceAttackDown += Time.deltaTime;
+        }
+        if (timeSinceAttackRelease <= attackCooldownTime) timeSinceAttackRelease += Time.deltaTime; 
+
+        /*
+        if(!attackDown)
+        {
+            weaponHandAnimator.SetTrigger("AttackReset");
+        }*/
+
     }
 
     //Late update is called after every gameobject has had their update called
@@ -517,8 +534,10 @@ public class BasicPlayerController : MonoBehaviour
         if(attackDown)
         {
             attackDown = false;
-            timeSinceAttackRelease = 0;
-            weaponHandAnimator.SetTrigger("Quick Attack");
+            timeSinceAttackRelease = 0f;
+            if (!heavyAttackInProcess) weaponHandAnimator.SetTrigger("Quick Attack");
+            else weaponHandAnimator.SetTrigger("EndHeavy");
+            heavyAttackInProcess = false;
         }
     }
 

@@ -613,6 +613,7 @@ MonoBehaviour:
   acutalGraple: {fileID: 1064942033352451107}
   grapleRest: {fileID: 6046087142744461906}
   grapleParent: {fileID: 6536878775320332}
+  useJoint: 1
   quality: 500
   strength: 800
   damper: 14
@@ -645,6 +646,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   attackCooldownTime: 1
+  beginHeavyAttackTime: 0.5
   weaponHandAnimator: {fileID: 1198059530714571093}
 --- !u!114 &7808391533682837763
 MonoBehaviour:
