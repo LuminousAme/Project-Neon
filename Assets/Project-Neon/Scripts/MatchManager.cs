@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using System;
 
 public class MatchManager : MonoBehaviour
 {
@@ -15,6 +16,8 @@ public class MatchManager : MonoBehaviour
     [SerializeField] float matchTimeSeconds = 300f;
     float timeRemainingInMatch; //used to determine timestamps and when a game has ended
     bool multiplayer = true;
+    Guid thisPlayerID;
+    public Guid GetThisPlayerID() => thisPlayerID;
 
     public static string winnerName;
     public static int winnerScore;
@@ -48,6 +51,7 @@ public class MatchManager : MonoBehaviour
                     GameObject newPlayer = Instantiate(localPlayerPrefab, initialSpawns[i].position, initialSpawns[i].rotation);
                     PlayerState state = newPlayer.GetComponent<PlayerState>();
                     state.SetPlayerID(allInRoom[i].id);
+                    thisPlayerID = state.GetPlayerID();
                     players.Add(state);
                 }
                 //spawn remote player
@@ -65,7 +69,8 @@ public class MatchManager : MonoBehaviour
             multiplayer = false;
             GameObject newPlayer = Instantiate(localPlayerPrefab, initialSpawns[0].position, initialSpawns[0].rotation);
             PlayerState state = newPlayer.GetComponent<PlayerState>();
-            state.SetPlayerID(0);
+            state.SetPlayerID(new Guid());
+            thisPlayerID = state.GetPlayerID();
             players.Add(state);
         }
 

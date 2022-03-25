@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class PlayerState : MonoBehaviour
 {
@@ -11,9 +12,8 @@ public class PlayerState : MonoBehaviour
     private int killsObtained;
     private int timesDied;
     private string playerName;
-    private int playerId;
+    private Guid playerId;
     [SerializeField] bool overrideIdForDebug = false;
-    [SerializeField] int debugOverrideId = 1;
 
     public delegate void HandleRespawn(PlayerState player);
     public static event HandleRespawn onRespawn;
@@ -26,11 +26,11 @@ public class PlayerState : MonoBehaviour
     public int GetKillCount() => killsObtained;
     public int GetTimesDied() => timesDied;
     public string GetDisplayName() => playerName;
-    public int GetPlayerID() => playerId;
-    public void SetPlayerID(int id)
+    public Guid GetPlayerID() => playerId;
+    public void SetPlayerID(Guid id)
     {
         if (!overrideIdForDebug) playerId = id;
-        else playerId = debugOverrideId;
+        else playerId = Guid.NewGuid();
     }
 
     private void Awake()
@@ -41,7 +41,7 @@ public class PlayerState : MonoBehaviour
     void Start()
     {
         RestartGame();
-        if (overrideIdForDebug) playerId = debugOverrideId;
+        if (overrideIdForDebug) playerId = new Guid();
     }
 
     void Respawn()

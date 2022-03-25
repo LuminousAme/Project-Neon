@@ -28,8 +28,8 @@ public class Client : MonoBehaviour
 
     private List<Player> players = new List<Player>();
     public List<Player> GetPlayers() => players;
-    private int thisClientId = 0;
-    public int GetThisClientID() => thisClientId;
+    private Guid thisClientId;
+    public Guid GetThisClientID() => thisClientId;
     private float timeBetweenConnectionChecks = 1f, elapsedTime = 0f;
 
     //starts client
@@ -85,6 +85,7 @@ public class Client : MonoBehaviour
             Debug.Log(data);
             string[] splitData = data.Split('$');
             roomCode = splitData[1];
+            thisClientId = Guid.Parse(splitData[2]);
 
             client.Blocking = false;
 
@@ -144,21 +145,22 @@ public class Client : MonoBehaviour
                 if (int.Parse(splitData[0]) == 0)
                 {
                     List <Player> newPlayerList = new List<Player>();
-                    for (int i = 1; i < splitData.Length; i++)
+                    for (int i = 1; i < splitData.Length; i = i + 2)
                     {
-
-                        newPlayerList.Add(new Player(splitData[i]));
+                        Guid newID = Guid.Parse(splitData[i+1]);
+                        newPlayerList.Add(new Player(splitData[i], newID));
 
                         bool exists = false;
                         foreach (Player player in players)
                         {
-                            if (player.name == splitData[i]) exists = true;
+                            if (player.id == newID) exists = true;
                         }
 
                         if (!exists)
                         {
                             Player newplayer = new Player();
                             newplayer.name = splitData[i];
+                            newplayer.id = Guid.Parse(splitData[i+1]);
                             players.Add(newplayer);
                         }
                     }
@@ -171,7 +173,7 @@ public class Client : MonoBehaviour
 
                         foreach (Player player in players)
                         {
-                            if(!newPlayerList.Exists(p => p.name == player.name)) {
+                            if(!newPlayerList.Exists(p => p.id == player.id)) {
                                 noLongerHere.Add(player);
                             }
                         }
@@ -189,7 +191,7 @@ public class Client : MonoBehaviour
                 }
                 else if (int.Parse(splitData[0]) == 3)
                 {
-                    Player player = players.Find(p => p.name == splitData[1]);
+                    Player player = players.Find(p => p.id == Guid.Parse(splitData[1]));
                     player.ready = (int.Parse(splitData[2]) == 0) ? false : true;
                 }
                 else if (int.Parse(splitData[0]) == 4)
@@ -230,10 +232,10 @@ public class Client : MonoBehaviour
 
     public void SetReady(bool ready)
     {
-        Player thisPlayer = players.Find(p => p.name == PlayerPrefs.GetString("DisplayName"));
+        Player thisPlayer = players.Find(p => p.id == thisClientId);
         thisPlayer.ready = ready;
 
-        string toSend = "3$" + PlayerPrefs.GetString("DisplayName") + "$";
+        string toSend = "3$" + thisClientId + "$";
         toSend += (ready) ? "1" : "0";
         sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
@@ -281,7 +283,7 @@ public class Player
 {
     public string name = "";
     public bool ready = false;
-    public int id = 0;
+    public Guid id;
 
     public Player()
     {
@@ -289,13 +291,7 @@ public class Player
         ready = false;
     }
 
-    public Player(string name)
-    {
-        this.name = name;
-        ready = false;
-    }
-
-    public Player(string name, int id)
+    public Player(string name, Guid id)
     {
         this.name = name;
         this.id = id;

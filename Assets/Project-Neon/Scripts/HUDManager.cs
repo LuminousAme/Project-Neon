@@ -18,10 +18,8 @@ public class HUDManager : MonoBehaviour
 
     private void OnEnable()
     {
-        if(Client.instance != null)
-            player = FindObjectsOfType<PlayerState>().ToList().Find(p => p.GetPlayerID() == Client.instance.GetThisClientID());
-        else 
-            player = FindObjectsOfType<PlayerState>().ToList().Find(p => p.GetPlayerID() == 0);
+        if(MatchManager.instance != null )
+            player = FindObjectsOfType<PlayerState>().ToList().Find(p => p.GetPlayerID() == MatchManager.instance.GetThisPlayerID());
 
         PlayerState.onRespawn += HandleHPOnRespawn;
         fakeScore = player.GetBounty();

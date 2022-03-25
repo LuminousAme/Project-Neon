@@ -37,7 +37,7 @@ namespace ProjectNeonServer
 
             try
             {
-                sendBuffer = Encoding.ASCII.GetBytes("1$" + newCode);
+                sendBuffer = Encoding.ASCII.GetBytes("1$" + newCode + "$" + creator.id.ToString());
                 creator.socket.Send(sendBuffer);
             }
             catch (SocketException e)
@@ -54,13 +54,13 @@ namespace ProjectNeonServer
 
                 try
                 {
-                    sendBuffer = Encoding.ASCII.GetBytes("1$" + code);
+                    sendBuffer = Encoding.ASCII.GetBytes("1$" + code + "$" + joiningPlayer.id.ToString());
                     joiningPlayer.socket.Send(sendBuffer);
 
                     string sendData = "0";
                     for (int i = 0; i < allRooms[code].connectedPlayers.Count; i++)
                     {
-                        sendData += "$" + allRooms[code].connectedPlayers[i].name;
+                        sendData += "$" + allRooms[code].connectedPlayers[i].name + "$" + allRooms[code].connectedPlayers[i].id.ToString();
                     }
 
                     sendBuffer = Encoding.ASCII.GetBytes(sendData);
@@ -216,7 +216,7 @@ namespace ProjectNeonServer
                             string sendData = "0";
                             for(int i = 0; i < room.connectedPlayers.Count; i++)
                             {
-                                sendData += "$" + room.connectedPlayers[i].name;
+                                sendData += "$" + room.connectedPlayers[i].name + "$" + room.connectedPlayers[i].id.ToString();
                             }
 
                             sendBuffer = Encoding.ASCII.GetBytes(sendData);
@@ -285,6 +285,7 @@ namespace ProjectNeonServer
         public EndPoint remoteEndPoint;
         public Socket socket;
         public string name;
+        public Guid id;
 
         public Player(IPAddress ip, string name, Socket socket, IPEndPoint clientEndPoint, EndPoint remoteEndPoint)
         {
@@ -293,6 +294,7 @@ namespace ProjectNeonServer
             this.socket = socket;
             this.clientEndPoint = clientEndPoint;
             this.remoteEndPoint = remoteEndPoint;
+            this.id = Guid.NewGuid();
         }
     }
 }
