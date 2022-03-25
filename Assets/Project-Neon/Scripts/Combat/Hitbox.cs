@@ -41,7 +41,7 @@ public class Hitbox : MonoBehaviour
     public Color activeGizmoColor = Color.yellow;
     public Color collidingGizmoColor = Color.red;
 
-    private List<IHitboxListener> listeners = new List<IHitboxListener>();
+    [SerializeField] private List<IHitboxListener> listeners = new List<IHitboxListener>();
 
     private Mesh capsuleMeshForGizmo;
 

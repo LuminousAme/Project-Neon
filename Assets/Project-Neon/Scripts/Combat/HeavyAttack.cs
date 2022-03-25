@@ -2,16 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class QuickAttack : MonoBehaviour, IHitboxListener
+public class HeavyAttack : MonoBehaviour, IHitboxListener
 {
     [SerializeField] private Hitbox hitbox;
     private int attackIndex;
     [SerializeField] private PlayerState player;
-    [SerializeField] private int baseDamage = 10;
+    [SerializeField] private int baseDamage = 25;
     private List<Collider> alreadyHitThisAttack = new List<Collider>();
-    [SerializeField] private float standardAttackLenght = 1f, speedAdjustment = 1.5f;
+    [SerializeField] private float standardAttackLenght = 1f, speedAdjustment = 1f;
     private float timeElapsed = 0f, timeToComplete = 1f;
-    private bool attackActive = false;
+    private bool attackActive = false, attackReleased = false;
     [SerializeField] private Animator weaponHandAnimator;
 
     //subscribe to the hitbox callback
@@ -28,7 +28,7 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
 
     public void HitRegistered(Collider collider)
     {
-        if(attackActive && !alreadyHitThisAttack.Contains(collider))
+        if (attackActive && !alreadyHitThisAttack.Contains(collider))
         {
             alreadyHitThisAttack.Add(collider);
             Hurtbox hurtbox = collider.GetComponent<Hurtbox>();
@@ -44,23 +44,39 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
     public void BeginAttack()
     {
         attackActive = true;
-        weaponHandAnimator.SetTrigger("Quick Attack");
+        attackReleased = false;
+        weaponHandAnimator.SetTrigger("BeginHeavy");
 
         hitbox.shape = Hitbox.HitboxShape.BOX;
         hitbox.state = Hitbox.HitboxState.ACTIVE;
-        hitbox.boxHalfSize = new Vector3(0.6f, 0.5f, 0.8f);
-        hitbox.transform.localPosition = new Vector3(0f, -0.1f, 1.5f);
+        hitbox.boxHalfSize = new Vector3(1f, 0.3f, 0.5f);
+        hitbox.transform.localPosition = new Vector3(0f, 0.3f, -0.1f);
+
         alreadyHitThisAttack.Clear();
+    }
+
+    public void ReleaseAttack()
+    {
+        attackReleased = true;
+        weaponHandAnimator.SetTrigger("EndHeavy");
+        timeElapsed = 0f;
+
+        hitbox.shape = Hitbox.HitboxShape.BOX;
+        hitbox.boxHalfSize = new Vector3(1f, 1.2f, 0.8f);
+        hitbox.transform.localPosition = new Vector3(0f, -1f, 1.5f);
     }
 
     public void EndAttack()
     {
         attackActive = false;
+        attackReleased = false;
         timeElapsed = 0f;
+
         hitbox.shape = Hitbox.HitboxShape.BOX;
         hitbox.state = Hitbox.HitboxState.OFF;
         hitbox.boxHalfSize = Vector3.zero;
         hitbox.transform.localPosition = Vector3.zero;
+
         alreadyHitThisAttack.Clear();
     }
 
@@ -68,16 +84,20 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
     {
         alreadyHitThisAttack.Clear();
         attackActive = false;
+        attackReleased = false;
         timeElapsed = 0f;
         timeToComplete = standardAttackLenght / speedAdjustment;
     }
 
     private void Update()
     {
-        if(attackActive)
+        if (attackReleased)
         {
             timeElapsed += Time.deltaTime;
             if (timeElapsed > timeToComplete) EndAttack();
         }
     }
+
+    public bool GetAttackActive() => attackActive;
+    public bool GetAttackReleased() => attackReleased;
 }

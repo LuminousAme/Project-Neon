@@ -53,8 +53,9 @@ public class PlayerState : MonoBehaviour
     }
 
     //takes the passed in ammount of damage, and returns true if it killed
-    public bool TakeDamage(int damage)
+    public bool TakeDamage(int damage, out int cappedDamage)
     {
+        cappedDamage = Mathf.Clamp(damage, 0, hp);
         hp = Mathf.Clamp(hp - damage, 0, basicData.GetMaxHealth());
         if (hp == 0)
         {
@@ -65,6 +66,12 @@ public class PlayerState : MonoBehaviour
         }
 
         return false;
+    }
+
+    public bool TakeDamage(int damage)
+    {
+        int useless;
+        return TakeDamage(damage, out useless);
     }
 
     //adds to the total ammount of damage dealth by this player

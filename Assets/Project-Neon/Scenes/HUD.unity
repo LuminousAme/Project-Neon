@@ -1157,6 +1157,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scoreText: {fileID: 1601967195}
-  scoreUpdateRate: 5
+  scoreUpdateTime: 1
   healthBar: {fileID: 581458645}
   GrappleUI: {fileID: 946389190}

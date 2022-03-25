@@ -8,8 +8,9 @@ public class HUDManager : MonoBehaviour
 {
     PlayerState player;
     [SerializeField] TMP_Text scoreText;
-    int fakeScore;
-    [SerializeField] float scoreUpdateRate = 5f;
+    int fakeScore, actualScore;
+    [SerializeField] float scoreUpdateTime = 5f;
+    float scoreElapsedtime;
     [SerializeField] HealthBar healthBar;
     [SerializeField] GrappleUI GrappleUI;
 
@@ -18,6 +19,8 @@ public class HUDManager : MonoBehaviour
         player = FindObjectsOfType<PlayerState>().ToList().Find(p => p.GetDisplayName() == PlayerPrefs.GetString("DisplayName"));
         PlayerState.onRespawn += HandleHPOnRespawn;
         fakeScore = player.GetBounty();
+        actualScore = player.GetBounty();
+        scoreElapsedtime = 0f;
         GrappleUI.SetPlayer(FindObjectOfType<BasicPlayerController>());
     }
 
@@ -30,9 +33,20 @@ public class HUDManager : MonoBehaviour
     void Update()
     {
         healthBar.SetHealth(player.GetHP());
-        fakeScore = Mathf.RoundToInt(Mathf.Lerp(fakeScore, player.GetBounty(), Time.deltaTime * scoreUpdateRate));
-        scoreText.text = "Bounty: $" + fakeScore;
 
+        if(actualScore != player.GetBounty())
+        {
+            int displayedBefore = Mathf.RoundToInt(Mathf.Lerp(fakeScore, actualScore, scoreElapsedtime / scoreUpdateTime));
+            actualScore = player.GetBounty();
+            float percentNow = MathUlits.InverseLerp(fakeScore, actualScore, displayedBefore);
+            scoreElapsedtime = Mathf.Lerp(0f, scoreUpdateTime, percentNow); 
+        } 
+        int displayed = Mathf.RoundToInt(Mathf.Lerp(fakeScore, actualScore, scoreElapsedtime / scoreUpdateTime));
+        scoreText.text = "Bounty: $" + displayed;
+        scoreElapsedtime = Mathf.Clamp(scoreElapsedtime + Time.deltaTime, 0f, scoreUpdateTime);
+        if (scoreElapsedtime >= scoreUpdateTime) fakeScore = actualScore;
+
+        
         if (Input.GetKeyDown(KeyCode.F1)) player.TakeDamage(10);
     }
 

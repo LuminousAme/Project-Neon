@@ -54,12 +54,12 @@ public class BasicPlayerController : MonoBehaviour
 
     [Header("Combat Controls")]
     private float timeSinceAttackDown = 0f;
-    private bool attackDown = false, heavyAttackInProcess = false;
+    private bool attackDown = false;
     [SerializeField] private float attackCooldownTime = 1f;
     [SerializeField] private float beginHeavyAttackTime = 0.5f;
     private float timeSinceAttackRelease = 0f;
-    [SerializeField] private Animator weaponHandAnimator;
     [SerializeField] private QuickAttack quickAttack;
+    [SerializeField] private HeavyAttack heavyAttack;
 
     private void Awake()
     {
@@ -122,7 +122,6 @@ public class BasicPlayerController : MonoBehaviour
         timeSinceAttackDown = 0f;
         timeSinceAttackRelease = 0f;
         attackDown = false;
-        heavyAttackInProcess = false;
 
         for (int i = 0; i < movementSettings.GetNumOfDashes(); i++) timeSinceLastDash.Add(0.0f);
     }
@@ -166,20 +165,13 @@ public class BasicPlayerController : MonoBehaviour
 
         if (attackDown)
         {
-            if(!heavyAttackInProcess && timeSinceAttackDown >= beginHeavyAttackTime)
+            if(!heavyAttack.GetAttackActive() && timeSinceAttackDown >= beginHeavyAttackTime)
             {
-                heavyAttackInProcess = true;
-                weaponHandAnimator.SetTrigger("BeginHeavy");
+                heavyAttack.BeginAttack();
             }
             timeSinceAttackDown += Time.deltaTime;
         }
         if (timeSinceAttackRelease <= attackCooldownTime) timeSinceAttackRelease += Time.deltaTime; 
-
-        /*
-        if(!attackDown)
-        {
-            weaponHandAnimator.SetTrigger("AttackReset");
-        }*/
 
     }
 
@@ -536,9 +528,8 @@ public class BasicPlayerController : MonoBehaviour
         {
             attackDown = false;
             timeSinceAttackRelease = 0f;
-            if (!heavyAttackInProcess) quickAttack.BeginAttack();
-            else weaponHandAnimator.SetTrigger("EndHeavy");
-            heavyAttackInProcess = false;
+            if (!heavyAttack.GetAttackActive()) quickAttack.BeginAttack();
+            else heavyAttack.ReleaseAttack();
         }
     }
 
