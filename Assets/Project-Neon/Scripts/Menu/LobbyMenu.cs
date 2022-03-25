@@ -263,7 +263,7 @@ public class LobbyMenu : MonoBehaviour
 
     public void StartGame()
     {
-        sceneTransition.beginTransition(3);
+        sceneTransition.beginTransition(6);
     }
 
     public void Ready()

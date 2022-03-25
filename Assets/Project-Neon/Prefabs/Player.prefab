@@ -788,7 +788,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   basicData: {fileID: 11400000, guid: dd494f07ece6416479036f57f3d16c12, type: 2}
-  useSavedName: 0
+  useSavedName: 1
+  overrideIdForDebug: 0
+  debugOverrideId: 1
 --- !u!1 &6750960484867642186
 GameObject:
   m_ObjectHideFlags: 0

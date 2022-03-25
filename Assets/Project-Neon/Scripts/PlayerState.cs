@@ -12,6 +12,8 @@ public class PlayerState : MonoBehaviour
     private int timesDied;
     private string playerName;
     private int playerId;
+    [SerializeField] bool overrideIdForDebug = false;
+    [SerializeField] int debugOverrideId = 1;
 
     public delegate void HandleRespawn(PlayerState player);
     public static event HandleRespawn onRespawn;
@@ -25,7 +27,11 @@ public class PlayerState : MonoBehaviour
     public int GetTimesDied() => timesDied;
     public string GetDisplayName() => playerName;
     public int GetPlayerID() => playerId;
-    public void SetPlayerID(int id) => playerId = id;
+    public void SetPlayerID(int id)
+    {
+        if (!overrideIdForDebug) playerId = id;
+        else playerId = debugOverrideId;
+    }
 
     private void Awake()
     {
@@ -35,6 +41,7 @@ public class PlayerState : MonoBehaviour
     void Start()
     {
         RestartGame();
+        if (overrideIdForDebug) playerId = debugOverrideId;
     }
 
     void Respawn()
