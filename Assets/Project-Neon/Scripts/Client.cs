@@ -265,6 +265,13 @@ public class Client : MonoBehaviour
         return ready;
     }
 
+    public void SendPosRotUpdate(Vector3 pos, Vector3 vel, Quaternion rot, Vector3 angularVel)
+    {
+        //block copy the data to send to the server, so it can then send it to all of the other clients
+        float[] toSend = { pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, rot.x, rot.y, rot.z, rot.w, angularVel.x, angularVel.y, angularVel.z};
+        Buffer.BlockCopy(toSend, 0, sendBuffer, 0, sizeof(float) * toSend.Length); //should be 13 floats
+    }
+
     private void OnDestroy()
     {
         if(isStarted)
