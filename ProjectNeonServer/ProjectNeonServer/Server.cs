@@ -15,7 +15,7 @@ namespace ProjectNeonServer
         static byte[] recieveBuffer = new byte[512];
         static int rec = 0;
         static byte[] sendBuffer = new byte[1024];
-        static Socket server;
+        static Socket server, udpSend, udpRecieve;
 
         static void CreateNewRoom(Player creator)
         {
@@ -116,6 +116,7 @@ namespace ProjectNeonServer
 
         static void Main(string[] args)
         {
+            //setup sockets
             try
             {
                 IPHostEntry hostInfo = Dns.GetHostEntry(Dns.GetHostName());
@@ -136,12 +137,20 @@ namespace ProjectNeonServer
 
                 server.Bind(localEP);
                 server.Listen(10);
+
+                IPEndPoint udpLocalEP = new IPEndPoint(ip, 11112);
+                udpRecieve = new Socket(ip.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+                udpRecieve.Bind(udpLocalEP);
+                udpRecieve.Blocking = false;
+
+                udpSend = new Socket(ip.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
             }
             catch (SocketException e)
             {
                 if (e.SocketErrorCode != SocketError.WouldBlock) Console.WriteLine(e.ToString());
             }
 
+            //start a stopwatch
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -182,7 +191,7 @@ namespace ProjectNeonServer
                     if (e.SocketErrorCode != SocketError.WouldBlock) Console.WriteLine(e.ToString());
                 }
 
-                //send to existing clients
+                //tcp update sent to all clients every 1000 seconds
                 if(stopwatch.ElapsedMilliseconds >= 1000)
                 {
                     //Console.WriteLine("Elapsed: " + stopwatch.ElapsedMilliseconds);
@@ -236,6 +245,8 @@ namespace ProjectNeonServer
                     }
                 }
 
+
+                //listening for data from each of the clients and forwarding it to other clients
                 foreach(var roomdata in allRooms)
                 {
                     Room room = roomdata.Value;
@@ -247,13 +258,24 @@ namespace ProjectNeonServer
                             int rec = player.socket.Receive(recieveBuffer);
                             if(rec > 0)
                             {
-                                string data = Encoding.ASCII.GetString(recieveBuffer, 0, rec);
                                 for(int j = 0; j < room.connectedPlayers.Count; j++)
                                 {
                                     if (j == i) continue;
 
-                                    sendBuffer = Encoding.ASCII.GetBytes(data);
+                                    Buffer.BlockCopy(recieveBuffer, 0, sendBuffer, 0, rec);
                                     room.connectedPlayers[j].socket.Send(sendBuffer);
+                                }
+                            }
+
+                            int udpRec = udpRecieve.ReceiveFrom(recieveBuffer, ref player.udpEndpoint);
+                            if(udpRec > 0)
+                            {
+                                for (int j = 0; j < room.connectedPlayers.Count; j++)
+                                {
+                                    if (j == i) continue;
+
+                                    Buffer.BlockCopy(recieveBuffer, 0, sendBuffer, 0, udpRec);
+                                    udpSend.SendTo(sendBuffer, room.connectedPlayers[j].udpAltEndpoint);
                                 }
                             }
                         }
@@ -287,6 +309,9 @@ namespace ProjectNeonServer
         public string name;
         public Guid id;
 
+        public EndPoint udpEndpoint;
+        public EndPoint udpAltEndpoint;
+
         public Player(IPAddress ip, string name, Socket socket, IPEndPoint clientEndPoint, EndPoint remoteEndPoint)
         {
             this.ip = ip;
@@ -295,6 +320,12 @@ namespace ProjectNeonServer
             this.clientEndPoint = clientEndPoint;
             this.remoteEndPoint = remoteEndPoint;
             this.id = Guid.NewGuid();
+
+            IPEndPoint tempIpEndPoint = new IPEndPoint(ip, 0);
+            udpEndpoint = (EndPoint)tempIpEndPoint;
+
+            IPEndPoint tempAltIPEndPoint = new IPEndPoint(ip, 11112);
+            udpAltEndpoint = (EndPoint)tempAltIPEndPoint;
         }
     }
 }

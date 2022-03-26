@@ -90,6 +90,8 @@ public class Client : MonoBehaviour
             client.Blocking = false;
 
             isStarted = true;
+
+            
         }
         catch (ArgumentNullException anexc)
         {
