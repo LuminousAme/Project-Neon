@@ -26,7 +26,8 @@ public class BasicPlayerController : MonoBehaviour
     private Vector3 eulerAngles;
 
     private float timeRemainingInDash = 0.0f;
-    private float timeSinceLastDash = 0.0f;
+    private List<float> timeSinceLastDash = new List<float>();
+    private uint numberOfDashesTaken = 0;
 
     private bool isGrappling = false, isRidingMommentum = false;
     private float timeSinceLastGrappleEnd = 0.0f;
@@ -35,6 +36,7 @@ public class BasicPlayerController : MonoBehaviour
     private Vector3 grapplingMomentum;
     [SerializeField] private LineRenderer grapplingLine;
     [SerializeField] Transform grappleLatch, grappleLaunch, acutalGraple, grapleRest, grapleParent;
+    [SerializeField] bool useJoint = true;
     Quaternion desiredRotForGrapple;
 
     [Header("Grappling Line Animation")]
@@ -49,6 +51,15 @@ public class BasicPlayerController : MonoBehaviour
     [SerializeField] float waveCount;
     [SerializeField] float waveHeight;
     [SerializeField] AnimationCurve affectCurve;
+
+    [Header("Combat Controls")]
+    private float timeSinceAttackDown = 0f;
+    private bool attackDown = false;
+    [SerializeField] private float attackCooldownTime = 1f;
+    [SerializeField] private float beginHeavyAttackTime = 0.5f;
+    private float timeSinceAttackRelease = 0f;
+    [SerializeField] private QuickAttack quickAttack;
+    [SerializeField] private HeavyAttack heavyAttack;
 
     private void Awake()
     {
@@ -67,12 +78,26 @@ public class BasicPlayerController : MonoBehaviour
         controls.Player.Dash.started += ctx => StartDash();
         //assign the handlegrapple function to the started event of the grapple action
         controls.Player.Grapple.started += ctx => HandleGrapplePressed();
+
+        //assign the attack donw function to the start event of the attack action
+        controls.Player.Attack.started += ctx => PressedDownAttack();
+        //assigned the attack release function to the finish event of the attack action
+        controls.Player.Attack.canceled += ctx => ReleasedAttack();
+
+        ChatManager.onStartType += HandleTypingStart;
+        ChatManager.onStopType += HandleTpyingEnd;
     }
 
     private void OnDisable()
     {
         controls.Disable();
+        ChatManager.onStartType -= HandleTypingStart;
+        ChatManager.onStopType -= HandleTpyingEnd;
     }
+
+    void HandleTypingStart() => controls.Disable();
+
+    void HandleTpyingEnd() => controls.Enable();
 
     // Start is called before the first frame update
     void Start()
@@ -93,6 +118,12 @@ public class BasicPlayerController : MonoBehaviour
 
         isGrappling = false;
         grapplingMomentum = Vector3.zero;
+
+        timeSinceAttackDown = 0f;
+        timeSinceAttackRelease = 0f;
+        attackDown = false;
+
+        for (int i = 0; i < movementSettings.GetNumOfDashes(); i++) timeSinceLastDash.Add(0.0f);
     }
 
     // Update is called once per frame
@@ -108,7 +139,14 @@ public class BasicPlayerController : MonoBehaviour
 
         //reduce the time and cooldown remaining for dashing
         if (timeRemainingInDash > 0.0) timeRemainingInDash -= Time.deltaTime;
-        if (timeSinceLastDash > 0.0) timeSinceLastDash -= Time.deltaTime;
+        for(int i = 0; i < timeSinceLastDash.Count; i++)
+        {
+            if(timeSinceLastDash[i] > 0.0)
+            {
+                timeSinceLastDash[i] -= Time.deltaTime;
+                if (timeSinceLastDash[i] <= 0.0) numberOfDashesTaken--;
+            }
+        }
 
         //do the update for the grappling hook if it is active
         if (isGrappling) GrapplingHookUpdate();
@@ -124,6 +162,17 @@ public class BasicPlayerController : MonoBehaviour
 
         //reduce the cooldown remaing for the grappling hook
         if (timeSinceLastGrappleEnd > 0.0f && !isGrappling) timeSinceLastGrappleEnd -= Time.deltaTime;
+
+        if (attackDown)
+        {
+            if(!heavyAttack.GetAttackActive() && timeSinceAttackDown >= beginHeavyAttackTime)
+            {
+                heavyAttack.BeginAttack();
+            }
+            timeSinceAttackDown += Time.deltaTime;
+        }
+        if (timeSinceAttackRelease <= attackCooldownTime) timeSinceAttackRelease += Time.deltaTime; 
+
     }
 
     //Late update is called after every gameobject has had their update called
@@ -153,11 +202,14 @@ public class BasicPlayerController : MonoBehaviour
     void FixedRotatePlayer()
     {
         //handle rotation from player input
-        eulerAngles.y -= lookInput.y * movementSettings.GetVerticalLookSpeed() * Time.deltaTime;
+        float yawSpeed = -lookInput.y * movementSettings.GetVerticalLookSpeed();
+        eulerAngles.y += yawSpeed * Time.deltaTime;
         eulerAngles.y = Mathf.Clamp(eulerAngles.y, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
         lookAtTarget.localPosition = new Vector3(0.0f, 0.0f, 1.0f);
         lookAtTarget.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
         lookAtTarget.RotateAround(lookAtTarget.parent.position, lookAtTarget.right, eulerAngles.y);
+
+        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateCamData(eulerAngles.y, yawSpeed);
 
         //update the rotation for the rigidbody
         float horiRot = lookInput.x * movementSettings.GetHorizontalLookSpeed() * Time.deltaTime;
@@ -300,23 +352,25 @@ public class BasicPlayerController : MonoBehaviour
 
             //code that handles setting up the joint and stuff, uncomment later
             {
-                //and set up a spring joint to connect the player to that point
-                grapplingHookJoint = this.gameObject.AddComponent<SpringJoint>();
-                grapplingHookJoint.autoConfigureConnectedAnchor = false;
-                grapplingHookJoint.connectedAnchor = hookPosition;
-                //spring force used to keep the 2 objects together (higher means faster hook in, lower means slower)
-                grapplingHookJoint.spring = movementSettings.GetGrappleJointSpring();
-                //damper force used to dampen the spring force. (lower means faster hook, higher means slower)
-                grapplingHookJoint.damper = movementSettings.GetGrappleJointDamp();
-                //scale to apply to the inverse mass and inertia tensor of the body (seems to affect momentum)
-                grapplingHookJoint.massScale = movementSettings.GetGrappleJointMassScale();
+                if(useJoint)
+                {
+                    //and set up a spring joint to connect the player to that point
+                    grapplingHookJoint = this.gameObject.AddComponent<SpringJoint>();
+                    grapplingHookJoint.autoConfigureConnectedAnchor = false;
+                    grapplingHookJoint.connectedAnchor = hookPosition;
+                    //spring force used to keep the 2 objects together (higher means faster hook in, lower means slower)
+                    grapplingHookJoint.spring = movementSettings.GetGrappleJointSpring();
+                    //damper force used to dampen the spring force. (lower means faster hook, higher means slower)
+                    grapplingHookJoint.damper = movementSettings.GetGrappleJointDamp();
+                    //scale to apply to the inverse mass and inertia tensor of the body (seems to affect momentum)
+                    grapplingHookJoint.massScale = movementSettings.GetGrappleJointMassScale();
 
-                //setting the starting distances to grapple between
-                float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
-                grapplingHookJoint.maxDistance = distanceFromHookPoint * 0.8f;
-                grapplingHookJoint.minDistance = distanceFromHookPoint * 0.25f;
-                //grapplingHookJoint.minDistance = movementSettings.GetGrappleCloseDistance();
-                
+                    //setting the starting distances to grapple between
+                    float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
+                    grapplingHookJoint.maxDistance = distanceFromHookPoint * 0.8f;
+                    grapplingHookJoint.minDistance = distanceFromHookPoint * 0.25f;
+                    //grapplingHookJoint.minDistance = movementSettings.GetGrappleCloseDistance();
+                }
 
                 //if a line renderer for the grappling line exists then set it to have 2 points
                 if (grapplingLine != null) grapplingLine.positionCount = quality + 1;
@@ -363,19 +417,24 @@ public class BasicPlayerController : MonoBehaviour
 
     void FixedGrapplingHookPull()
     {
-        if(isGrappling)
+        if (isGrappling)
         {
             Vector3 GrappleDir = hookPosition - this.transform.position;
-            grapplingMomentum = GrappleDir * movementSettings.GetGrapplePullSpeed() * Time.fixedDeltaTime;
+            grapplingMomentum = GrappleDir.normalized * movementSettings.GetGrapplePullSpeed() * Time.fixedDeltaTime;
             isRidingMommentum = true;
         }
+        else isRidingMommentum = false;
 
         if(isRidingMommentum)
         {
+            rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
             rb.AddForce(grapplingMomentum, ForceMode.VelocityChange);
 
-            Vector3 inputMove = inputDirection.normalized * movementSettings.GetGrappleHoriInputForce();
-            rb.AddForce(inputMove);
+            if(useJoint)
+            {
+                Vector3 inputMove = inputDirection.normalized * movementSettings.GetGrappleHoriInputForce();
+                rb.AddForce(inputMove, ForceMode.VelocityChange);
+            }
         }
     }
 
@@ -422,9 +481,10 @@ public class BasicPlayerController : MonoBehaviour
 
     private void StartDash()
     {
-        if(timeSinceLastDash <= 0.0)
+        if(numberOfDashesTaken < movementSettings.GetNumOfDashes() && timeRemainingInDash <= 0.0f) //timeSinceLastDash <= 0.0)
         {
-            timeSinceLastDash = movementSettings.GetDashCooldown();
+            timeSinceLastDash[(int)numberOfDashesTaken] = movementSettings.GetDashCooldown();
+            numberOfDashesTaken++;
             timeRemainingInDash = movementSettings.GetDashLenght();
         }
     }
@@ -447,7 +507,33 @@ public class BasicPlayerController : MonoBehaviour
     public bool GetIsGrappling()
     {
         return isGrappling;
+    }
 
+    public bool GetGrappleOnCooldown()
+    {
+        if (isGrappling) return false;
+        else if (timeSinceLastGrappleEnd > 0.0f) return true;
+        return false;
+    }
+
+    public void PressedDownAttack()
+    {
+        if(timeSinceAttackRelease > attackCooldownTime)
+        {
+            attackDown = true;
+            timeSinceAttackDown = 0f;
+        }
+    }
+
+    public void ReleasedAttack()
+    {
+        if(attackDown)
+        {
+            attackDown = false;
+            timeSinceAttackRelease = 0f;
+            if (!heavyAttack.GetAttackActive()) quickAttack.BeginAttack();
+            else heavyAttack.ReleaseAttack();
+        }
     }
 
     private void OnDrawGizmosSelected()

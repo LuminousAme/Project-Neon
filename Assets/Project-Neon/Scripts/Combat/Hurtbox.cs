@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 //Hit and hurt box system based on this game developer article https://www.gamedeveloper.com/design/hitboxes-and-hurtboxes-in-unity
 //a hurtbox requires a collider of some type, however I do not trust requirecomponent to handle inherietence probably so I'm not putting it
+[ExecuteAlways]
 public class Hurtbox : MonoBehaviour
 {
     //the player that is owning of this hurtbox
@@ -27,15 +29,29 @@ public class Hurtbox : MonoBehaviour
     private float sphereCapsuleRadius;
     private float capsuleHeight;
 
-    private Mesh capsuleMeshForGizmo;
+    private Mesh capsuleMeshForGizmo = null;
+
+    public Action<PlayerState, int> onHurt;
 
     public void ProcessHit(PlayerState attackingPlayer, int damage)
     {
-        bool killed = player.TakeDamage(damage);
-        attackingPlayer.DealDamage(damage, killed);
+        int cappedDamage;
+        bool killed = player.TakeDamage(damage, out cappedDamage);
+        attackingPlayer.DealDamage(cappedDamage, killed);
+        onHurt?.Invoke(attackingPlayer, cappedDamage);
     }
 
     private void Start()
+    {
+        Setup();
+    }
+
+    private void OnValidate()
+    {
+        Setup();
+    }
+
+    void Setup()
     {
         if (GetComponent<BoxCollider>() != null)
         {
@@ -57,14 +73,17 @@ public class Hurtbox : MonoBehaviour
             capsuleHeight = cc.height;
         }
 
-        try
+        if(capsuleMeshForGizmo == null)
         {
-            capsuleMeshForGizmo = Resources.GetBuiltinResource<Mesh>("Capsule.fbx");
-        }
-        catch
-        {
-            capsuleMeshForGizmo = null;
-            Debug.Log("Could not load capsule mesh for hitbox gizmos");
+            try
+            {
+                capsuleMeshForGizmo = Resources.GetBuiltinResource<Mesh>("Capsule.fbx");
+            }
+            catch
+            {
+                capsuleMeshForGizmo = null;
+                Debug.Log("Could not load capsule mesh for hitbox gizmos");
+            }
         }
     }
 
@@ -108,7 +127,7 @@ public class Hurtbox : MonoBehaviour
                 if (capsuleMeshForGizmo != null)
                 {
                     Gizmos.DrawMesh(capsuleMeshForGizmo, transform.position, transform.rotation,
-                        new Vector3(sphereCapsuleRadius, capsuleHeight * 0.5f, sphereCapsuleRadius));
+                        new Vector3(sphereCapsuleRadius, capsuleHeight * 0.25f, sphereCapsuleRadius));
                 }
                 break;
         }

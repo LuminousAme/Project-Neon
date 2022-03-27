@@ -1,15 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class PlayerState : MonoBehaviour
 {
     [SerializeField] private PlayerData basicData;
+    [SerializeField] private bool useSavedName;
     private int hp;
     private int damageDealt;
     private int killsObtained;
     private int timesDied;
     private string playerName;
+    private Guid playerId;
+    [SerializeField] bool overrideIdForDebug = false;
 
     public delegate void HandleRespawn(PlayerState player);
     public static event HandleRespawn onRespawn;
@@ -22,10 +26,22 @@ public class PlayerState : MonoBehaviour
     public int GetKillCount() => killsObtained;
     public int GetTimesDied() => timesDied;
     public string GetDisplayName() => playerName;
+    public Guid GetPlayerID() => playerId;
+    public void SetPlayerID(Guid id)
+    {
+        if (!overrideIdForDebug) playerId = id;
+        else playerId = Guid.NewGuid();
+    }
+
+    private void Awake()
+    {
+        ReadNameFromFile();
+    }
 
     void Start()
     {
         RestartGame();
+        if (overrideIdForDebug) playerId = new Guid();
     }
 
     void Respawn()
@@ -48,10 +64,11 @@ public class PlayerState : MonoBehaviour
     }
 
     //takes the passed in ammount of damage, and returns true if it killed
-    public bool TakeDamage(int damage)
+    public bool TakeDamage(int damage, out int cappedDamage)
     {
+        cappedDamage = Mathf.Clamp(damage, 0, hp);
         hp = Mathf.Clamp(hp - damage, 0, basicData.GetMaxHealth());
-        if(hp == 0)
+        if (hp == 0)
         {
             Respawn();
             onRespawn?.Invoke(this);
@@ -60,6 +77,12 @@ public class PlayerState : MonoBehaviour
         }
 
         return false;
+    }
+
+    public bool TakeDamage(int damage)
+    {
+        int useless;
+        return TakeDamage(damage, out useless);
     }
 
     //adds to the total ammount of damage dealth by this player
@@ -71,5 +94,10 @@ public class PlayerState : MonoBehaviour
             killsObtained++;
             onNewKill?.Invoke(this);
         }
+    }
+
+    public int GetBounty()
+    {
+        return killsObtained * 100 + damageDealt;
     }
 }
