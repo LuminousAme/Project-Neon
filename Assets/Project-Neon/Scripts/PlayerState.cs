@@ -51,7 +51,7 @@ public class PlayerState : MonoBehaviour
 
     private void Start()
     {
-       // healDelay = 6;
+        // healDelay = 6;
         RestartGame();
         if (overrideIdForDebug) playerId = new Guid();
     }
@@ -103,17 +103,13 @@ public class PlayerState : MonoBehaviour
 
     private void Update()
     {
-       
         healTimer = healTimer + Time.deltaTime;
         Debug.Log(damaged);
         //if the player hasn't been damaged for the  delay amount then they are not longer damaged and can heal
         if (healTimer >= healDelay)
         {
             damaged = false;
-            //healTimer = 0;
         }
-        //else
-        //    damaged = true;
 
         //if player hasn't been damaged then heal
         if (!damaged)
