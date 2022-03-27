@@ -12,10 +12,12 @@ namespace ProjectNeonServer
     {
         static Dictionary<string, Room> allRooms = new Dictionary<string, Room>();
         static Random rand = new Random();
-        static byte[] recieveBuffer = new byte[512];
+        static byte[] recieveBuffer = new byte[1024];
         static int rec = 0;
         static byte[] sendBuffer = new byte[1024];
-        static Socket server, udpSend, udpRecieve;
+        static Socket TcpServer;
+        static Socket UDPServer;
+        static EndPoint remoteClient;
 
         static void CreateNewRoom(Player creator)
         {
@@ -116,34 +118,44 @@ namespace ProjectNeonServer
 
         static void Main(string[] args)
         {
-            //setup sockets
+            IPHostEntry hostInfo = Dns.GetHostEntry(Dns.GetHostName());
+            IPAddress ip = null;
+
+            for (int i = 0; i < hostInfo.AddressList.Length; i++)
+            {
+                //check for IPv4 address
+                if (hostInfo.AddressList[i].AddressFamily == AddressFamily.InterNetwork)
+                    ip = hostInfo.AddressList[i];
+            }
+            Console.WriteLine("ip address: " + ip.ToString());
+
+            //setup tcp server
             try
             {
-                IPHostEntry hostInfo = Dns.GetHostEntry(Dns.GetHostName());
-                IPAddress ip = null;
-
-                for (int i = 0; i < hostInfo.AddressList.Length; i++)
-                {
-                    //check for IPv4 address
-                    if (hostInfo.AddressList[i].AddressFamily == AddressFamily.InterNetwork)
-                        ip = hostInfo.AddressList[i];
-                }
                 IPEndPoint localEP = new IPEndPoint(ip, 11111);
+                TcpServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                TcpServer.Blocking = false;
 
-                Console.WriteLine("ip address: " + ip.ToString());
+                TcpServer.Bind(localEP);
+                TcpServer.Listen(10);
+            }
+            catch (SocketException e)
+            {
+                if (e.SocketErrorCode != SocketError.WouldBlock) Console.WriteLine(e.ToString());
+            }
 
-                server = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                server.Blocking = false;
+            //setup udp server
+            try
+            {
+                IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
+                remoteClient = (EndPoint)remoteEP;
 
-                server.Bind(localEP);
-                server.Listen(10);
+                IPEndPoint localEP = new IPEndPoint(ip, 11112);
+                UDPServer = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                UDPServer.Blocking = false;
 
-                IPEndPoint udpLocalEP = new IPEndPoint(ip, 11112);
-                udpRecieve = new Socket(ip.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-                udpRecieve.Bind(udpLocalEP);
-                udpRecieve.Blocking = false;
-
-                udpSend = new Socket(ip.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+                UDPServer.Bind(localEP);
+                //no need to listen since UDP is connectionless
             }
             catch (SocketException e)
             {
@@ -161,8 +173,9 @@ namespace ProjectNeonServer
                 //accept new clients
                 try
                 {
-                    server.Listen(10);
-                    Socket newConnection = server.Accept();
+                    TcpServer.Listen(10);
+                    Socket newConnection = TcpServer.Accept();
+                    UDPServer.Blocking = true;
                     //setting it up to handle ungraceful disconnecting, checks every second, and waits half a second before trying again if it failed
                     SetKeepAliveValues(newConnection, 1000, 500);
                     IPEndPoint newIPEndPoint = (IPEndPoint)newConnection.RemoteEndPoint;
@@ -185,6 +198,11 @@ namespace ProjectNeonServer
                         JoinRoom(splitData[3], newPlayer);
                     }
 
+                    int recv = UDPServer.ReceiveFrom(recieveBuffer, ref remoteClient);
+                    newPlayer.udpEndPoint = remoteClient;
+                    sendBuffer = Encoding.ASCII.GetBytes("Thank you!");
+                    UDPServer.SendTo(sendBuffer, newPlayer.udpEndPoint);
+                    UDPServer.Blocking = false;
                 }
                 catch (SocketException e)
                 {
@@ -203,7 +221,6 @@ namespace ProjectNeonServer
                         foreach(var roomdata in allRooms)
                         {
                             Room room = roomdata.Value;
-                            Console.WriteLine(room.connectedPlayers.Count);
 
                             if(room.connectedPlayers.Count == 0)
                             {
@@ -252,30 +269,45 @@ namespace ProjectNeonServer
                     Room room = roomdata.Value;
                     for(int i = 0; i < room.connectedPlayers.Count; i++)
                     {
+                        Player player = room.connectedPlayers[i];
+
+                        //tcp
                         try
                         {
-                            Player player = room.connectedPlayers[i];
                             int rec = player.socket.Receive(recieveBuffer);
-                            if(rec > 0)
-                            {
-                                for(int j = 0; j < room.connectedPlayers.Count; j++)
-                                {
-                                    if (j == i) continue;
-
-                                    Buffer.BlockCopy(recieveBuffer, 0, sendBuffer, 0, rec);
-                                    room.connectedPlayers[j].socket.Send(sendBuffer);
-                                }
-                            }
-
-                            int udpRec = udpRecieve.ReceiveFrom(recieveBuffer, ref player.udpEndpoint);
-                            if(udpRec > 0)
+                            string data = Encoding.ASCII.GetString(recieveBuffer, 0, rec);
+                            if (rec > 0)
                             {
                                 for (int j = 0; j < room.connectedPlayers.Count; j++)
                                 {
                                     if (j == i) continue;
 
-                                    Buffer.BlockCopy(recieveBuffer, 0, sendBuffer, 0, udpRec);
-                                    udpSend.SendTo(sendBuffer, room.connectedPlayers[j].udpAltEndpoint);
+                                    sendBuffer = Encoding.ASCII.GetBytes(data);
+                                    room.connectedPlayers[j].socket.Send(sendBuffer);
+                                }
+                            }
+                        }
+                        catch (SocketException e)
+                        {
+                            if(e.SocketErrorCode != SocketError.WouldBlock) Console.WriteLine(e.ToString());
+                        }
+
+                        //udp
+                        try
+                        {
+                            int rec = UDPServer.ReceiveFrom(recieveBuffer, ref remoteClient);
+                            if (rec > 0)
+                            {
+                                string data = Encoding.ASCII.GetString(recieveBuffer, 0, rec);
+                                string[] splitData = data.Split('$');
+
+                                byte[] forwardBuffer = new byte[rec];
+                                Buffer.BlockCopy(recieveBuffer, 0, forwardBuffer, 0, rec);
+                                for (int j = 0; j < room.connectedPlayers.Count; j++)
+                                {
+                                    if (splitData[0] == room.connectedPlayers[j].id.ToString()) continue;
+
+                                    UDPServer.SendTo(forwardBuffer, room.connectedPlayers[j].udpEndPoint);
                                 }
                             }
                         }
@@ -284,12 +316,12 @@ namespace ProjectNeonServer
                             if (e.SocketErrorCode != SocketError.WouldBlock) Console.WriteLine(e.ToString());
                         }
                     }
+                    }
                 }
 
             }
         }
-    }
-
+    
     class Room
     {
         public List<Player> connectedPlayers = new List<Player>();
@@ -309,8 +341,7 @@ namespace ProjectNeonServer
         public string name;
         public Guid id;
 
-        public EndPoint udpEndpoint;
-        public EndPoint udpAltEndpoint;
+        public EndPoint udpEndPoint;
 
         public Player(IPAddress ip, string name, Socket socket, IPEndPoint clientEndPoint, EndPoint remoteEndPoint)
         {
@@ -320,12 +351,6 @@ namespace ProjectNeonServer
             this.clientEndPoint = clientEndPoint;
             this.remoteEndPoint = remoteEndPoint;
             this.id = Guid.NewGuid();
-
-            IPEndPoint tempIpEndPoint = new IPEndPoint(ip, 0);
-            udpEndpoint = (EndPoint)tempIpEndPoint;
-
-            IPEndPoint tempAltIPEndPoint = new IPEndPoint(ip, 11112);
-            udpAltEndpoint = (EndPoint)tempAltIPEndPoint;
         }
     }
 }

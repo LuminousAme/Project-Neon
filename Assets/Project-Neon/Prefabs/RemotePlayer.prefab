@@ -289,7 +289,7 @@ GameObject:
   - component: {fileID: 4184891140758154737}
   - component: {fileID: 1949479923388824735}
   - component: {fileID: 9056271236550722260}
-  m_Layer: 3
+  m_Layer: 8
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -404,7 +404,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6621076173115090216}
   m_Layer: 8
-  m_Name: Main Camera
+  m_Name: FakeCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -551,8 +551,8 @@ GameObject:
   - component: {fileID: 4383490165763651500}
   - component: {fileID: 4383490165763651503}
   - component: {fileID: 4383490165763651502}
-  - component: {fileID: 4383490165763651505}
   - component: {fileID: 4383490165763651507}
+  - component: {fileID: 1765173851905630661}
   m_Layer: 8
   m_Name: RemotePlayer
   m_TagString: Untagged
@@ -627,20 +627,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &4383490165763651505
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4383490165763651506}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4383490165763651507
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -655,6 +641,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   basicData: {fileID: 11400000, guid: dd494f07ece6416479036f57f3d16c12, type: 2}
   useSavedName: 0
+  overrideIdForDebug: 0
+--- !u!114 &1765173851905630661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4383490165763651506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d979965eab11f3642bf91437a672cb4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetRB: {fileID: 0}
+  lookControl: {fileID: 6621076173115090216}
+  movementSettings: {fileID: 11400000, guid: d8fe1107ccd6f5842a5121a63c5cc0db, type: 2}
 --- !u!1 &5053042749945638645
 GameObject:
   m_ObjectHideFlags: 0
@@ -898,7 +900,7 @@ GameObject:
   - component: {fileID: 3153298835743999511}
   - component: {fileID: 5003328779880385616}
   m_Layer: 6
-  m_Name: Capsule
+  m_Name: Hurtbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -994,7 +996,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8679199778846129358}
-  m_Layer: 3
+  m_Layer: 8
   m_Name: Look
   m_TagString: Untagged
   m_Icon: {fileID: 0}

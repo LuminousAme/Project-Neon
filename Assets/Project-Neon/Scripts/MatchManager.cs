@@ -34,6 +34,8 @@ public class MatchManager : MonoBehaviour
         PlayerState.onRespawn -= RespawnPlayer;
     }
 
+    public List<PlayerState> GetPlayers() => players;
+
     private void Start()
     {
         if (instance == null) instance = this;

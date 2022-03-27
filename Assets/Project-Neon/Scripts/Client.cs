@@ -15,13 +15,16 @@ public class Client : MonoBehaviour
 
     bool isStarted = false;
 
-    private Socket client;
+    private Socket TcpClient;
+    private Socket UdpClient;
 
-    private IPEndPoint localEP;
+    private IPEndPoint remoteTcpEP;
+    private IPEndPoint remoteUdpEP;
+    private EndPoint remoteUdpAbstractEP;
 
     private IPAddress thisPlayerIp;
 
-    private byte[] sendBuffer = new byte[512];
+    private byte[] sendBuffer = new byte[1024];
     private byte[] recieveBuffer = new byte[1024];
 
     private bool connection;
@@ -41,13 +44,13 @@ public class Client : MonoBehaviour
         //IPAddress ip = host.AddressList[1];// user's ipv4
         IPAddress ip = IPAddress.Parse(ipText);// server's ip
 
-        localEP = new IPEndPoint(ip, 11111);
+        remoteTcpEP = new IPEndPoint(ip, 11111);
 
         //create
-        client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        TcpClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         //setting it up to handle ungraceful disconnecting, checks every second, and waits half a second before trying again if it failed
-        client.SetKeepAliveValues(1000, 500);
-        client.Blocking = true;
+        TcpClient.SetKeepAliveValues(1000, 500);
+        TcpClient.Blocking = true;
 
         // Attempt a connection
         try
@@ -63,8 +66,8 @@ public class Client : MonoBehaviour
             }
 
             Debug.Log("Connecting to server...");
-            client.Connect(localEP);
-            Debug.Log("Client Connected to IP: " + client.RemoteEndPoint.ToString());
+            TcpClient.Connect(remoteTcpEP);
+            Debug.Log("Client Connected to IP: " + TcpClient.RemoteEndPoint.ToString());
 
             string toSend = "";
             if (type == 0)
@@ -77,21 +80,31 @@ public class Client : MonoBehaviour
             }
 
             sendBuffer = Encoding.ASCII.GetBytes(toSend);
-            client.Send(sendBuffer);
+            TcpClient.Send(sendBuffer);
 
-            int recv = client.Receive(recieveBuffer);
+            int recv = TcpClient.Receive(recieveBuffer);
 
             string data = Encoding.ASCII.GetString(recieveBuffer, 0, recv);
-            Debug.Log(data);
             string[] splitData = data.Split('$');
             roomCode = splitData[1];
             thisClientId = Guid.Parse(splitData[2]);
 
-            client.Blocking = false;
+            TcpClient.Blocking = false;
+
+            remoteUdpEP = new IPEndPoint(ip, 11112);
+            remoteUdpAbstractEP = (EndPoint)remoteUdpEP;
+
+            UdpClient = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            UdpClient.Blocking = true;
+
+            //just send the id to start the connection lol
+            sendBuffer = Encoding.ASCII.GetBytes(thisClientId.ToString());
+            UdpClient.SendTo(sendBuffer, remoteUdpEP);
+            int rec = UdpClient.ReceiveFrom(recieveBuffer, ref remoteUdpAbstractEP);
+            Debug.Log("Server UDP Response: " + Encoding.ASCII.GetString(recieveBuffer, 0, rec));
+            UdpClient.Blocking = false;
 
             isStarted = true;
-
-            
         }
         catch (ArgumentNullException anexc)
         {
@@ -127,21 +140,21 @@ public class Client : MonoBehaviour
             if (elapsedTime >= timeBetweenConnectionChecks)
             {
                 //check for connection
-                connection = IsConnected(client);
+                connection = IsConnected(TcpClient);
                 if (!connection)
                 {
                     //if not connected release the socket
-                    client.Shutdown(SocketShutdown.Both);
-                    client.Close();
+                    TcpClient.Shutdown(SocketShutdown.Both);
+                    TcpClient.Close();
                     isStarted = false;
                     return;
                 }
             }
+            //tcp
             try
             {
-                int recv = client.Receive(recieveBuffer);
+                int recv = TcpClient.Receive(recieveBuffer);
                 string data = Encoding.ASCII.GetString(recieveBuffer, 0, recv);
-                Debug.Log(data);
                 string[] splitData = data.Split('$');
 
                 if (int.Parse(splitData[0]) == 0)
@@ -206,13 +219,79 @@ public class Client : MonoBehaviour
             {
                 if (e.SocketErrorCode != SocketError.WouldBlock) Debug.Log(e.ToString());
             }
+
+            //udp
+            try
+            {
+                int recv = UdpClient.ReceiveFrom(recieveBuffer, ref remoteUdpAbstractEP);
+
+
+
+                if (recv > 0)
+                {
+                    string data = Encoding.ASCII.GetString(recieveBuffer, 0, recv);
+                    string[] splitData = data.Split('$');
+                    //Debug.Log("Recieved on UDP: " + data); //know we're recieving correctly
+
+                    if (splitData[1] == "0")
+                    {
+                        Guid targetPlayer = Guid.Parse(splitData[0]);
+
+                        const int size = sizeof(float) * (3 + 3 + 4 + 3 + 1 + 1); //vec3, vec3, quat, vec3, float, float
+                        byte[] temp = new byte[size];
+                        Buffer.BlockCopy(recieveBuffer, recv - size, temp, 0, size);
+
+                        float[] floatarr = new float[(3 + 3 + 4 + 3 + 1 + 1)];
+                        if(temp.Length == size)
+                        {
+                            Buffer.BlockCopy(temp, 0, floatarr, 0, temp.Length);
+
+
+                            Vector3 newPos = new Vector3(floatarr[0], floatarr[1], floatarr[2]);
+                            Vector3 newVel = new Vector3(floatarr[3], floatarr[4], floatarr[5]);
+                            Quaternion newRot = new Quaternion(floatarr[6], floatarr[7], floatarr[8], floatarr[9]);
+                            Vector3 newAngVel = new Vector3(floatarr[10], floatarr[11], floatarr[12]);
+                            float newYaw = floatarr[13];
+                            float newYawSpeed = floatarr[14];
+
+                            //this is jank but will find the remote player to set the values
+                            if (MatchManager.instance != null)
+                            {
+                                PlayerState player = MatchManager.instance.GetPlayers().Find(p => p.GetPlayerID() == targetPlayer);
+                                if (player != null)
+                                {
+                                    RemotePlayer remotePlayer = player.GetComponent<RemotePlayer>();
+                                    if (remotePlayer != null) remotePlayer.SetData(newPos, newVel, newRot, newAngVel, newYaw, newYawSpeed);
+                                }
+                            }
+                        }   
+                    }
+                }
+            }
+            catch (SocketException e)
+            {
+                if (e.SocketErrorCode != SocketError.WouldBlock) Debug.Log(e.ToString());
+            }
+
+            if(Input.GetKeyDown(KeyCode.F1))
+            {
+                try
+                {
+                    sendBuffer = Encoding.ASCII.GetBytes(thisClientId.ToString());
+                    UdpClient.SendTo(sendBuffer, remoteUdpEP);
+                }
+                catch (SocketException e)
+                {
+                    if (e.SocketErrorCode != SocketError.WouldBlock) Debug.Log(e.ToString());
+                }
+            }
         }
     }
 
     public void Disconnect()
     {
-        client.Shutdown(SocketShutdown.Both);
-        client.Close();
+        TcpClient.Shutdown(SocketShutdown.Both);
+        TcpClient.Close();
         isStarted = false;
         players.Clear();
     }
@@ -221,7 +300,7 @@ public class Client : MonoBehaviour
     public void EnterGame(int type)
     {
         StartClient(type);
-        connection = IsConnected(client);
+        connection = IsConnected(TcpClient);
     }
 
     public void SendMessageToOtherPlayers(string msg)
@@ -229,7 +308,7 @@ public class Client : MonoBehaviour
         string toSend = "2$" + PlayerPrefs.GetString("DisplayName") + "$" + msg;
         sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
-        client.Send(sendBuffer);
+        TcpClient.Send(sendBuffer);
     }
 
     public void SetReady(bool ready)
@@ -241,7 +320,7 @@ public class Client : MonoBehaviour
         toSend += (ready) ? "1" : "0";
         sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
-        client.Send(sendBuffer);
+        TcpClient.Send(sendBuffer);
     }
 
     public void LaunchGameForAll()
@@ -249,7 +328,7 @@ public class Client : MonoBehaviour
         string toSend = "4";
         sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
-        client.Send(sendBuffer);
+        TcpClient.Send(sendBuffer);
     }
 
     public bool GetAllPlayersReady()
@@ -267,11 +346,22 @@ public class Client : MonoBehaviour
         return ready;
     }
 
-    public void SendPosRotUpdate(Vector3 pos, Vector3 vel, Quaternion rot, Vector3 angularVel)
+    public void SendPosRotUpdate(Vector3 pos, Vector3 vel, Quaternion rot, Vector3 angularVel, float yaw, float yawSpeed)
     {
         //block copy the data to send to the server, so it can then send it to all of the other clients
-        float[] toSend = { pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, rot.x, rot.y, rot.z, rot.w, angularVel.x, angularVel.y, angularVel.z};
-        Buffer.BlockCopy(toSend, 0, sendBuffer, 0, sizeof(float) * toSend.Length); //should be 13 floats
+        float[] floatarr = { pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, rot.x, rot.y, rot.z, rot.w, angularVel.x, angularVel.y, angularVel.z, yaw, yawSpeed};
+        byte[] temp = new byte[sizeof(float) * floatarr.Length];
+        Buffer.BlockCopy(floatarr, 0, temp, 0, sizeof(float) * floatarr.Length); //should be 15 floats
+
+        string toSend = thisClientId.ToString() + "$0$";
+
+        //this is jank but hopefully works
+        byte[] temp2 = Encoding.ASCII.GetBytes(toSend);
+        byte[] temp3 = new byte[temp.Length + temp2.Length];
+        Array.Copy(temp2, temp3, temp2.Length);
+        Array.Copy(temp, 0, temp3, temp2.Length, temp.Length);
+        sendBuffer = temp3;
+        UdpClient.SendTo(sendBuffer, remoteUdpEP);
     }
 
     private void OnDestroy()

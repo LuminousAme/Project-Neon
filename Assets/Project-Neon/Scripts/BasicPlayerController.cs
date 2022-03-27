@@ -202,11 +202,14 @@ public class BasicPlayerController : MonoBehaviour
     void FixedRotatePlayer()
     {
         //handle rotation from player input
-        eulerAngles.y -= lookInput.y * movementSettings.GetVerticalLookSpeed() * Time.deltaTime;
+        float yawSpeed = -lookInput.y * movementSettings.GetVerticalLookSpeed();
+        eulerAngles.y += yawSpeed * Time.deltaTime;
         eulerAngles.y = Mathf.Clamp(eulerAngles.y, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
         lookAtTarget.localPosition = new Vector3(0.0f, 0.0f, 1.0f);
         lookAtTarget.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
         lookAtTarget.RotateAround(lookAtTarget.parent.position, lookAtTarget.right, eulerAngles.y);
+
+        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateCamData(eulerAngles.y, yawSpeed);
 
         //update the rotation for the rigidbody
         float horiRot = lookInput.x * movementSettings.GetHorizontalLookSpeed() * Time.deltaTime;
