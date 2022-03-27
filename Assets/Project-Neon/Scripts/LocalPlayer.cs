@@ -8,6 +8,7 @@ public class LocalPlayer : MonoBehaviour
     [SerializeField] float updateServerTime = 0.05f;
     float elapsedTime = 0f;
     Vector3 position, velocity, angularVelocity;
+    Vector3 lastVelocity;
     Quaternion rotation;
     float yaw, yawSpeed;
 
@@ -18,6 +19,7 @@ public class LocalPlayer : MonoBehaviour
     {
         position = targetRB.position;
         velocity = targetRB.velocity;
+        velocity.RemoveTinyValues(0.01f);
         angularVelocity = targetRB.angularVelocity;
         rotation = targetRB.rotation;
     }
@@ -41,13 +43,14 @@ public class LocalPlayer : MonoBehaviour
     private void Update()
     {
         UpdateData();
-
         if (Client.instance != null)
         {
             elapsedTime += Time.deltaTime;
-            if(elapsedTime >= updateServerTime)
+            if(elapsedTime >= updateServerTime && velocity != lastVelocity)
             {
+                lastVelocity = velocity;
                 Client.instance.SendPosRotUpdate(position, velocity, rotation, angularVelocity, yaw, yawSpeed);
+                elapsedTime = 0.0f;
             }
         }
     }

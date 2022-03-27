@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rideHeight: 1.5
   rideSpringStr: 160
-  rideSpringDamp: 30
+  rideSpringDamp: 50
   walkableMask:
     serializedVersion: 2
     m_Bits: 1

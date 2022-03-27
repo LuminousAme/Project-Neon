@@ -57,4 +57,15 @@ public static class ExtensionMethods
 
         s.IOControl(IOControlCode.KeepAliveValues, values, outvalues);
     }
+
+    public static void RemoveTinyValues(this float f, float limit) {
+        if (f <= limit) f = 0;
+    }
+
+    public static void RemoveTinyValues(this Vector3 v, float limit)
+    {
+        v.x.RemoveTinyValues(limit);
+        v.y.RemoveTinyValues(limit);
+        v.z.RemoveTinyValues(limit);
+    }
 }

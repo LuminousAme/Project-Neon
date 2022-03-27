@@ -11,6 +11,7 @@ public class RemotePlayer : MonoBehaviour
     float yaw, yawSpeed;
     [SerializeField] private PlayerMoveSettings movementSettings;
     Vector3 savedPos;
+    float timeSinceUpdate = 0f;
 
     public void SetData(Vector3 pos, Vector3 vel, Quaternion rot, Vector3 angularVel, float yaw, float yawSpeed)
     {
@@ -21,21 +22,24 @@ public class RemotePlayer : MonoBehaviour
         this.yaw = yaw;
         this.yawSpeed = yawSpeed;
 
-        transform.position = position;
-        // targetRB.MovePosition(position);
-        // targetRB.AddForce(-targetRB.velocity, ForceMode.VelocityChange);
-        // targetRB.AddForce(velocity, ForceMode.VelocityChange);
 
-        transform.rotation = rotation;
-       // targetRB.MoveRotation(rotation);
-       // targetRB.AddTorque(-targetRB.angularVelocity, ForceMode.VelocityChange);
-       // targetRB.AddTorque(angularVelocity, ForceMode.VelocityChange);
+        if(targetRB != null)
+        {
+            targetRB.MovePosition(position);
+            targetRB.MoveRotation(rotation);
+        }
+        else
+        {
+            transform.position = position;
+            transform.rotation = rotation;
+        }
 
         lookControl.localPosition = savedPos;
         lookControl.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
         lookControl.RotateAround(lookControl.parent.position, lookControl.right, yaw);
 
         Debug.Log("updated!");
+        timeSinceUpdate = 0f;
     }
 
     // Start is called before the first frame update
@@ -46,25 +50,39 @@ public class RemotePlayer : MonoBehaviour
             position = targetRB.position;
             velocity = targetRB.velocity;
             angularVelocity = targetRB.angularVelocity;
-            rotation = targetRB.rotation;
-            savedPos = lookControl.localPosition;
         }
+        else
+        {
+            position = transform.position;
+            velocity = Vector3.zero;
+            angularVelocity = Vector3.zero;
+        }
+
+        rotation = targetRB.rotation;
+        savedPos = lookControl.localPosition;
+        timeSinceUpdate = 0f;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //set the velocity to always be the one recieved from the client
-        //targetRB.AddForce(-targetRB.velocity, ForceMode.VelocityChange);
-        //targetRB.AddForce(velocity, ForceMode.VelocityChange);
+        if(targetRB != null)
+        {
+            //set the velocity to always be the one recieved from the client
+            targetRB.MovePosition(position + velocity * timeSinceUpdate);
 
-       // targetRB.AddTorque(-targetRB.angularVelocity, ForceMode.VelocityChange);
-       // targetRB.AddTorque(angularVelocity, ForceMode.VelocityChange);
+            //will have to figure out rotation latter
+            //targetRB.AddTorque(-targetRB.angularVelocity, ForceMode.VelocityChange);
+            //targetRB.AddTorque(angularVelocity, ForceMode.VelocityChange);
+        }
 
-       // yaw += yawSpeed * Time.deltaTime;
-       // yaw = Mathf.Clamp(yaw, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
-      //  lookControl.localPosition = savedPos;
-       // lookControl.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-       // lookControl.RotateAround(lookControl.parent.position, lookControl.right, yaw);
+
+        yaw += yawSpeed * Time.deltaTime;
+        yaw = Mathf.Clamp(yaw, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
+        lookControl.localPosition = savedPos;
+        lookControl.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        lookControl.RotateAround(lookControl.parent.position, lookControl.right, yaw);
+
+        timeSinceUpdate += Time.deltaTime;
     }
 }
