@@ -9,7 +9,7 @@ public class HealthBar : MonoBehaviour
     [SerializeField] Image healthImage;
     [SerializeField] PlayerData basicData;
     [SerializeField] float healthBarFadeSpeed = 5f;
-    int acutalHealth;
+    float acutalHealth;
     [SerializeField] Gradient barColor;
     private void Start()
     {
@@ -19,12 +19,12 @@ public class HealthBar : MonoBehaviour
         acutalHealth = basicData.GetMaxHealth();
     }
 
-    public void SetHealth(int hp)
+    public void SetHealth(float hp)
     {
         acutalHealth = hp;
     }
 
-    public void HardSetHealth(int hp)
+    public void HardSetHealth(float hp)
     {
         acutalHealth = hp;
         healthBar.value = hp;
