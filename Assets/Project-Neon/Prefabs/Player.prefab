@@ -790,6 +790,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   basicData: {fileID: 11400000, guid: dd494f07ece6416479036f57f3d16c12, type: 2}
   useSavedName: 1
+  healDelay: 6
   overrideIdForDebug: 0
 --- !u!114 &4962359256849159137
 MonoBehaviour:
