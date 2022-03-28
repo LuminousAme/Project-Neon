@@ -28,7 +28,7 @@ MonoBehaviour:
   airjumps: 1
   coyoteTime: 0.35
   AdditionalSpeedForDash: 150
-  DashLenght: 0.2
+  DashLenght: 0.4
   DashCooldown: 2
   numberOfDashes: 2
   grappleableMask:

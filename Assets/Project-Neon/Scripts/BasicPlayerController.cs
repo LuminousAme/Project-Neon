@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//Basic character movement script based on the character controller from Very Very Valet 
+//Basic character movement script based on the character controller from Very Very Valet
 //https://youtu.be/qdskE8PJy6Q
 [RequireComponent(typeof(Rigidbody))]
 public class BasicPlayerController : MonoBehaviour
@@ -25,7 +24,9 @@ public class BasicPlayerController : MonoBehaviour
     private Vector2 lookInput;
     private Vector3 eulerAngles;
 
+    //dashes
     private float timeRemainingInDash = 0.0f;
+
     private List<float> timeSinceLastDash = new List<float>();
     private uint numberOfDashesTaken = 0;
 
@@ -35,25 +36,27 @@ public class BasicPlayerController : MonoBehaviour
     private SpringJoint grapplingHookJoint;
     private Vector3 grapplingMomentum;
     [SerializeField] private LineRenderer grapplingLine;
-    [SerializeField] Transform grappleLatch, grappleLaunch, acutalGraple, grapleRest, grapleParent;
-    [SerializeField] bool useJoint = true;
-    Quaternion desiredRotForGrapple;
+    [SerializeField] private Transform grappleLatch, grappleLaunch, acutalGraple, grapleRest, grapleParent;
+    [SerializeField] private bool useJoint = true;
+    private Quaternion desiredRotForGrapple;
 
     [Header("Grappling Line Animation")]
     //based on this video https://youtu.be/8nENcDnxeVE
-    [SerializeField] int quality;
-    [SerializeField] float strength;
-    [SerializeField] float damper;
-    [SerializeField] float target;
-    [SerializeField] float velocity;
-    float acutalVelocity;
+    [SerializeField] private int quality;
+
+    [SerializeField] private float strength;
+    [SerializeField] private float damper;
+    [SerializeField] private float target;
+    [SerializeField] private float velocity;
+    private float acutalVelocity;
     private float value;
-    [SerializeField] float waveCount;
-    [SerializeField] float waveHeight;
-    [SerializeField] AnimationCurve affectCurve;
+    [SerializeField] private float waveCount;
+    [SerializeField] private float waveHeight;
+    [SerializeField] private AnimationCurve affectCurve;
 
     [Header("Combat Controls")]
     private float timeSinceAttackDown = 0f;
+
     private bool attackDown = false;
     [SerializeField] private float attackCooldownTime = 1f;
     [SerializeField] private float beginHeavyAttackTime = 0.5f;
@@ -95,12 +98,12 @@ public class BasicPlayerController : MonoBehaviour
         ChatManager.onStopType -= HandleTpyingEnd;
     }
 
-    void HandleTypingStart() => controls.Disable();
+    private void HandleTypingStart() => controls.Disable();
 
-    void HandleTpyingEnd() => controls.Enable();
+    private void HandleTpyingEnd() => controls.Enable();
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         rb = this.GetComponent<Rigidbody>();
         targetRotation = transform.rotation;
@@ -127,7 +130,7 @@ public class BasicPlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         //grab the input direction from the controls and update the current input direction
         Vector2 inputVec2 = controls.Player.Move.ReadValue<Vector2>();
@@ -139,9 +142,9 @@ public class BasicPlayerController : MonoBehaviour
 
         //reduce the time and cooldown remaining for dashing
         if (timeRemainingInDash > 0.0) timeRemainingInDash -= Time.deltaTime;
-        for(int i = 0; i < timeSinceLastDash.Count; i++)
+        for (int i = 0; i < timeSinceLastDash.Count; i++)
         {
-            if(timeSinceLastDash[i] > 0.0)
+            if (timeSinceLastDash[i] > 0.0)
             {
                 timeSinceLastDash[i] -= Time.deltaTime;
                 if (timeSinceLastDash[i] <= 0.0) numberOfDashesTaken--;
@@ -159,20 +162,18 @@ public class BasicPlayerController : MonoBehaviour
         acutalGraple.position = MathUlits.LerpClamped(acutalGraple.position, adjustedHookPosition, movementSettings.GetGrapplePullSpeed() * 2.0f);
         grapleParent.rotation = Quaternion.Slerp(grapleParent.rotation, desiredRotForGrapple, Time.deltaTime * 5f);
 
-
         //reduce the cooldown remaing for the grappling hook
         if (timeSinceLastGrappleEnd > 0.0f && !isGrappling) timeSinceLastGrappleEnd -= Time.deltaTime;
 
         if (attackDown)
         {
-            if(!heavyAttack.GetAttackActive() && timeSinceAttackDown >= beginHeavyAttackTime)
+            if (!heavyAttack.GetAttackActive() && timeSinceAttackDown >= beginHeavyAttackTime)
             {
                 heavyAttack.BeginAttack();
             }
             timeSinceAttackDown += Time.deltaTime;
         }
-        if (timeSinceAttackRelease <= attackCooldownTime) timeSinceAttackRelease += Time.deltaTime; 
-
+        if (timeSinceAttackRelease <= attackCooldownTime) timeSinceAttackRelease += Time.deltaTime;
     }
 
     //Late update is called after every gameobject has had their update called
@@ -190,7 +191,7 @@ public class BasicPlayerController : MonoBehaviour
         FixedRaiseCapsule();
 
         //apply the 2 dimensional (forward, and side to side) basic character motion
-        if(!isGrappling && !isRidingMommentum) FixedCharacterMove();
+        if (!isGrappling && !isRidingMommentum) FixedCharacterMove();
 
         //apply any mommentum from the grappling hook
         FixedGrapplingHookPull();
@@ -199,7 +200,7 @@ public class BasicPlayerController : MonoBehaviour
         FixedRotatePlayer();
     }
 
-    void FixedRotatePlayer()
+    private void FixedRotatePlayer()
     {
         //handle rotation from player input
         float vertRot = -lookInput.y * movementSettings.GetVerticalLookSpeed();
@@ -214,7 +215,7 @@ public class BasicPlayerController : MonoBehaviour
         Quaternion yaw = Quaternion.AngleAxis(horiRot * Time.deltaTime, transform.up);
         targetRotation = yaw * targetRotation;
 
-        //get the target rotation such that it tries to orient the player to stay upright 
+        //get the target rotation such that it tries to orient the player to stay upright
         targetRotation = Quaternion.FromToRotation(transform.up, Vector3.up) * targetRotation;
 
         //find the rotation needed to move the player's current rotation to the target rotation
@@ -230,7 +231,7 @@ public class BasicPlayerController : MonoBehaviour
         float rotR = rotD * Mathf.Deg2Rad;
 
         //calculate the torque needed to move it
-        if(lookInput.x != 0.0f)
+        if (lookInput.x != 0.0f)
         {
             Vector3 torque = (axis * (rotR * movementSettings.GetRotationSpringDamp()) - (rb.angularVelocity));
             rb.AddTorque(torque);
@@ -244,7 +245,7 @@ public class BasicPlayerController : MonoBehaviour
         if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateRotData(eulerAngles.y);
     }
 
-    void FixedRaiseCapsule()
+    private void FixedRaiseCapsule()
     {
         //do a raycast down
         RaycastHit rayHit;
@@ -273,7 +274,7 @@ public class BasicPlayerController : MonoBehaviour
             //apply that force to the player
             rb.AddForce(rayDir * springForce);
 
-            if(!isGrappling)
+            if (!isGrappling)
             {
                 //apply drag onto the grappling hook momentum
                 float currentGrapplingMag = grapplingMomentum.magnitude;
@@ -294,7 +295,7 @@ public class BasicPlayerController : MonoBehaviour
             }*/
         }
         //if the player is not on the ground, apply the force of gravity to them
-        else if (!isGrappling) 
+        else if (!isGrappling)
         {
             rb.AddForce(currentGravity, ForceMode.Acceleration);
             grounded = false;
@@ -302,7 +303,7 @@ public class BasicPlayerController : MonoBehaviour
         }
     }
 
-    void FixedCharacterMove()
+    private void FixedCharacterMove()
     {
         //figure out if the player's dash speed should be
         float dashSpeed = (timeRemainingInDash > 0.0) ? movementSettings.GetDashSpeed() : 0.0f;
@@ -318,7 +319,7 @@ public class BasicPlayerController : MonoBehaviour
         //claculate the acutal new target velocity, based on the acceleration
         targetVelocity = Vector3.MoveTowards(targetVelocity, desiredVelocity, movementSettings.GetBaseAcceleration() * Time.fixedDeltaTime);
 
-        //figure out how much force it would take to get to that velocity       
+        //figure out how much force it would take to get to that velocity
         Vector3 existingVelocity = new Vector3(rb.velocity.x, 0.0f, rb.velocity.z);
         Vector3 forceRequired = (targetVelocity - existingVelocity) / Time.fixedDeltaTime;
         //clamp the magnitude of the force to the maximum
@@ -329,7 +330,7 @@ public class BasicPlayerController : MonoBehaviour
         rb.AddForce(forceRequired * rb.mass);
     }
 
-    void FixedCalculateGravity()
+    private void FixedCalculateGravity()
     {
         //set gravity based on player velocity - will see how this works with the floating capsule, we'll have to see
         if (rb.velocity.y >= 0) currentGravity = Vector3.up * movementSettings.GetGravityGoingUp();
@@ -337,11 +338,11 @@ public class BasicPlayerController : MonoBehaviour
     }
 
     //grappling hook mechanics based on this video https://www.youtube.com/watch?v=Xgh4v1w5DxU
-    void TryStartGrappling()
+    private void TryStartGrappling()
     {
         //check if we even hit something we can grapple too
         RaycastHit rayHit;
-        if (Physics.Raycast(lookAtTarget.parent.position, lookAtTarget.forward, out rayHit, 
+        if (Physics.Raycast(lookAtTarget.parent.position, lookAtTarget.forward, out rayHit,
             movementSettings.GetMaxGrappleRange(), movementSettings.GetGrappleableMask()))
         {
             //if we did set the point we hit to the anchor point
@@ -353,7 +354,7 @@ public class BasicPlayerController : MonoBehaviour
 
             //code that handles setting up the joint and stuff, uncomment later
             {
-                if(useJoint)
+                if (useJoint)
                 {
                     //and set up a spring joint to connect the player to that point
                     grapplingHookJoint = this.gameObject.AddComponent<SpringJoint>();
@@ -376,7 +377,6 @@ public class BasicPlayerController : MonoBehaviour
                 //if a line renderer for the grappling line exists then set it to have 2 points
                 if (grapplingLine != null) grapplingLine.positionCount = quality + 1;
             }
-           
 
             //finally mark the player as actively grappling
             isGrappling = true;
@@ -384,7 +384,7 @@ public class BasicPlayerController : MonoBehaviour
         }
     }
 
-    void StopGrappling()
+    private void StopGrappling()
     {
         if (grapplingLine != null) grapplingLine.positionCount = 0;
         if (grapplingHookJoint != null) Destroy(grapplingHookJoint);
@@ -394,7 +394,7 @@ public class BasicPlayerController : MonoBehaviour
         //rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
     }
 
-    void GrapplingHookUpdate()
+    private void GrapplingHookUpdate()
     {
         //if (!grapplingHookJoint) return;
 
@@ -403,9 +403,10 @@ public class BasicPlayerController : MonoBehaviour
         //grapplingHookJoint.maxDistance = currentMaxDist - movementSettings.GetGrapplePullSpeed() * Time.deltaTime;
         desiredRotForGrapple = Quaternion.LookRotation(acutalGraple.position - grapleRest.position);
 
-        //adjust the area that you can swing in 
+        //adjust the area that you can swing in
         float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
-        if (grapplingHookJoint != null) {
+        if (grapplingHookJoint != null)
+        {
             grapplingHookJoint.maxDistance = distanceFromHookPoint * 0.8f;
             grapplingHookJoint.minDistance = distanceFromHookPoint * 0.25f;
         }
@@ -414,7 +415,7 @@ public class BasicPlayerController : MonoBehaviour
         if (distanceFromHookPoint <= movementSettings.GetGrappleCloseDistance()) StopGrappling();
     }
 
-    void FixedGrapplingHookPull()
+    private void FixedGrapplingHookPull()
     {
         if (isGrappling)
         {
@@ -424,12 +425,12 @@ public class BasicPlayerController : MonoBehaviour
         }
         else isRidingMommentum = false;
 
-        if(isRidingMommentum)
+        if (isRidingMommentum)
         {
             rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
             rb.AddForce(grapplingMomentum, ForceMode.VelocityChange);
 
-            if(useJoint)
+            if (useJoint)
             {
                 Vector3 inputMove = inputDirection.normalized * movementSettings.GetGrappleHoriInputForce();
                 rb.AddForce(inputMove, ForceMode.VelocityChange);
@@ -437,9 +438,9 @@ public class BasicPlayerController : MonoBehaviour
         }
     }
 
-    void DrawGrapplingHook()
+    private void DrawGrapplingHook()
     {
-        if(grapplingLine != null && grapplingLine.positionCount > 0)
+        if (grapplingLine != null && grapplingLine.positionCount > 0)
         {
             // based on this video https://youtu.be/8nENcDnxeVE
             Vector3 startPoint = grappleLaunch.position;
@@ -451,7 +452,7 @@ public class BasicPlayerController : MonoBehaviour
             acutalVelocity += (force * dir - acutalVelocity * damper) * Time.deltaTime;
             value += acutalVelocity * Time.deltaTime;
 
-            for(int i = 0; i < quality + 1; i++)
+            for (int i = 0; i < quality + 1; i++)
             {
                 float delta = (float)i / (float)quality;
                 Vector3 offset = up * waveHeight * Mathf.Sin(delta * waveCount * Mathf.PI * value * affectCurve.Evaluate(delta));
@@ -467,12 +468,12 @@ public class BasicPlayerController : MonoBehaviour
     private void Jump()
     {
         //if the number of jumps the user has taken is less than the maximum, do a jump
-        if( isGrappling || grounded || coyoteTimer <= movementSettings.GetCoyoteTime() || airJumpsTaken < movementSettings.GetAirJumps())
+        if (isGrappling || grounded || coyoteTimer <= movementSettings.GetCoyoteTime() || airJumpsTaken < movementSettings.GetAirJumps())
         {
             //add the force - The - rb.velocity.y term here negates any existing y velocity when jumping mid air, making that feel better
-            rb.AddForce(Vector3.up * (movementSettings.GetJumpInitialVerticalVelo() - rb.velocity.y), ForceMode.VelocityChange); 
+            rb.AddForce(Vector3.up * (movementSettings.GetJumpInitialVerticalVelo() - rb.velocity.y), ForceMode.VelocityChange);
             //and if not on the ground, increase the number of air jumps taken
-            if(!(grounded && coyoteTimer <= movementSettings.GetCoyoteTime()) || !isGrappling) airJumpsTaken++;
+            if (!(grounded && coyoteTimer <= movementSettings.GetCoyoteTime()) || !isGrappling) airJumpsTaken++;
         }
 
         if (isGrappling) StopGrappling();
@@ -480,7 +481,7 @@ public class BasicPlayerController : MonoBehaviour
 
     private void StartDash()
     {
-        if(numberOfDashesTaken < movementSettings.GetNumOfDashes() && timeRemainingInDash <= 0.0f) //timeSinceLastDash <= 0.0)
+        if (numberOfDashesTaken < movementSettings.GetNumOfDashes() && timeRemainingInDash <= 0.0f) //timeSinceLastDash <= 0.0)
         {
             timeSinceLastDash[(int)numberOfDashesTaken] = movementSettings.GetDashCooldown();
             numberOfDashesTaken++;
@@ -490,7 +491,7 @@ public class BasicPlayerController : MonoBehaviour
 
     private void HandleGrapplePressed()
     {
-        if(isGrappling)
+        if (isGrappling)
         {
             //end grappling
             StopGrappling();
@@ -515,9 +516,28 @@ public class BasicPlayerController : MonoBehaviour
         return false;
     }
 
+    public float GetTimeSinceLastDash()
+    {
+        for (int i = 0; i < timeSinceLastDash.Count; i++)
+        {
+            if (timeSinceLastDash[i] > 0.0)
+            {
+                return timeSinceLastDash[i];
+            }
+            else
+            {
+                return 1f;
+            }
+        }
+
+        return 1f;
+        //  return 1f;
+        //return timeSinceLastDash;
+    }
+
     public void PressedDownAttack()
     {
-        if(timeSinceAttackRelease > attackCooldownTime)
+        if (timeSinceAttackRelease > attackCooldownTime)
         {
             attackDown = true;
             timeSinceAttackDown = 0f;
@@ -526,7 +546,7 @@ public class BasicPlayerController : MonoBehaviour
 
     public void ReleasedAttack()
     {
-        if(attackDown)
+        if (attackDown)
         {
             attackDown = false;
             timeSinceAttackRelease = 0f;
@@ -537,7 +557,7 @@ public class BasicPlayerController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if(movementSettings != null)
+        if (movementSettings != null)
         {
             Gizmos.color = Color.red;
             Gizmos.DrawRay(transform.position, Vector3.down * movementSettings.GetRideHeight());

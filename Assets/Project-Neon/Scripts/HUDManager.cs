@@ -14,6 +14,8 @@ public class HUDManager : MonoBehaviour
     float scoreElapsedtime;
     [SerializeField] HealthBar healthBar;
     [SerializeField] GrappleUI GrappleUI;
+    [SerializeField] DashBar dashUI;
+    //[SerializeField] DashBar dash2;
     [SerializeField] TMP_Text timeText;
 
     private void OnEnable()
@@ -26,6 +28,7 @@ public class HUDManager : MonoBehaviour
         actualScore = player.GetBounty();
         scoreElapsedtime = 0f;
         GrappleUI.SetPlayer(FindObjectOfType<BasicPlayerController>());
+        dashUI.SetPlayer(FindObjectOfType<BasicPlayerController>());
     }
 
     private void OnDisable()

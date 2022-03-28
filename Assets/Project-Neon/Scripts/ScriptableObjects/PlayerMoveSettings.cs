@@ -52,7 +52,7 @@ public class PlayerMoveSettings : ScriptableObject
     [Header("Dash Controls")]
     [SerializeField] private float AdditionalSpeedForDash = 8f;
     public float GetDashSpeed() => AdditionalSpeedForDash;
-    [SerializeField] private float DashLenght = 0.1f;
+    [SerializeField] private float DashLenght = 1.2f;
     public float GetDashLenght() => DashLenght;
     [SerializeField] private float DashCooldown = 2f;
     public float GetDashCooldown() => DashCooldown;
