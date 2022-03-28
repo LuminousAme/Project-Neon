@@ -119,7 +119,8 @@ public class MatchManager : MonoBehaviour
             if(players[i].transform.position.y <= deathHeight)
             {
                 //kill the player so they respawn at their starting position
-                players[i].TakeDamage(100);
+                if(Client.instance == null || (Client.instance != null && Client.instance.GetThisClientID() == players[i].GetPlayerID()))
+                    players[i].TakeDamage(100);
             }
         }
 

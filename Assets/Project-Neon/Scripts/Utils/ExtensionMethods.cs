@@ -68,4 +68,9 @@ public static class ExtensionMethods
         v.y.RemoveTinyValues(limit);
         v.z.RemoveTinyValues(limit);
     }
+
+    public static void AngleDegreeRange(this float f)
+    {
+        f = ((f % 360f) + 360f) % 360f;
+    }
 }

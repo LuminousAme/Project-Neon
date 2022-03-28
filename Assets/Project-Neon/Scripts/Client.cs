@@ -237,11 +237,11 @@ public class Client : MonoBehaviour
                     {
                         Guid targetPlayer = Guid.Parse(splitData[0]);
 
-                        const int size = sizeof(float) * (3 + 3 + 4 + 3 + 1 + 1); //vec3, vec3, quat, vec3, float, float
+                        const int size = sizeof(float) * (3 + 3 + 1 + 1 + 1 + 1); //vec3, vec3, float, float, float, float
                         byte[] temp = new byte[size];
                         Buffer.BlockCopy(recieveBuffer, recv - size, temp, 0, size);
 
-                        float[] floatarr = new float[(3 + 3 + 4 + 3 + 1 + 1)];
+                        float[] floatarr = new float[3 + 3 + 1 + 1 + 1 + 1];
                         if(temp.Length == size)
                         {
                             Buffer.BlockCopy(temp, 0, floatarr, 0, temp.Length);
@@ -249,10 +249,10 @@ public class Client : MonoBehaviour
 
                             Vector3 newPos = new Vector3(floatarr[0], floatarr[1], floatarr[2]);
                             Vector3 newVel = new Vector3(floatarr[3], floatarr[4], floatarr[5]);
-                            Quaternion newRot = new Quaternion(floatarr[6], floatarr[7], floatarr[8], floatarr[9]);
-                            Vector3 newAngVel = new Vector3(floatarr[10], floatarr[11], floatarr[12]);
-                            float newYaw = floatarr[13];
-                            float newYawSpeed = floatarr[14];
+                            float newYaw = floatarr[6];
+                            float newYawSpeed = floatarr[7];
+                            float newPitch = floatarr[8];
+                            float newPitchSpeed = floatarr[9];
 
                             //this is jank but will find the remote player to set the values
                             if (MatchManager.instance != null)
@@ -261,7 +261,7 @@ public class Client : MonoBehaviour
                                 if (player != null)
                                 {
                                     RemotePlayer remotePlayer = player.GetComponent<RemotePlayer>();
-                                    if (remotePlayer != null) remotePlayer.SetData(newPos, newVel, newRot, newAngVel, newYaw, newYawSpeed);
+                                    if (remotePlayer != null) remotePlayer.SetData(newPos, newVel, newYaw, newYawSpeed, newPitch, newPitchSpeed);
                                 }
                             }
                         }   
@@ -292,6 +292,8 @@ public class Client : MonoBehaviour
     {
         TcpClient.Shutdown(SocketShutdown.Both);
         TcpClient.Close();
+        UdpClient.Shutdown(SocketShutdown.Both);
+        UdpClient.Close();
         isStarted = false;
         players.Clear();
     }
@@ -316,7 +318,7 @@ public class Client : MonoBehaviour
         Player thisPlayer = players.Find(p => p.id == thisClientId);
         thisPlayer.ready = ready;
 
-        string toSend = "3$" + thisClientId + "$";
+        string toSend = "3$" + thisClientId.ToString() + "$";
         toSend += (ready) ? "1" : "0";
         sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
@@ -346,12 +348,12 @@ public class Client : MonoBehaviour
         return ready;
     }
 
-    public void SendPosRotUpdate(Vector3 pos, Vector3 vel, Quaternion rot, Vector3 angularVel, float yaw, float yawSpeed)
+    public void SendPosRotUpdate(Vector3 pos, Vector3 vel, float yaw, float yawSpeed, float pitch, float pitchSpeed)
     {
         //block copy the data to send to the server, so it can then send it to all of the other clients
-        float[] floatarr = { pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, rot.x, rot.y, rot.z, rot.w, angularVel.x, angularVel.y, angularVel.z, yaw, yawSpeed};
+        float[] floatarr = { pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, yaw, yawSpeed, pitch, pitchSpeed};
         byte[] temp = new byte[sizeof(float) * floatarr.Length];
-        Buffer.BlockCopy(floatarr, 0, temp, 0, sizeof(float) * floatarr.Length); //should be 15 floats
+        Buffer.BlockCopy(floatarr, 0, temp, 0, sizeof(float) * floatarr.Length);  //should be 10 floats
 
         string toSend = thisClientId.ToString() + "$0$";
 
