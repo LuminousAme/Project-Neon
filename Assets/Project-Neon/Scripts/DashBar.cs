@@ -23,14 +23,33 @@ public class DashBar : MonoBehaviour
         dash1BarValue = dash1BarOBJ.GetComponent<Slider>();
         dash2BarValue = dash2BarOBJ.GetComponent<Slider>();
         //each bar represents one jump
-         dash1BarValue.maxValue = movementSettings.GetDashCooldown();
+        dash1BarValue.maxValue = movementSettings.GetDashCooldown();
         dash2BarValue.maxValue = movementSettings.GetDashCooldown();
+
+        dash1BarValue.value = movementSettings.GetDashCooldown();
+        dash2BarValue.value = movementSettings.GetDashCooldown();
     }
 
     // Update is called once per frame
     private void Update()
     {
-        dash1BarValue.value = player.GetTimeSinceLastDash();
-        dash2BarValue.value = player.GetTimeSinceLastDash();
+        if (player.GetNumOfDashesTaken() == 1)
+        {
+            //one dash used
+           // dash1BarValue.value = 0;
+            dash1BarValue.value = player.GetTimeSinceLastDash();
+
+        }
+        else if (player.GetNumOfDashesTaken() == 2)
+        {
+            dash2BarValue.value = 0;
+        }
+        else
+        {
+            dash1BarValue.value = movementSettings.GetDashCooldown();
+            dash2BarValue.value = movementSettings.GetDashCooldown();
+            //   player.GetTimeSinceLastDash();
+        }
+        Debug.Log(player.GetTimeSinceLastDash());
     }
 }

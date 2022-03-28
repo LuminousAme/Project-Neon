@@ -535,6 +535,11 @@ public class BasicPlayerController : MonoBehaviour
         //return timeSinceLastDash;
     }
 
+    public uint GetNumOfDashesTaken()
+    {
+        return numberOfDashesTaken;
+    }
+
     public void PressedDownAttack()
     {
         if (timeSinceAttackRelease > attackCooldownTime)
