@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 //Basic character movement script based on the character controller from Very Very Valet
 //https://youtu.be/qdskE8PJy6Q
@@ -63,6 +64,10 @@ public class BasicPlayerController : MonoBehaviour
     private float timeSinceAttackRelease = 0f;
     [SerializeField] private QuickAttack quickAttack;
     [SerializeField] private HeavyAttack heavyAttack;
+
+    public static Action OnGrapple;
+    public static Action OnDoubleJump;
+    public static Action OnDash;
 
     private void Awake()
     {
@@ -373,6 +378,7 @@ public class BasicPlayerController : MonoBehaviour
 
             //finally mark the player as actively grappling
             isGrappling = true;
+            OnGrapple?.Invoke();
             rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
         }
     }
@@ -466,7 +472,11 @@ public class BasicPlayerController : MonoBehaviour
             //add the force - The - rb.velocity.y term here negates any existing y velocity when jumping mid air, making that feel better
             rb.AddForce(Vector3.up * (movementSettings.GetJumpInitialVerticalVelo() - rb.velocity.y), ForceMode.VelocityChange);
             //and if not on the ground, increase the number of air jumps taken
-            if (!(grounded && coyoteTimer <= movementSettings.GetCoyoteTime()) || !isGrappling) airJumpsTaken++;
+            if (!(grounded && coyoteTimer <= movementSettings.GetCoyoteTime()) || !isGrappling)
+            {
+                airJumpsTaken++;
+                OnDoubleJump?.Invoke();
+            }
         }
 
         if (isGrappling) StopGrappling();
@@ -479,6 +489,7 @@ public class BasicPlayerController : MonoBehaviour
             activeDashCooldown += movementSettings.GetDashCooldown();
             //numberOfDashesTaken++;
             timeRemainingInDash = movementSettings.GetDashLenght();
+            OnDash?.Invoke();
         }
     }
 

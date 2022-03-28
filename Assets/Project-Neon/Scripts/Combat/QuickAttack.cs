@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class QuickAttack : MonoBehaviour, IHitboxListener
 {
@@ -13,6 +14,8 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
     private float timeElapsed = 0f, timeToComplete = 1f;
     private bool attackActive = false;
     [SerializeField] private Animator weaponHandAnimator;
+
+    public static Action OnQuickAttack;
 
     //subscribe to the hitbox callback
     private void OnEnable()
@@ -46,6 +49,7 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
         attackActive = true;
         weaponHandAnimator.SetTrigger("Quick Attack");
         if (Client.instance != null) Client.instance.SendDoQuickAttack();
+        OnQuickAttack?.Invoke();
 
         hitbox.shape = Hitbox.HitboxShape.BOX;
         hitbox.state = Hitbox.HitboxState.ACTIVE;

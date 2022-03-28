@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlayerState : MonoBehaviour
 {
     [SerializeField] private PlayerData basicData;
-    [SerializeField] private bool useSavedName;
+    private bool useSavedName;
     private float hp;
     private int damageDealt;
     private int killsObtained;
@@ -50,6 +50,13 @@ public class PlayerState : MonoBehaviour
         else playerId = Guid.NewGuid();
     }
 
+    public void SetUseName(bool useSavedName, string name)
+    {
+        this.useSavedName = useSavedName;
+        if (!this.useSavedName) playerName = name;
+        else ReadNameFromFile();
+    }
+
     private void Awake()
     {
         ReadNameFromFile();
@@ -81,7 +88,7 @@ public class PlayerState : MonoBehaviour
 
     public void ReadNameFromFile()
     {
-        playerName = PlayerPrefs.GetString("DisplayName", "Hunter");
+        if(useSavedName) playerName = PlayerPrefs.GetString("DisplayName", "Hunter");
     }
 
     //takes the passed in ammount of damage, and returns true if it killed
