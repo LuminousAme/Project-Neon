@@ -660,11 +660,45 @@ MonoBehaviour:
   movementSettings: {fileID: 11400000, guid: d8fe1107ccd6f5842a5121a63c5cc0db, type: 2}
   PosSnapDistance: 5
   PosAcceptableOffset: 0.1
-  VertRotSnapAmount: 45
-  VertRotAcceptableOffSet: 5
-  HoriRotSnapAmount: 45
-  HoriRotAcceptableOffSet: 5
   rotAdjustmentSpeed: 2
+  weaponHandAnimator: {fileID: 6323992125740191626}
+  grapplingLine: {fileID: 917075556452332792}
+  quality: 500
+  strength: 800
+  damper: 14
+  target: 0
+  grappleVelocity: 15
+  waveCount: 3
+  waveHeight: 1
+  affectCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 6.05434
+      outSlope: 6.05434
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.016160497
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -0.008603751
+      outSlope: -0.008603751
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.027412355
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  grappleLatch: {fileID: 704109619041351828}
+  grappleLaunch: {fileID: 2881972282196444290}
+  acutalGraple: {fileID: 3325166220494465785}
+  grapleRest: {fileID: 1195361826923871652}
+  grapleParent: {fileID: 5186984787034570103}
 --- !u!54 &582478154817313508
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -275,15 +275,14 @@ namespace ProjectNeonServer
                         try
                         {
                             int rec = player.socket.Receive(recieveBuffer);
-                            string data = Encoding.ASCII.GetString(recieveBuffer, 0, rec);
+                            byte[] forwardBuffer = new byte[rec];
+                            Buffer.BlockCopy(recieveBuffer, 0, forwardBuffer, 0, rec);
                             if (rec > 0)
                             {
                                 for (int j = 0; j < room.connectedPlayers.Count; j++)
                                 {
                                     if (j == i) continue;
-
-                                    sendBuffer = Encoding.ASCII.GetBytes(data);
-                                    room.connectedPlayers[j].socket.Send(sendBuffer);
+                                    room.connectedPlayers[j].socket.Send(forwardBuffer);
                                 }
                             }
                         }

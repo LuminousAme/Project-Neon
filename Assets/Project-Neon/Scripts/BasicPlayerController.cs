@@ -31,7 +31,7 @@ public class BasicPlayerController : MonoBehaviour
 
     private bool isGrappling = false, isRidingMommentum = false;
     private float timeSinceLastGrappleEnd = 0.0f;
-    private Vector3 hookPosition, adjustedHookPosition, startingPosition;
+    private Vector3 hookPosition, adjustedHookPosition;
     private SpringJoint grapplingHookJoint;
     private Vector3 grapplingMomentum;
     [SerializeField] private LineRenderer grapplingLine;
@@ -241,7 +241,7 @@ public class BasicPlayerController : MonoBehaviour
             targetRotation = transform.rotation;
         }
 
-        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateRotData(eulerAngles.y, vertRot, horiRot);
+        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateRotData(eulerAngles.y);
     }
 
     void FixedRaiseCapsule()
@@ -349,6 +349,7 @@ public class BasicPlayerController : MonoBehaviour
             adjustedHookPosition = hookPosition - grappleLaunch.localPosition;
             value = 0;
             acutalVelocity = velocity;
+            if (Client.instance != null) Client.instance.SendGrappleStatus(true, hookPosition);
 
             //code that handles setting up the joint and stuff, uncomment later
             {
@@ -389,7 +390,7 @@ public class BasicPlayerController : MonoBehaviour
         if (grapplingHookJoint != null) Destroy(grapplingHookJoint);
         isGrappling = false;
         timeSinceLastGrappleEnd = movementSettings.GetGrappleCooldown();
-        startingPosition = acutalGraple.position;
+        if (Client.instance != null) Client.instance.SendGrappleStatus(false, hookPosition);
         //rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
     }
 
@@ -400,8 +401,6 @@ public class BasicPlayerController : MonoBehaviour
         //reduce the current maximum distance so the grappling hook pulls the user towards the hook point
         //float currentMaxDist = grapplingHookJoint.maxDistance;
         //grapplingHookJoint.maxDistance = currentMaxDist - movementSettings.GetGrapplePullSpeed() * Time.deltaTime;
-
-        startingPosition = grapleRest.position;
         desiredRotForGrapple = Quaternion.LookRotation(acutalGraple.position - grapleRest.position);
 
         //adjust the area that you can swing in 
