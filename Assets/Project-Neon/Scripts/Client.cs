@@ -159,10 +159,10 @@ public class Client : MonoBehaviour
 
                 if (int.Parse(splitData[0]) == 0)
                 {
-                    List <Player> newPlayerList = new List<Player>();
+                    List<Player> newPlayerList = new List<Player>();
                     for (int i = 1; i < splitData.Length; i = i + 2)
                     {
-                        Guid newID = Guid.Parse(splitData[i+1]);
+                        Guid newID = Guid.Parse(splitData[i + 1]);
                         newPlayerList.Add(new Player(splitData[i], newID));
 
                         bool exists = false;
@@ -175,20 +175,21 @@ public class Client : MonoBehaviour
                         {
                             Player newplayer = new Player();
                             newplayer.name = splitData[i];
-                            newplayer.id = Guid.Parse(splitData[i+1]);
+                            newplayer.id = Guid.Parse(splitData[i + 1]);
                             players.Add(newplayer);
                         }
                     }
 
                     //if a player has disconnected, remove them from the list of players
 
-                    if(newPlayerList.Count != players.Count)
+                    if (newPlayerList.Count != players.Count)
                     {
                         List<Player> noLongerHere = new List<Player>();
 
                         foreach (Player player in players)
                         {
-                            if(!newPlayerList.Exists(p => p.id == player.id)) {
+                            if (!newPlayerList.Exists(p => p.id == player.id))
+                            {
                                 noLongerHere.Add(player);
                             }
                         }
@@ -214,6 +215,77 @@ public class Client : MonoBehaviour
                     LobbyMenu lobby = FindObjectOfType<LobbyMenu>();
                     if (lobby != null) lobby.StartGame();
                 }
+                else if (int.Parse(splitData[0]) == 5)
+                {
+                    bool status = (int.Parse(splitData[2]) == 1);
+                    Guid relevantPlayer = Guid.Parse(splitData[1]);
+
+                    const int size = sizeof(float) * (3); //vec3, vec3, float, float
+                    byte[] temp = new byte[size];
+                    Buffer.BlockCopy(recieveBuffer, recv - size, temp, 0, size);
+
+                    float[] floatarr = new float[3];
+                    if (temp.Length == size)
+                    {
+                        Buffer.BlockCopy(temp, 0, floatarr, 0, temp.Length);
+
+                        Vector3 newTarget = new Vector3(floatarr[0], floatarr[1], floatarr[2]);
+                        //this is jank but will find the remote player to set the values
+                        if (MatchManager.instance != null)
+                        {
+                            PlayerState player = MatchManager.instance.GetPlayers().Find(p => p.GetPlayerID() == relevantPlayer);
+                            if (player != null)
+                            {
+                                RemotePlayer remotePlayer = player.GetComponent<RemotePlayer>();
+                                if (remotePlayer != null) remotePlayer.SetGrappleStatus(status, newTarget);
+                            }
+                        }
+                    }
+
+                }
+                else if (int.Parse(splitData[0]) == 6)
+                {
+                    Guid relevantPlayer = Guid.Parse(splitData[1]);
+                    //this is jank but will find the remote player to set the values
+                    if (MatchManager.instance != null)
+                    {
+                        PlayerState player = MatchManager.instance.GetPlayers().Find(p => p.GetPlayerID() == relevantPlayer);
+                        if (player != null)
+                        {
+                            RemotePlayer remotePlayer = player.GetComponent<RemotePlayer>();
+                            if (remotePlayer != null) remotePlayer.BeginQuickAttack();
+                        }
+                    }
+                }
+                else if (int.Parse(splitData[0]) == 7)
+                {
+                    Guid relevantPlayer = Guid.Parse(splitData[1]);
+                    //this is jank but will find the remote player to set the values
+                    if (MatchManager.instance != null)
+                    {
+                        PlayerState player = MatchManager.instance.GetPlayers().Find(p => p.GetPlayerID() == relevantPlayer);
+                        if (player != null)
+                        {
+                            RemotePlayer remotePlayer = player.GetComponent<RemotePlayer>();
+                            if (remotePlayer != null) remotePlayer.BeginRaiseHeavyAttack();
+                        }
+                    }
+                }
+                else if (int.Parse(splitData[0]) == 8)
+                {
+                    Guid relevantPlayer = Guid.Parse(splitData[1]);
+                    //this is jank but will find the remote player to set the values
+                    if (MatchManager.instance != null)
+                    {
+                        PlayerState player = MatchManager.instance.GetPlayers().Find(p => p.GetPlayerID() == relevantPlayer);
+                        if (player != null)
+                        {
+                            RemotePlayer remotePlayer = player.GetComponent<RemotePlayer>();
+                            if (remotePlayer != null) remotePlayer.BeginHeavyDown();
+                        }
+                    }
+                }
+
             }
             catch (SocketException e)
             {
@@ -237,11 +309,11 @@ public class Client : MonoBehaviour
                     {
                         Guid targetPlayer = Guid.Parse(splitData[0]);
 
-                        const int size = sizeof(float) * (3 + 3 + 1 + 1 + 1 + 1); //vec3, vec3, float, float, float, float
+                        const int size = sizeof(float) * (3 + 3 + 1 + 1); //vec3, vec3, float, float
                         byte[] temp = new byte[size];
                         Buffer.BlockCopy(recieveBuffer, recv - size, temp, 0, size);
 
-                        float[] floatarr = new float[3 + 3 + 1 + 1 + 1 + 1];
+                        float[] floatarr = new float[3 + 3 + 1 + 1];
                         if(temp.Length == size)
                         {
                             Buffer.BlockCopy(temp, 0, floatarr, 0, temp.Length);
@@ -250,10 +322,7 @@ public class Client : MonoBehaviour
                             Vector3 newPos = new Vector3(floatarr[0], floatarr[1], floatarr[2]);
                             Vector3 newVel = new Vector3(floatarr[3], floatarr[4], floatarr[5]);
                             float newYaw = floatarr[6];
-                            float newYawSpeed = floatarr[7];
-                            float newPitch = floatarr[8];
-                            float newPitchSpeed = floatarr[9];
-
+                            float newPitch = floatarr[7];
                             //this is jank but will find the remote player to set the values
                             if (MatchManager.instance != null)
                             {
@@ -261,7 +330,7 @@ public class Client : MonoBehaviour
                                 if (player != null)
                                 {
                                     RemotePlayer remotePlayer = player.GetComponent<RemotePlayer>();
-                                    if (remotePlayer != null) remotePlayer.SetData(newPos, newVel, newYaw, newYawSpeed, newPitch, newPitchSpeed);
+                                    if (remotePlayer != null) remotePlayer.SetData(newPos, newVel, newYaw, newPitch);
                                 }
                             }
                         }   
@@ -307,30 +376,39 @@ public class Client : MonoBehaviour
 
     public void SendMessageToOtherPlayers(string msg)
     {
-        string toSend = "2$" + PlayerPrefs.GetString("DisplayName") + "$" + msg;
-        sendBuffer = Encoding.ASCII.GetBytes(toSend);
+        if(isStarted)
+        {
+            string toSend = "2$" + PlayerPrefs.GetString("DisplayName") + "$" + msg;
+            sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
-        TcpClient.Send(sendBuffer);
+            TcpClient.Send(sendBuffer);
+        }
     }
 
     public void SetReady(bool ready)
     {
-        Player thisPlayer = players.Find(p => p.id == thisClientId);
-        thisPlayer.ready = ready;
+        if(isStarted)
+        {
+            Player thisPlayer = players.Find(p => p.id == thisClientId);
+            thisPlayer.ready = ready;
 
-        string toSend = "3$" + thisClientId.ToString() + "$";
-        toSend += (ready) ? "1" : "0";
-        sendBuffer = Encoding.ASCII.GetBytes(toSend);
+            string toSend = "3$" + thisClientId.ToString() + "$";
+            toSend += (ready) ? "1" : "0";
+            sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
-        TcpClient.Send(sendBuffer);
+            TcpClient.Send(sendBuffer);
+        }
     }
 
     public void LaunchGameForAll()
     {
-        string toSend = "4";
-        sendBuffer = Encoding.ASCII.GetBytes(toSend);
+        if(isStarted)
+        {
+            string toSend = "4";
+            sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
-        TcpClient.Send(sendBuffer);
+            TcpClient.Send(sendBuffer);
+        }
     }
 
     public bool GetAllPlayersReady()
@@ -348,22 +426,82 @@ public class Client : MonoBehaviour
         return ready;
     }
 
-    public void SendPosRotUpdate(Vector3 pos, Vector3 vel, float yaw, float yawSpeed, float pitch, float pitchSpeed)
+    public void SendPosRotUpdate(Vector3 pos, Vector3 vel, float yaw, float pitch)
     {
-        //block copy the data to send to the server, so it can then send it to all of the other clients
-        float[] floatarr = { pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, yaw, yawSpeed, pitch, pitchSpeed};
-        byte[] temp = new byte[sizeof(float) * floatarr.Length];
-        Buffer.BlockCopy(floatarr, 0, temp, 0, sizeof(float) * floatarr.Length);  //should be 10 floats
+        if(isStarted)
+        {
+            //block copy the data to send to the server, so it can then send it to all of the other clients
+            float[] floatarr = { pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, yaw, pitch };
+            byte[] temp = new byte[sizeof(float) * floatarr.Length];
+            Buffer.BlockCopy(floatarr, 0, temp, 0, sizeof(float) * floatarr.Length);  //should be 8 floats
 
-        string toSend = thisClientId.ToString() + "$0$";
+            string toSend = thisClientId.ToString() + "$0$";
 
-        //this is jank but hopefully works
-        byte[] temp2 = Encoding.ASCII.GetBytes(toSend);
-        byte[] temp3 = new byte[temp.Length + temp2.Length];
-        Array.Copy(temp2, temp3, temp2.Length);
-        Array.Copy(temp, 0, temp3, temp2.Length, temp.Length);
-        sendBuffer = temp3;
-        UdpClient.SendTo(sendBuffer, remoteUdpEP);
+            //this is jank but works
+            byte[] temp2 = Encoding.ASCII.GetBytes(toSend);
+            byte[] temp3 = new byte[temp.Length + temp2.Length];
+            Array.Copy(temp2, temp3, temp2.Length);
+            Array.Copy(temp, 0, temp3, temp2.Length, temp.Length);
+            sendBuffer = temp3;
+            UdpClient.SendTo(sendBuffer, remoteUdpEP);
+        }
+    }
+
+    public void SendDoQuickAttack()
+    {
+        if(isStarted)
+        {
+            string toSend = "6$" + thisClientId.ToString();
+            sendBuffer = Encoding.ASCII.GetBytes(toSend);
+
+            TcpClient.Send(sendBuffer);
+        }
+    }
+
+    public void SendStartHeavyAttack()
+    {
+        if(isStarted)
+        {
+            string toSend = "7$" + thisClientId.ToString();
+            sendBuffer = Encoding.ASCII.GetBytes(toSend);
+
+            TcpClient.Send(sendBuffer);
+        }
+    }
+
+    public void SendEndHeavyAttack()
+    {
+        if(isStarted)
+        {
+            string toSend = "8$" + thisClientId.ToString();
+            sendBuffer = Encoding.ASCII.GetBytes(toSend);
+
+            TcpClient.Send(sendBuffer);
+        }
+    }
+
+    public void SendGrappleStatus(bool isActive, Vector3 target)
+    {
+        if(isStarted)
+        {
+            // block copy the data to send to the server, so it can then send it to all of the other clients
+            float[] floatarr = { target.x, target.y, target.z };
+            byte[] temp = new byte[sizeof(float) * floatarr.Length];
+            Buffer.BlockCopy(floatarr, 0, temp, 0, sizeof(float) * floatarr.Length);  //should be 3 floats
+
+            string toSend = "5$" + thisClientId.ToString() + "$";
+            toSend += (isActive) ? "1$" : "0$";
+
+            //[0] = 5, [1] = id, [2] = status, after that it is the vector
+
+            //this is jank but works
+            byte[] temp2 = Encoding.ASCII.GetBytes(toSend);
+            byte[] temp3 = new byte[temp.Length + temp2.Length];
+            Array.Copy(temp2, temp3, temp2.Length);
+            Array.Copy(temp, 0, temp3, temp2.Length, temp.Length);
+            sendBuffer = temp3;
+            TcpClient.Send(sendBuffer);
+        }
     }
 
     private void OnDestroy()

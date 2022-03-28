@@ -45,6 +45,7 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
     {
         attackActive = true;
         weaponHandAnimator.SetTrigger("Quick Attack");
+        if (Client.instance != null) Client.instance.SendDoQuickAttack();
 
         hitbox.shape = Hitbox.HitboxShape.BOX;
         hitbox.state = Hitbox.HitboxState.ACTIVE;

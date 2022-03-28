@@ -8,8 +8,8 @@ public class LocalPlayer : MonoBehaviour
     [SerializeField] float updateServerTime = 0.05f;
     float elapsedTime = 0f;
     Vector3 position, velocity;
-    float yaw, yawSpeed;
-    float pitch, pitchSpeed;
+    float yaw;
+    float pitch;
 
     //non-persistant singleton
     public static LocalPlayer instance = null;
@@ -22,14 +22,10 @@ public class LocalPlayer : MonoBehaviour
     }
 
     //I think I might have yaw and pitch inverted but I'll figure that out later
-    public void UpdateRotData(float yaw, float yawSpeed, float pitchSpeed) 
+    public void UpdateRotData(float yaw) 
     {
         this.yaw = yaw;
-        this.yawSpeed = yawSpeed;
         pitch = transform.rotation.eulerAngles.y;
-        this.pitchSpeed = pitchSpeed;
-
-        Debug.Log("Pitch: " + pitch + ", acutal transform data:" + transform.rotation.eulerAngles.y);
     }
 
     private void Start()
@@ -48,7 +44,7 @@ public class LocalPlayer : MonoBehaviour
             elapsedTime += Time.deltaTime;
             if(elapsedTime >= updateServerTime)
             {
-                Client.instance.SendPosRotUpdate(position, velocity, yaw, yawSpeed, pitch, pitchSpeed);
+                Client.instance.SendPosRotUpdate(position, velocity, yaw, pitch);
                 elapsedTime = 0.0f;
             }
         }

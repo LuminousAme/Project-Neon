@@ -7,8 +7,8 @@ public class RemotePlayer : MonoBehaviour
     [SerializeField] Rigidbody targetRB;
     [SerializeField] Transform lookControl;
     Vector3 position, velocity;
-    float HoriRot, HoriRotSpeed;
-    float VertRot, VertRotSpeed;
+    float HoriRot;
+    float VertRot;
     [SerializeField] private PlayerMoveSettings movementSettings;
     Vector3 savedPos;
     float timeSinceUpdate = 0f;
@@ -22,97 +22,46 @@ public class RemotePlayer : MonoBehaviour
     bool correctionPos = false;
     float PosCorrectTime = 1;
 
-    //VertRot
-    [SerializeField] float VertRotSnapAmount = 90f, VertRotAcceptableOffSet = 5f;
-    float targetVertRot, VertRotOnRec;
-    bool correctionVertRot = false;
-    float VertRotCorrectTime = 1f;
-
-    //HoriRot
-    [SerializeField] float HoriRotSnapAmount = 90f, HoriRotAcceptableOffSet = 5f;
-    float targetHoriRot, HoriRotOnRec;
-    bool correctionHoriRot = false;
-    float HoriRotCorrectTime = 1f;
-
     [Space]
     [SerializeField] float rotAdjustmentSpeed = 5f;
-    float horiVel = 0f;
-    float vertVel = 0f;
-
     Quaternion horiRotTarget, vertRotTarget;
 
-    public void SetData(Vector3 pos, Vector3 vel, float VertRot, float VertRotSpeed, float HoriRot, float HoriRotSpeed)
+    [Header("Animation")]
+    //weapon
+    [SerializeField] Animator weaponHandAnimator;
+    [SerializeField] private LineRenderer grapplingLine;
+    [SerializeField] int quality;
+    [SerializeField] float strength;
+    [SerializeField] float damper;
+    [SerializeField] float target;
+    [SerializeField] float grappleVelocity;
+    float acutalVelocity;
+    private float value;
+    [SerializeField] float waveCount;
+    [SerializeField] float waveHeight;
+    [SerializeField] AnimationCurve affectCurve;
+    bool isGrappling = false;
+    [SerializeField] Transform grappleLatch, grappleLaunch, acutalGraple, grapleRest, grapleParent;
+    private Vector3 hookPosition, adjustedHookPosition;
+    Quaternion desiredRotForGrapple;
+
+    public void SetData(Vector3 pos, Vector3 vel, float VertRot, float HoriRot)
     {
         //we can just take the velocities and speeds
         velocity = vel;
-        this.VertRotSpeed = VertRotSpeed;
-        this.HoriRotSpeed = HoriRotSpeed;
 
         //convert to 0-360 angle range
         VertRot.AngleDegreeRange();
         HoriRot.AngleDegreeRange();
 
+        this.VertRot = Mathf.Clamp(VertRot, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
+        vertRotTarget = Quaternion.Euler(this.VertRot, 0.0f, 0.0f);
+
+        this.HoriRot = HoriRot;
+        horiRotTarget = Quaternion.Euler(0.0f, this.HoriRot, 0.0f);
+
         //for the acutal values we want to do some smoothly damping though
         NewPositionRecieved(pos);
-        NewVertRotHandle(VertRot);
-        NewHoriRotHandle(HoriRot);
-
-        {
-            /*
-            //position = pos; //will be set seperately
-            targetPosition = pos;
-            velocity = vel;
-            this.VertRot = VertRot;
-            this.VertRotSpeed = VertRotSpeed;
-            this.HoriRot = HoriRot;
-            this.HoriRotSpeed = HoriRotSpeed;
-            correcting = false;
-
-
-            if (targetRB != null)
-            {
-                realPositionOnRec = targetRB.position;
-
-                float dist = Vector3.Distance(realPositionOnRec, targetPosition);
-
-                //if the distance is too large or too small to care just snap too it, otherwise we will try to smoothly correc
-                if (dist >= snapDistance || dist <= acceptableOffset)
-                {
-                    realPositionOnRec = targetPosition;
-                    position = targetPosition;
-                    targetRB.MovePosition(position);
-                }
-                else
-                {
-                    correcting = true;
-                    position = realPositionOnRec;
-                    timeToCorrect = dist / movementSettings.GetBaseMaxSpeed(); //t = d/v
-                }
-            }
-            else
-            {
-                realPositionOnRec = transform.position;
-
-                //if the distance is too large just snap too it, otherwise we will try to smoothly correc
-                if (Vector3.Distance(realPositionOnRec, targetPosition) >= snapDistance)
-                {
-                    realPositionOnRec = targetPosition;
-                    position = targetPosition;
-                    transform.position = position;
-                }
-                else
-                {
-                    position = realPositionOnRec;
-                }
-            }
-
-            transform.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-            transform.Rotate(transform.up, this.HoriRot);
-
-            lookControl.localPosition = savedPos;
-            lookControl.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-            lookControl.RotateAround(lookControl.parent.position, lookControl.right, this.VertRot);*/
-        }
 
         Debug.Log("updated!");
         timeSinceUpdate = 0f;
@@ -132,11 +81,8 @@ public class RemotePlayer : MonoBehaviour
 
         VertRot = lookControl.localRotation.eulerAngles.x;
         HoriRot = targetRB.rotation.eulerAngles.y;
-        VertRotSpeed = 0f;
-        HoriRotSpeed = 0f;
 
-        horiVel = 0f;
-        vertVel = 0f;
+        isGrappling = false;
     }
 
     // Update is called once per frame
@@ -150,30 +96,29 @@ public class RemotePlayer : MonoBehaviour
             position.y = yPos;
         }
 
-        if (correctionVertRot)
-        {
-            Debug.Log("Correcting VertRot!");
-            float t = Mathf.Clamp(timeSinceUpdate / VertRotCorrectTime, 0f, 1f);
-            if (t >= 1f) correctionVertRot = false;
-            VertRot = Mathf.Lerp(VertRotOnRec, targetVertRot, t);
-        }
-
-        if (correctionHoriRot)
-        {
-            Debug.Log("Correcting HoriRot!");
-            float t = Mathf.Clamp(timeSinceUpdate / HoriRotCorrectTime, 0f, 1f);
-            if (t >= 1f) correctionHoriRot = false;
-            HoriRot = Mathf.Lerp(HoriRotOnRec, targetHoriRot, t);
-        }
-
         targetRB.position = position + velocity * timeSinceUpdate;
-
 
         //do not dead recokon this it makes it actively worse
         lookControl.localRotation = Quaternion.Slerp(lookControl.localRotation, vertRotTarget, Time.deltaTime * rotAdjustmentSpeed * movementSettings.GetVerticalLookSpeed());
         transform.localRotation = Quaternion.Slerp(transform.localRotation, horiRotTarget, Time.deltaTime * rotAdjustmentSpeed  *  movementSettings.GetHorizontalLookSpeed());
 
         timeSinceUpdate += Time.deltaTime;
+
+        //do the update for the grappling hook if it is active
+        if (isGrappling) GrapplingHookUpdate();
+        else
+        {
+            adjustedHookPosition = grapleRest.position;
+            desiredRotForGrapple = Quaternion.LookRotation(Camera.main.transform.forward);
+        }
+
+        acutalGraple.position = MathUlits.LerpClamped(acutalGraple.position, adjustedHookPosition, movementSettings.GetGrapplePullSpeed() * 2.0f);
+        grapleParent.rotation = Quaternion.Slerp(grapleParent.rotation, desiredRotForGrapple, Time.deltaTime * 5f);
+    }
+
+    private void LateUpdate()
+    {
+        DrawGrapplingHook();
     }
 
     void NewPositionRecieved(Vector3 newPos)
@@ -212,72 +157,64 @@ public class RemotePlayer : MonoBehaviour
         targetRB.position = position;
     }
 
-    void NewVertRotHandle(float newVertRot)
+    public void BeginQuickAttack()
     {
-        /*
-        correctionVertRot = false;
-        VertRotOnRec = VertRot;
-        VertRotOnRec.AngleDegreeRange();
-        targetVertRot = newVertRot;
-        targetVertRot.AngleDegreeRange();
-
-        float delta = Mathf.Abs(Mathf.Atan2(Mathf.Sin(targetVertRot - VertRotOnRec), Mathf.Cos(targetVertRot - VertRotOnRec)));
-
-        if(delta >= VertRotSnapAmount)
-        {
-            VertRot = targetVertRot;
-        }
-        else if (delta <= VertRotAcceptableOffSet)
-        {
-            VertRot = VertRotOnRec;
-        }
-
-        else
-        {
-            correctionVertRot = true;
-            VertRotCorrectTime = delta / movementSettings.GetVerticalLookSpeed();
-            VertRot = VertRotOnRec;
-        }*/
-
-        VertRot = Mathf.Clamp(newVertRot, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
-        vertRotTarget = Quaternion.Euler(VertRot, 0.0f, 0.0f);
-        //lookControl.localPosition = savedPos;
-        //lookControl.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-        //lookControl.RotateAround(lookControl.parent.position, lookControl.right, VertRot);
+        weaponHandAnimator.SetTrigger("Quick Attack");
     }
 
-    void NewHoriRotHandle(float newHoriRot)
+    public void BeginRaiseHeavyAttack()
     {
-        /*
-        correctionHoriRot = false;
-        HoriRotOnRec = HoriRot;
-        HoriRotOnRec.AngleDegreeRange();
-        targetHoriRot = newHoriRot;
-        targetHoriRot.AngleDegreeRange();
+        weaponHandAnimator.SetTrigger("BeginHeavy");
+    }
 
-        float delta = Mathf.Abs(Mathf.Atan2(Mathf.Sin(targetHoriRot - HoriRotOnRec), Mathf.Cos(targetHoriRot - HoriRotOnRec)));
+    public void BeginHeavyDown()
+    {
+        weaponHandAnimator.SetTrigger("EndHeavy");
+    }
 
-        
-        if (delta >= HoriRotSnapAmount)
+    //will have to implement this in a bit
+    public void SetGrappleStatus(bool status, Vector3 target)
+    {
+        isGrappling = status;
+
+        if(grapplingLine != null)
         {
-            HoriRot = targetHoriRot;
-
+            if(isGrappling) grapplingLine.positionCount = quality + 1;
+            else grapplingLine.positionCount = 0;
         }
-        else if (delta <= HoriRotAcceptableOffSet)
-        {
-            HoriRot = HoriRotOnRec;
-        }
-        else
-        {
-            correctionHoriRot = true;
-            HoriRotCorrectTime = delta / movementSettings.GetHorizontalLookSpeed();
-            HoriRot = HoriRotOnRec;
-        }*/
 
-        //correctionHoriRot = false;
-        HoriRot = newHoriRot;
-        horiRotTarget = Quaternion.Euler(0.0f, HoriRot, 0.0f);
-        //transform.RotateAround(transform.position, transform.up, HoriRot);
-       // Debug.Log("HoriRot: " + HoriRot + ", acutal HoriRot send:" + newHoriRot);
+        hookPosition = target;
+        adjustedHookPosition = hookPosition - grappleLaunch.localPosition;
+        value = 0;
+        acutalVelocity = grappleVelocity;
+    }
+
+    void GrapplingHookUpdate()
+    {
+        desiredRotForGrapple = Quaternion.LookRotation(acutalGraple.position - grapleRest.position);
+    }
+
+    void DrawGrapplingHook()
+    {
+        if (grapplingLine != null && grapplingLine.positionCount > 0)
+        {
+            // based on this video https://youtu.be/8nENcDnxeVE
+            Vector3 startPoint = grappleLaunch.position;
+            Vector3 endPoint = grappleLatch.position;
+            Vector3 up = Quaternion.LookRotation(endPoint - startPoint).normalized * Vector3.up;
+
+            float dir = target - value >= 0 ? 1f : -1f;
+            float force = Mathf.Abs(target - value) * strength;
+            acutalVelocity += (force * dir - acutalVelocity * damper) * Time.deltaTime;
+            value += acutalVelocity * Time.deltaTime;
+
+            for (int i = 0; i < quality + 1; i++)
+            {
+                float delta = (float)i / (float)quality;
+                Vector3 offset = up * waveHeight * Mathf.Sin(delta * waveCount * Mathf.PI * value * affectCurve.Evaluate(delta));
+
+                grapplingLine.SetPosition(i, Vector3.Lerp(startPoint, endPoint, delta) + offset);
+            }
+        }
     }
 }
