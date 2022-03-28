@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerState : MonoBehaviour
@@ -15,6 +17,7 @@ public class PlayerState : MonoBehaviour
     private float healTimer;
     private Guid playerId;
     [SerializeField] private bool overrideIdForDebug = false;
+    public static float hpRegenRate = 1f;
 
     public delegate void HandleRespawn(PlayerState player);
 
@@ -23,6 +26,9 @@ public class PlayerState : MonoBehaviour
     public delegate void HandleNewKill(PlayerState player);
 
     public static event HandleNewKill onNewKill;
+
+    public delegate void HandleLocalHPChange(PlayerState player);
+    public static event HandleLocalHPChange onHPChange;
 
     public float GetHP() => hp;
 
@@ -70,6 +76,7 @@ public class PlayerState : MonoBehaviour
         killsObtained = 0;
         timesDied = 0;
         ReadNameFromFile();
+        Debug.Log("Restarted");
     }
 
     public void ReadNameFromFile()
@@ -89,8 +96,16 @@ public class PlayerState : MonoBehaviour
             Respawn();
             onRespawn?.Invoke(this);
             timesDied++;
+
+            if (Client.instance != null)
+            {
+                StartCoroutine(UpdateHPOnServer());
+            }
+
             return true;
         }
+
+        StartCoroutine(UpdateHPOnServer());
 
         return false;
     }
@@ -114,7 +129,8 @@ public class PlayerState : MonoBehaviour
         //if player hasn't been damaged then heal
         if (!damaged)
         {
-            hp = Mathf.Clamp(hp + 0.1f, 0, basicData.GetMaxHealth());
+            //uncomment this when we figure out how to make it work with netcode
+            //hp = Mathf.Clamp(hp + hpRegenRate * Time.deltaTime, 0, basicData.GetMaxHealth());
         }
     }
 
@@ -127,10 +143,41 @@ public class PlayerState : MonoBehaviour
             killsObtained++;
             onNewKill?.Invoke(this);
         }
+
+        //update the other clients with our score
+        StartCoroutine(UpdateBountyOnServer());
+    }
+
+    IEnumerator UpdateBountyOnServer()
+    {
+        yield return new WaitForSeconds(0.1f);
+        if (Client.instance != null)
+        {
+            Client.instance.UpdateScore(playerId, killsObtained, damageDealt);
+        }
+    }
+
+    IEnumerator UpdateHPOnServer()
+    {
+        yield return new WaitForSeconds(0.05f);
+        {
+            Client.instance.UpdateHP(playerId, hp);
+        }
     }
 
     public int GetBounty()
     {
         return killsObtained * 100 + damageDealt;
+    }
+
+    public void RemoteUpdateBounty(int newKillCount, int damageDealt)
+    {
+        killsObtained = newKillCount;
+        this.damageDealt = damageDealt;
+    }
+
+    public void RemoteUpdateHP(float newHP)
+    {
+        hp = newHP;
     }
 }

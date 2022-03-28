@@ -14,9 +14,12 @@ public class MatchManager : MonoBehaviour
     public static MatchManager instance = null; //non-persistant singleton
     [SerializeField] Transform[] initialSpawns = new Transform[4];
     [SerializeField] float matchTimeSeconds = 300f;
+    [SerializeField] float PlayerHPRegenRate = 1f;
     float timeRemainingInMatch; //used to determine timestamps and when a game has ended
     bool multiplayer = true;
     Guid thisPlayerID;
+    bool active;
+
     public Guid GetThisPlayerID() => thisPlayerID;
 
     public static string winnerName;
@@ -30,7 +33,6 @@ public class MatchManager : MonoBehaviour
 
     private void OnDisable()
     {
-
         PlayerState.onRespawn -= RespawnPlayer;
     }
 
@@ -85,6 +87,9 @@ public class MatchManager : MonoBehaviour
         if (!SceneManager.GetSceneByBuildIndex(5).isLoaded) SceneManager.LoadScene(5, LoadSceneMode.Additive);
 
         timeRemainingInMatch = matchTimeSeconds;
+
+        PlayerState.hpRegenRate = PlayerHPRegenRate;
+        active = true;
     }
 
     private void OnDestroy()
@@ -98,41 +103,55 @@ public class MatchManager : MonoBehaviour
 
     private void EndMatch()
     {
-        int winnerIndex = -1, highestScore = -1;
-        for (int i = 0; i < players.Count; i++)
+        active = false;
+
+        for(int i = 0; i < players.Count; i++)
         {
-            if (players[i].GetBounty() > highestScore)
-            {
-                highestScore = players[i].GetBounty();
-                winnerIndex = i;
-            }
+            //force a score update on the server
+            if(players[i].GetPlayerID() == thisPlayerID) players[i].DealDamage(0, false);
         }
 
-        winnerName = players[winnerIndex].GetDisplayName();
-        winnerScore = players[winnerIndex].GetBounty();
+        BasicPlayerController controller = FindObjectOfType<BasicPlayerController>();
+        if (controller != null) controller.EndMatch();
+
+        StartCoroutine(BeginEndMatchScene());
+    }
+
+    IEnumerator BeginEndMatchScene()
+    {
+        //wait for a second to allow the server to update all of the scores 
+        yield return new WaitForSeconds(1f);
+
+        //change the scene
+        if (SceneManager.GetSceneByBuildIndex(5).isLoaded) SceneManager.UnloadSceneAsync(5);
+        SceneManager.LoadScene(7, LoadSceneMode.Additive);
+        if (Client.instance != null) Client.instance.Disconnect();
     }
 
     private void Update()
     {
-        for(int i = 0; i < players.Count; i++)
+        if(active)
         {
-            if(players[i].transform.position.y <= deathHeight)
+            for (int i = 0; i < players.Count; i++)
             {
-                //kill the player so they respawn at their starting position
-                if(Client.instance == null || (Client.instance != null && Client.instance.GetThisClientID() == players[i].GetPlayerID()))
-                    players[i].TakeDamage(100);
+                if (players[i].transform.position.y <= deathHeight)
+                {
+                    //kill the player so they respawn at their starting position
+                    if (Client.instance == null || (Client.instance != null && Client.instance.GetThisClientID() == players[i].GetPlayerID()))
+                        players[i].TakeDamage(100);
+                }
             }
+
+            if (multiplayer) timeRemainingInMatch -= Time.deltaTime;
+            if (timeRemainingInMatch <= 0.0f) EndMatch();
+
+            /*
+            if(Input.GetKeyDown(KeyCode.F2))
+            {
+                if (!SceneManager.GetSceneByBuildIndex(4).isLoaded) SceneManager.LoadScene(4, LoadSceneMode.Additive);
+                else if (SceneManager.GetSceneByBuildIndex(4).isLoaded) SceneManager.UnloadSceneAsync(4);
+            }*/
         }
-
-        if (multiplayer) timeRemainingInMatch -= Time.deltaTime;
-        if (timeRemainingInMatch <= 0.0f) EndMatch();
-
-        /*
-        if(Input.GetKeyDown(KeyCode.F2))
-        {
-            if (!SceneManager.GetSceneByBuildIndex(4).isLoaded) SceneManager.LoadScene(4, LoadSceneMode.Additive);
-            else if (SceneManager.GetSceneByBuildIndex(4).isLoaded) SceneManager.UnloadSceneAsync(4);
-        }*/
     }
 
     private void RespawnPlayer(PlayerState player)
@@ -150,4 +169,19 @@ public class MatchManager : MonoBehaviour
     }
 
     public float GetTimeRemaining() => timeRemainingInMatch;
+
+    public List<PlayerState> GetPlayersSortedByScore()
+    {
+        List<PlayerState> newPlayerStateList = new List<PlayerState>();
+
+        for(int i = 0; i < players.Count; i++)
+        {
+            newPlayerStateList.Add(players[i]);
+        }
+
+        //using two lists just in case, I don't know if OrderBy changes the underlying code or not
+        List<PlayerState> sortedPlayers = newPlayerStateList.OrderByDescending(p => p.GetBounty()).ToList(); 
+
+        return sortedPlayers;
+    }
 }

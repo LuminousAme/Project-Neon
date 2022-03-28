@@ -12,12 +12,13 @@ namespace ProjectNeonServer
     {
         static Dictionary<string, Room> allRooms = new Dictionary<string, Room>();
         static Random rand = new Random();
-        static byte[] recieveBuffer = new byte[1024];
+        static byte[] recieveBuffer = new byte[1024*8];
         static int rec = 0;
         static byte[] sendBuffer = new byte[1024];
         static Socket TcpServer;
         static Socket UDPServer;
         static EndPoint remoteClient;
+        static bool sentAlreadyThisLoop = false;
 
         static void CreateNewRoom(Player creator)
         {
@@ -168,7 +169,7 @@ namespace ProjectNeonServer
 
             while (true)
             {
-                Thread.Sleep(50);
+                if(!sentAlreadyThisLoop) Thread.Sleep(50);
 
                 //accept new clients
                 try
@@ -209,6 +210,7 @@ namespace ProjectNeonServer
                     if (e.SocketErrorCode != SocketError.WouldBlock) Console.WriteLine(e.ToString());
                 }
 
+                sentAlreadyThisLoop = false;
                 //tcp update sent to all clients every 1000 seconds
                 if(stopwatch.ElapsedMilliseconds >= 1000)
                 {
@@ -251,6 +253,8 @@ namespace ProjectNeonServer
                             {
                                 room.connectedPlayers[i].socket.Send(sendBuffer);
                             }
+
+                            sentAlreadyThisLoop = true;
                         }
 
                         //delete any empty rooms
@@ -274,6 +278,7 @@ namespace ProjectNeonServer
                         //tcp
                         try
                         {
+                            if (sentAlreadyThisLoop) Thread.Sleep(50); //wait a short time before sending again so the sends don't overlap
                             int rec = player.socket.Receive(recieveBuffer);
                             byte[] forwardBuffer = new byte[rec];
                             Buffer.BlockCopy(recieveBuffer, 0, forwardBuffer, 0, rec);

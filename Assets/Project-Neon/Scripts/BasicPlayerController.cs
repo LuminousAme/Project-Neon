@@ -27,7 +27,7 @@ public class BasicPlayerController : MonoBehaviour
     //dashes
     private float timeRemainingInDash = 0.0f;
 
-    private List<float> timeSinceLastDash = new List<float>();
+    private float activeDashCooldown = 0f;
     private uint numberOfDashesTaken = 0;
 
     private bool isGrappling = false, isRidingMommentum = false;
@@ -126,7 +126,7 @@ public class BasicPlayerController : MonoBehaviour
         timeSinceAttackRelease = 0f;
         attackDown = false;
 
-        for (int i = 0; i < movementSettings.GetNumOfDashes(); i++) timeSinceLastDash.Add(0.0f);
+        activeDashCooldown = 0f;
     }
 
     // Update is called once per frame
@@ -142,14 +142,7 @@ public class BasicPlayerController : MonoBehaviour
 
         //reduce the time and cooldown remaining for dashing
         if (timeRemainingInDash > 0.0) timeRemainingInDash -= Time.deltaTime;
-        for (int i = 0; i < timeSinceLastDash.Count; i++)
-        {
-            if (timeSinceLastDash[i] > 0.0)
-            {
-                timeSinceLastDash[i] -= Time.deltaTime;
-                if (timeSinceLastDash[i] <= 0.0) numberOfDashesTaken--;
-            }
-        }
+        activeDashCooldown = Mathf.Max(activeDashCooldown - Time.deltaTime, 0f);
 
         //do the update for the grappling hook if it is active
         if (isGrappling) GrapplingHookUpdate();
@@ -481,10 +474,10 @@ public class BasicPlayerController : MonoBehaviour
 
     private void StartDash()
     {
-        if (numberOfDashesTaken < movementSettings.GetNumOfDashes() && timeRemainingInDash <= 0.0f) //timeSinceLastDash <= 0.0)
+        if (activeDashCooldown < movementSettings.GetDashCooldown() && timeRemainingInDash <= 0.0f) //timeSinceLastDash <= 0.0)
         {
-            timeSinceLastDash[(int)numberOfDashesTaken] = movementSettings.GetDashCooldown();
-            numberOfDashesTaken++;
+            activeDashCooldown += movementSettings.GetDashCooldown();
+            //numberOfDashesTaken++;
             timeRemainingInDash = movementSettings.GetDashLenght();
         }
     }
@@ -516,24 +509,7 @@ public class BasicPlayerController : MonoBehaviour
         return false;
     }
 
-    public float GetTimeSinceLastDash()
-    {
-        for (int i = 0; i < timeSinceLastDash.Count; i++)
-        {
-            if (timeSinceLastDash[i] > 0.0)
-            {
-                return timeSinceLastDash[i];
-            }
-            else
-            {
-                return 1f;
-            }
-        }
-
-        return 1f;
-        //  return 1f;
-        //return timeSinceLastDash;
-    }
+    public float GetDashTotalCooldown() => activeDashCooldown;
 
     public uint GetNumOfDashesTaken()
     {
@@ -568,6 +544,11 @@ public class BasicPlayerController : MonoBehaviour
             Gizmos.DrawRay(transform.position, Vector3.down * movementSettings.GetRideHeight());
             Gizmos.color = Color.white;
         }
+    }
+
+    public void EndMatch()
+    {
+        controls.Player.Disable();
     }
 
     public Vector3 GetCamEulerAngles() => eulerAngles;

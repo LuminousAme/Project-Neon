@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
-public class CreditsMenuManager : MonoBehaviour
+public class MatchEndManager : MonoBehaviour
 {
     struct FlickerInfo
     {
@@ -30,8 +31,79 @@ public class CreditsMenuManager : MonoBehaviour
     float timeElapsed;
     int lastIndex;
 
+    [SerializeField] TMP_Text FirstPlaceText, FirstPlaceBounty, SecondPlaceText, SecondPlaceBounty, ThirdPlaceText, ThirdPlaceBounty, FourthPlaceText, FourthPlaceBounty;
+    [SerializeField] TMP_Text unlitFirstPlaceText, unlitFirstPlaceBounty, unlitSecondPlaceText, unlitSecondPlaceBounty, unlitThirdPlaceText, unlitThirdPlaceBounty, unlitFourthPlaceText, unlitFourthPlaceBounty;
+
+    List<PlayerState> players;
+
+    // Start is called before the first frame update
     void Start()
     {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        players = MatchManager.instance.GetPlayersSortedByScore();
+
+        if(players.Count > 0)
+        {
+            FirstPlaceText.text = "1st: " + players[0].GetDisplayName();
+            FirstPlaceBounty.text = "$" + players[0].GetBounty().ToString();
+            unlitFirstPlaceText.text = "1st: " + players[0].GetDisplayName();
+            unlitFirstPlaceBounty.text = "$" + players[0].GetBounty().ToString();
+        }
+        else
+        {
+            FirstPlaceText.text = "";
+            FirstPlaceBounty.text = "";
+            unlitFirstPlaceText.text = "";
+            unlitFirstPlaceBounty.text = "";
+        }
+
+        if (players.Count > 1)
+        {
+            SecondPlaceText.text = "2nd: " + players[1].GetDisplayName();
+            SecondPlaceBounty.text = "$" + players[1].GetBounty().ToString();
+            unlitSecondPlaceText.text = "2nd: " + players[1].GetDisplayName();
+            unlitSecondPlaceBounty.text = "$" + players[1].GetBounty().ToString();
+        }
+        else
+        {
+            SecondPlaceText.text = "";
+            SecondPlaceBounty.text = "";
+            unlitSecondPlaceText.text = "";
+            unlitSecondPlaceBounty.text = "";
+        }
+
+        if (players.Count > 2)
+        {
+            ThirdPlaceText.text = "3rd: " + players[2].GetDisplayName();
+            ThirdPlaceBounty.text = "$" + players[2].GetBounty().ToString();
+            unlitThirdPlaceText.text = "3rd: " + players[2].GetDisplayName();
+            unlitThirdPlaceBounty.text = "$" + players[2].GetBounty().ToString();
+        }
+        else
+        {
+            ThirdPlaceText.text = "";
+            ThirdPlaceBounty.text = "";
+            unlitThirdPlaceText.text = "";
+            unlitThirdPlaceBounty.text = "";
+        }
+
+        if (players.Count > 3)
+        {
+            FourthPlaceText.text = "4th: " + players[3].GetDisplayName();
+            FourthPlaceBounty.text = "$" + players[3].GetBounty().ToString();
+            unlitFourthPlaceText.text = "4th: " + players[3].GetDisplayName();
+            unlitFourthPlaceBounty.text = "$" + players[3].GetBounty().ToString();
+        }
+        else
+        {
+            FourthPlaceText.text = "";
+            FourthPlaceBounty.text = "";
+            unlitFourthPlaceText.text = "";
+            unlitFourthPlaceBounty.text = "";
+        }
+
         startFinished = false;
         timeToStartFinish = 0.0f;
         timeElapsed = 0.0f;
@@ -74,13 +146,13 @@ public class CreditsMenuManager : MonoBehaviour
                 StartFlickering(newIndex);
             }
         }
-        else creditsFirstStageUpdate();
+        else endMatchScreenFirstStageUpdate();
 
         //handle existing flickers
         HandleExistingFlickers();
     }
 
-    void creditsFirstStageUpdate()
+    void endMatchScreenFirstStageUpdate()
     {
         timeSinceStart += Time.deltaTime;
 
@@ -104,6 +176,7 @@ public class CreditsMenuManager : MonoBehaviour
 
     void StartFlickering(int index)
     {
+
         FlickerInfo flicker = objectsFlickeringInfo[index];
         flicker.flickering = true;
         flicker.started = true;
@@ -146,7 +219,7 @@ public class CreditsMenuManager : MonoBehaviour
         }
     }
 
-    public void BackButtonPressed()
+    public void MenuButtonPressed()
     {
         sceneTransition.beginTransition(0);
     }

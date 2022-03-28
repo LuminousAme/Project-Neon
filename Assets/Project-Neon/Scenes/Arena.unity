@@ -4061,6 +4061,7 @@ MonoBehaviour:
   - {fileID: 1350307641}
   - {fileID: 1294414678}
   matchTimeSeconds: 300
+  PlayerHPRegenRate: 1
 --- !u!4 &1885369815
 Transform:
   m_ObjectHideFlags: 0
