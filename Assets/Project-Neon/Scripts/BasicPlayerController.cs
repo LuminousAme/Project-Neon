@@ -546,5 +546,10 @@ public class BasicPlayerController : MonoBehaviour
         }
     }
 
+    public void EndMatch()
+    {
+        controls.Player.Disable();
+    }
+
     public Vector3 GetCamEulerAngles() => eulerAngles;
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -26,6 +27,8 @@ public class Client : MonoBehaviour
 
     private byte[] sendBuffer = new byte[1024];
     private byte[] recieveBuffer = new byte[1024];
+    private List<byte[]> sendQueue = new List<byte[]>();
+    bool sendQueueActive = false;
 
     private bool connection;
 
@@ -127,6 +130,7 @@ public class Client : MonoBehaviour
         else
         {
             instance = this;
+            sendQueueActive = false;
             DontDestroyOnLoad(this.gameObject);
         }
     }
@@ -150,6 +154,9 @@ public class Client : MonoBehaviour
                     return;
                 }
             }
+
+            if (sendQueue.Count > 0 && !sendQueueActive) StartCoroutine(ProcessSendQueue());
+
             //tcp
             try
             {
@@ -157,7 +164,7 @@ public class Client : MonoBehaviour
                 string data = Encoding.ASCII.GetString(recieveBuffer, 0, recv);
                 string[] splitData = data.Split('$');
 
-                if (int.Parse(splitData[0]) == 0)
+                if (splitData[0] == "0")
                 {
                     List<Player> newPlayerList = new List<Player>();
                     for (int i = 1; i < splitData.Length; i = i + 2)
@@ -197,7 +204,7 @@ public class Client : MonoBehaviour
                         foreach (var player in noLongerHere) players.Remove(player);
                     }
                 }
-                else if (int.Parse(splitData[0]) == 2)
+                else if (splitData[0] == "2")
                 {
                     string username = splitData[1];
                     string msg = splitData[2];
@@ -205,17 +212,17 @@ public class Client : MonoBehaviour
                     ChatManager chat = FindObjectOfType<ChatManager>();
                     if (chat != null) chat.AddMessageToChat(username, msg);
                 }
-                else if (int.Parse(splitData[0]) == 3)
+                else if (splitData[0] == "3")
                 {
                     Player player = players.Find(p => p.id == Guid.Parse(splitData[1]));
                     player.ready = (int.Parse(splitData[2]) == 0) ? false : true;
                 }
-                else if (int.Parse(splitData[0]) == 4)
+                else if (splitData[0] == "4")
                 {
                     LobbyMenu lobby = FindObjectOfType<LobbyMenu>();
                     if (lobby != null) lobby.StartGame();
                 }
-                else if (int.Parse(splitData[0]) == 5)
+                else if (splitData[0] == "5")
                 {
                     bool status = (int.Parse(splitData[2]) == 1);
                     Guid relevantPlayer = Guid.Parse(splitData[1]);
@@ -243,7 +250,7 @@ public class Client : MonoBehaviour
                     }
 
                 }
-                else if (int.Parse(splitData[0]) == 6)
+                else if (splitData[0] == "6")
                 {
                     Guid relevantPlayer = Guid.Parse(splitData[1]);
                     //this is jank but will find the remote player to set the values
@@ -257,7 +264,7 @@ public class Client : MonoBehaviour
                         }
                     }
                 }
-                else if (int.Parse(splitData[0]) == 7)
+                else if (splitData[0] == "7")
                 {
                     Guid relevantPlayer = Guid.Parse(splitData[1]);
                     //this is jank but will find the remote player to set the values
@@ -271,7 +278,7 @@ public class Client : MonoBehaviour
                         }
                     }
                 }
-                else if (int.Parse(splitData[0]) == 8)
+                else if (splitData[0] == "8")
                 {
                     Guid relevantPlayer = Guid.Parse(splitData[1]);
                     //this is jank but will find the remote player to set the values
@@ -285,7 +292,54 @@ public class Client : MonoBehaviour
                         }
                     }
                 }
+                else if (splitData[0] == "9")
+                {
+                    Guid relevantPlayer = Guid.Parse(splitData[1]);
 
+                    const int size = sizeof(int) * 2; //2 ints
+                    byte[] temp = new byte[size];
+                    Buffer.BlockCopy(recieveBuffer, recv - size, temp, 0, size);
+
+                    int[] intarr = new int[2];
+                    if (temp.Length == size)
+                    {
+                        Buffer.BlockCopy(temp, 0, intarr, 0, temp.Length);
+
+                        //this is jank but will find the remote player to set the values
+                        if (MatchManager.instance != null)
+                        {
+                            PlayerState player = MatchManager.instance.GetPlayers().Find(p => p.GetPlayerID() == relevantPlayer);
+                            if (player != null)
+                            {
+                                player.RemoteUpdateBounty(intarr[0], intarr[1]);
+                            }
+                        }
+                    }
+                }
+                else if (splitData[0] == "10")
+                {
+                    Guid relevantPlayer = Guid.Parse(splitData[1]);
+
+                    const int size = sizeof(float); //1 float
+                    byte[] temp = new byte[size];
+                    Buffer.BlockCopy(recieveBuffer, recv - size, temp, 0, size);
+
+                    float[] floatarr = new float[1];
+                    if (temp.Length == size)
+                    {
+                        Buffer.BlockCopy(temp, 0, floatarr, 0, temp.Length);
+
+                        //this is jank but will find the remote player to set the values
+                        if (MatchManager.instance != null)
+                        {
+                            PlayerState player = MatchManager.instance.GetPlayers().Find(p => p.GetPlayerID() == relevantPlayer);
+                            if (player != null)
+                            {
+                                player.RemoteUpdateHP(floatarr[0]);
+                            }
+                        }
+                    }
+                }
             }
             catch (SocketException e)
             {
@@ -333,26 +387,13 @@ public class Client : MonoBehaviour
                                     if (remotePlayer != null) remotePlayer.SetData(newPos, newVel, newYaw, newPitch);
                                 }
                             }
-                        }   
+                        }
                     }
                 }
             }
             catch (SocketException e)
             {
                 if (e.SocketErrorCode != SocketError.WouldBlock) Debug.Log(e.ToString());
-            }
-
-            if(Input.GetKeyDown(KeyCode.F1))
-            {
-                try
-                {
-                    sendBuffer = Encoding.ASCII.GetBytes(thisClientId.ToString());
-                    UdpClient.SendTo(sendBuffer, remoteUdpEP);
-                }
-                catch (SocketException e)
-                {
-                    if (e.SocketErrorCode != SocketError.WouldBlock) Debug.Log(e.ToString());
-                }
             }
         }
     }
@@ -379,9 +420,11 @@ public class Client : MonoBehaviour
         if(isStarted)
         {
             string toSend = "2$" + PlayerPrefs.GetString("DisplayName") + "$" + msg;
-            sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
-            TcpClient.Send(sendBuffer);
+            byte[] newBuffer = Encoding.ASCII.GetBytes(toSend);
+            sendQueue.Add(newBuffer);
+
+            //TcpClient.Send(sendBuffer);
         }
     }
 
@@ -405,9 +448,11 @@ public class Client : MonoBehaviour
         if(isStarted)
         {
             string toSend = "4";
-            sendBuffer = Encoding.ASCII.GetBytes(toSend);
 
-            TcpClient.Send(sendBuffer);
+            byte[] newBuffer = Encoding.ASCII.GetBytes(toSend);
+            sendQueue.Add(newBuffer);
+
+            //TcpClient.Send(sendBuffer);
         }
     }
 
@@ -452,9 +497,11 @@ public class Client : MonoBehaviour
         if(isStarted)
         {
             string toSend = "6$" + thisClientId.ToString();
-            sendBuffer = Encoding.ASCII.GetBytes(toSend);
+            
+            byte[] newBuffer = Encoding.ASCII.GetBytes(toSend);
+            sendQueue.Add(newBuffer);
 
-            TcpClient.Send(sendBuffer);
+            //TcpClient.Send(sendBuffer);
         }
     }
 
@@ -463,9 +510,11 @@ public class Client : MonoBehaviour
         if(isStarted)
         {
             string toSend = "7$" + thisClientId.ToString();
-            sendBuffer = Encoding.ASCII.GetBytes(toSend);
-
-            TcpClient.Send(sendBuffer);
+            
+            byte[] newBuffer = Encoding.ASCII.GetBytes(toSend);
+            sendQueue.Add(newBuffer);
+            
+            //TcpClient.Send(sendBuffer);
         }
     }
 
@@ -474,9 +523,11 @@ public class Client : MonoBehaviour
         if(isStarted)
         {
             string toSend = "8$" + thisClientId.ToString();
-            sendBuffer = Encoding.ASCII.GetBytes(toSend);
+            
+            byte[] newBuffer = Encoding.ASCII.GetBytes(toSend);
+            sendQueue.Add(newBuffer);
 
-            TcpClient.Send(sendBuffer);
+            //TcpClient.Send(sendBuffer);
         }
     }
 
@@ -499,14 +550,84 @@ public class Client : MonoBehaviour
             byte[] temp3 = new byte[temp.Length + temp2.Length];
             Array.Copy(temp2, temp3, temp2.Length);
             Array.Copy(temp, 0, temp3, temp2.Length, temp.Length);
-            sendBuffer = temp3;
-            TcpClient.Send(sendBuffer);
+
+            sendQueue.Add(temp3);
+
+            //TcpClient.Send(sendBuffer);
         }
+    }
+
+    public void UpdateScore(Guid player, int kills, int damageDealt)
+    {
+        if (isStarted)
+        {
+            int[] intarr = { kills, damageDealt };
+            byte[] temp = new byte[sizeof(int) * intarr.Length];
+            Buffer.BlockCopy(intarr, 0, temp, 0, sizeof(int) * intarr.Length);  //should be 2 ints
+
+            string toSend = "9$" + player.ToString() + "$";
+
+            //this is jank but works
+            byte[] temp2 = Encoding.ASCII.GetBytes(toSend);
+            byte[] temp3 = new byte[temp.Length + temp2.Length];
+            Array.Copy(temp2, temp3, temp2.Length);
+            Array.Copy(temp, 0, temp3, temp2.Length, temp.Length);
+
+            sendQueue.Add(temp3);
+
+            //TcpClient.Send(sendBuffer);
+        }
+    }
+
+    public void UpdateHP(Guid player, float newHp)
+    {
+        if (isStarted)
+        {
+            //sending two hp to help resolve if multiple players got a hit on the same player at the same time lol
+            float[] floatarr = { newHp };
+            byte[] temp = new byte[sizeof(float) * floatarr.Length];
+            Buffer.BlockCopy(floatarr, 0, temp, 0, sizeof(float) * floatarr.Length); //should be 2 floats
+
+            string toSend = "10$" + player.ToString() + "$";
+
+            //this is jank but works
+            byte[] temp2 = Encoding.ASCII.GetBytes(toSend);
+            byte[] temp3 = new byte[temp.Length + temp2.Length];
+            Array.Copy(temp2, temp3, temp2.Length);
+            Array.Copy(temp, 0, temp3, temp2.Length, temp.Length);
+            
+            sendQueue.Add(temp3);
+            //TcpClient.Send(sendBuffer);
+        }
+    }
+
+    private byte[] AppendByteBuffer(byte[] from, byte[] to)
+    {
+        byte[] temp = new byte[from.Length + to.Length];
+        Array.Copy(to, temp, to.Length);
+        Array.Copy(from, 0, temp, to.Length, from.Length);
+
+        return temp;
+    }
+
+    IEnumerator ProcessSendQueue()
+    {
+        sendQueueActive = true;
+
+        while (sendQueue.Count > 0)
+        {
+            TcpClient.Send(sendQueue[0]);
+            sendQueue.RemoveAt(0);
+
+            if (sendQueue.Count > 0) yield return new WaitForSeconds(0.05f);
+        }
+
+        sendQueueActive = false;
     }
 
     private void OnDestroy()
     {
-        if(isStarted)
+        if (isStarted)
         {
             Disconnect();
         }

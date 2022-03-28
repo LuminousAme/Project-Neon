@@ -26,4 +26,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project-Neon/Scenes/Arena.unity
     guid: bd4522f1ce895d34cb5258d331d61977
+  - enabled: 1
+    path: Assets/Project-Neon/Scenes/MatchEnd.unity
+    guid: 6db9d574e0b1ebc4780bc3d2070fd34a
   m_configObjects: {}
