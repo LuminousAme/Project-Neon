@@ -202,18 +202,16 @@ public class BasicPlayerController : MonoBehaviour
     void FixedRotatePlayer()
     {
         //handle rotation from player input
-        float yawSpeed = -lookInput.y * movementSettings.GetVerticalLookSpeed();
-        eulerAngles.y += yawSpeed * Time.deltaTime;
+        float vertRot = -lookInput.y * movementSettings.GetVerticalLookSpeed();
+        eulerAngles.y += vertRot * Time.deltaTime;
         eulerAngles.y = Mathf.Clamp(eulerAngles.y, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
         lookAtTarget.localPosition = new Vector3(0.0f, 0.0f, 1.0f);
         lookAtTarget.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
         lookAtTarget.RotateAround(lookAtTarget.parent.position, lookAtTarget.right, eulerAngles.y);
 
-        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateCamData(eulerAngles.y, yawSpeed);
-
         //update the rotation for the rigidbody
-        float horiRot = lookInput.x * movementSettings.GetHorizontalLookSpeed() * Time.deltaTime;
-        Quaternion yaw = Quaternion.AngleAxis(horiRot, transform.up);
+        float horiRot = lookInput.x * movementSettings.GetHorizontalLookSpeed();
+        Quaternion yaw = Quaternion.AngleAxis(horiRot * Time.deltaTime, transform.up);
         targetRotation = yaw * targetRotation;
 
         //get the target rotation such that it tries to orient the player to stay upright 
@@ -242,6 +240,8 @@ public class BasicPlayerController : MonoBehaviour
             rb.AddTorque(-rb.angularVelocity, ForceMode.VelocityChange);
             targetRotation = transform.rotation;
         }
+
+        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateRotData(eulerAngles.y, vertRot, horiRot);
     }
 
     void FixedRaiseCapsule()

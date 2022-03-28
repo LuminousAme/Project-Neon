@@ -658,6 +658,13 @@ MonoBehaviour:
   targetRB: {fileID: 582478154817313508}
   lookControl: {fileID: 6621076173115090216}
   movementSettings: {fileID: 11400000, guid: d8fe1107ccd6f5842a5121a63c5cc0db, type: 2}
+  PosSnapDistance: 5
+  PosAcceptableOffset: 0.1
+  VertRotSnapAmount: 45
+  VertRotAcceptableOffSet: 5
+  HoriRotSnapAmount: 45
+  HoriRotAcceptableOffSet: 5
+  rotAdjustmentSpeed: 2
 --- !u!54 &582478154817313508
 Rigidbody:
   m_ObjectHideFlags: 0
