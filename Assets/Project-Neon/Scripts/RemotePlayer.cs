@@ -109,7 +109,7 @@ public class RemotePlayer : MonoBehaviour
         else
         {
             adjustedHookPosition = grapleRest.position;
-            desiredRotForGrapple = Quaternion.LookRotation(Camera.main.transform.forward);
+            desiredRotForGrapple = Quaternion.LookRotation(transform.forward);
         }
 
         acutalGraple.position = MathUlits.LerpClamped(acutalGraple.position, adjustedHookPosition, movementSettings.GetGrapplePullSpeed() * 2.0f);

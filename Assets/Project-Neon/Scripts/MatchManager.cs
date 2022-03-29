@@ -27,13 +27,22 @@ public class MatchManager : MonoBehaviour
 
     private void OnEnable()
     {
-
         PlayerState.onRespawn += RespawnPlayer;
+        QuickAttack.OnQuickAttack += RecordQuickAttack;
+        HeavyAttack.OnHeavyAttack += RecordHeavyAttack;
+        BasicPlayerController.OnDash += RecordDash;
+        BasicPlayerController.OnGrapple += RecordGrapple;
+        BasicPlayerController.OnDoubleJump += RecordDoubleJump;
     }
 
     private void OnDisable()
     {
         PlayerState.onRespawn -= RespawnPlayer;
+        QuickAttack.OnQuickAttack -= RecordQuickAttack;
+        HeavyAttack.OnHeavyAttack -= RecordHeavyAttack;
+        BasicPlayerController.OnDash -= RecordDash;
+        BasicPlayerController.OnGrapple -= RecordGrapple;
+        BasicPlayerController.OnDoubleJump -= RecordDoubleJump;
     }
 
     public List<PlayerState> GetPlayers() => players;
@@ -55,6 +64,7 @@ public class MatchManager : MonoBehaviour
                     GameObject newPlayer = Instantiate(localPlayerPrefab, initialSpawns[i].position, initialSpawns[i].rotation);
                     PlayerState state = newPlayer.GetComponent<PlayerState>();
                     state.SetPlayerID(allInRoom[i].id);
+                    state.SetUseName(true, allInRoom[i].name);
                     thisPlayerID = state.GetPlayerID();
                     players.Add(state);
                 }
@@ -64,6 +74,7 @@ public class MatchManager : MonoBehaviour
                     GameObject newPlayer = Instantiate(remotePlayerPrefab, initialSpawns[i].position, initialSpawns[i].rotation);
                     PlayerState state = newPlayer.GetComponent<PlayerState>();
                     state.SetPlayerID(allInRoom[i].id);
+                    state.SetUseName(false, allInRoom[i].name);
                     players.Add(state);
                 }
             }
@@ -180,8 +191,52 @@ public class MatchManager : MonoBehaviour
         }
 
         //using two lists just in case, I don't know if OrderBy changes the underlying code or not
-        List<PlayerState> sortedPlayers = newPlayerStateList.OrderByDescending(p => p.GetBounty()).ToList(); 
+        List<PlayerState> sortedPlayers = newPlayerStateList.OrderByDescending(p => p.GetBounty()).ToList();
+
+        string roomCode = "test room";
+        if (Client.instance != null) roomCode = Client.instance.roomCode;
+        DataSaver.WriteGameResult(roomCode, sortedPlayers);
 
         return sortedPlayers;
+    }
+
+    private void RecordQuickAttack()
+    {
+        string roomCode = "test room";
+        if (Client.instance != null) roomCode = Client.instance.roomCode;
+
+        DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Quick Attack", timeRemainingInMatch);
+    }
+
+    private void RecordHeavyAttack()
+    {
+        string roomCode = "test room";
+        if (Client.instance != null) roomCode = Client.instance.roomCode;
+
+        DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Heavy Attack", timeRemainingInMatch);
+    }
+
+    private void RecordDash()
+    {
+        string roomCode = "test room";
+        if (Client.instance != null) roomCode = Client.instance.roomCode;
+
+        DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Dash", timeRemainingInMatch);
+    }
+
+    private void RecordGrapple()
+    {
+        string roomCode = "test room";
+        if (Client.instance != null) roomCode = Client.instance.roomCode;
+
+        DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Grapple", timeRemainingInMatch);
+    }
+
+    private void RecordDoubleJump()
+    {
+        string roomCode = "test room";
+        if (Client.instance != null) roomCode = Client.instance.roomCode;
+
+        DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Double Jump", timeRemainingInMatch);
     }
 }

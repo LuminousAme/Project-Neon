@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class HeavyAttack : MonoBehaviour, IHitboxListener
 {
@@ -13,6 +14,8 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
     private float timeElapsed = 0f, timeToComplete = 1f;
     private bool attackActive = false, attackReleased = false;
     [SerializeField] private Animator weaponHandAnimator;
+
+    public static Action OnHeavyAttack;
 
     //subscribe to the hitbox callback
     private void OnEnable()
@@ -61,6 +64,7 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
         attackReleased = true;
         weaponHandAnimator.SetTrigger("EndHeavy");
         if (Client.instance != null) Client.instance.SendEndHeavyAttack();
+        OnHeavyAttack?.Invoke();
         timeElapsed = 0f;
 
         hitbox.shape = Hitbox.HitboxShape.BOX;

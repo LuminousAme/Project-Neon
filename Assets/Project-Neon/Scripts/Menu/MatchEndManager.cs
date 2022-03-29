@@ -123,6 +123,8 @@ public class MatchEndManager : MonoBehaviour
 
         timeSinceStart = -startDelay;
         currentTimeBetweenFlickers = Random.Range(minTimeBetweenFlickers, maxTimeBetweenFlickers);
+
+        DataSaver.Shutdown();
     }
 
     // Update is called once per frame
