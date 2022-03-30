@@ -6,6 +6,7 @@ public class RemotePlayer : MonoBehaviour
 {
     [SerializeField] Rigidbody targetRB;
     [SerializeField] Transform lookControl;
+    [SerializeField] Transform horiLookControl;
     Vector3 position, velocity;
     float HoriRot;
     float VertRot;
@@ -80,7 +81,7 @@ public class RemotePlayer : MonoBehaviour
         timeSinceUpdate = 0f;
 
         VertRot = lookControl.localRotation.eulerAngles.x;
-        HoriRot = targetRB.rotation.eulerAngles.y;
+        HoriRot = horiLookControl.localRotation.eulerAngles.y;
 
         isGrappling = false;
     }
@@ -100,7 +101,7 @@ public class RemotePlayer : MonoBehaviour
 
         //do not dead recokon this it makes it actively worse
         lookControl.localRotation = Quaternion.Slerp(lookControl.localRotation, vertRotTarget, Time.deltaTime * rotAdjustmentSpeed * movementSettings.GetVerticalLookSpeed());
-        transform.localRotation = Quaternion.Slerp(transform.localRotation, horiRotTarget, Time.deltaTime * rotAdjustmentSpeed  *  movementSettings.GetHorizontalLookSpeed());
+        horiLookControl.localRotation = Quaternion.Slerp(transform.localRotation, horiRotTarget, Time.deltaTime * rotAdjustmentSpeed  *  movementSettings.GetHorizontalLookSpeed());
 
         timeSinceUpdate += Time.deltaTime;
 

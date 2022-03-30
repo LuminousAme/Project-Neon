@@ -22,6 +22,7 @@ public class BasicPlayerController : MonoBehaviour
 
     [SerializeField] private PlayerMoveSettings movementSettings;
     [SerializeField] private Transform lookAtTarget;
+    [SerializeField] private Transform horizontalLookRot;
     private Vector2 lookInput;
     private Vector3 eulerAngles;
 
@@ -139,7 +140,7 @@ public class BasicPlayerController : MonoBehaviour
     {
         //grab the input direction from the controls and update the current input direction
         Vector2 inputVec2 = controls.Player.Move.ReadValue<Vector2>();
-        inputDirection = transform.forward * inputVec2.y + transform.right * inputVec2.x;
+        inputDirection = horizontalLookRot.forward * inputVec2.y + horizontalLookRot.right * inputVec2.x;
         inputDirection.Normalize();
 
         //update the rotation for the camera
@@ -172,6 +173,9 @@ public class BasicPlayerController : MonoBehaviour
             timeSinceAttackDown += Time.deltaTime;
         }
         if (timeSinceAttackRelease <= attackCooldownTime) timeSinceAttackRelease += Time.deltaTime;
+
+        //rotate the player towards their target rotation using the
+        FixedRotatePlayer();
     }
 
     //Late update is called after every gameobject has had their update called
@@ -194,8 +198,7 @@ public class BasicPlayerController : MonoBehaviour
         //apply any mommentum from the grappling hook
         FixedGrapplingHookPull();
 
-        //rotate the player towards their target rotation using the
-        FixedRotatePlayer();
+
     }
 
     private void FixedRotatePlayer()
@@ -210,6 +213,12 @@ public class BasicPlayerController : MonoBehaviour
 
         //update the rotation for the rigidbody
         float horiRot = lookInput.x * movementSettings.GetHorizontalLookSpeed();
+        eulerAngles.x += horiRot * Time.deltaTime;
+        //horizontalLookRot.localPosition = Vector3.zero;
+        horizontalLookRot.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        horizontalLookRot.RotateAround(horizontalLookRot.position, horizontalLookRot.up, eulerAngles.x);
+
+        /*
         Quaternion yaw = Quaternion.AngleAxis(horiRot * Time.deltaTime, transform.up);
         targetRotation = yaw * targetRotation;
 
@@ -238,9 +247,9 @@ public class BasicPlayerController : MonoBehaviour
         {
             rb.AddTorque(-rb.angularVelocity, ForceMode.VelocityChange);
             targetRotation = transform.rotation;
-        }
+        }*/
 
-        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateRotData(eulerAngles.y);
+        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateRotData(eulerAngles.y, eulerAngles.x);
     }
 
     private void FixedRaiseCapsule()

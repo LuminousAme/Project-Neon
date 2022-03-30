@@ -22,10 +22,10 @@ public class LocalPlayer : MonoBehaviour
     }
 
     //I think I might have yaw and pitch inverted but I'll figure that out later
-    public void UpdateRotData(float yaw) 
+    public void UpdateRotData(float yaw, float oitch) 
     {
         this.yaw = yaw;
-        pitch = transform.rotation.eulerAngles.y;
+        this.pitch = pitch;
     }
 
     private void Start()
