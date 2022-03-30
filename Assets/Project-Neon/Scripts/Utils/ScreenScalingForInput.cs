@@ -39,6 +39,12 @@ public class ScreenScalingForInput : InputProcessor<Vector2>
         //scale back down
         value *= new Vector2(scaleX, scaleY);
 
+        //scale value by mouse sensitivity
+        if (GameSettings.instance != null)
+        {
+            value *= GameSettings.instance.mouseSensitivity;
+        }
+
         return value;
     }
 }

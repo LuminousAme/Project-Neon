@@ -10,6 +10,7 @@ public class GameSettings : MonoBehaviour
     public float masterVolume, musicVolume, SFXVolume;
     public bool fullscreen, stylizedText;
     public int graphicsQuality, resolutionIndex;
+    public float mouseSensitivity, controllerSensitivity;
 
     [SerializeField] AudioMixer mixer;
     Resolution[] resolutions;
@@ -66,6 +67,9 @@ public class GameSettings : MonoBehaviour
         }
         Resolution newResolution = resolutions[resolutionIndex];
         Screen.SetResolution(newResolution.width, newResolution.height, Screen.fullScreen);
+
+        mouseSensitivity = PlayerPrefs.GetFloat("MouseSens", 1);
+        controllerSensitivity = PlayerPrefs.GetFloat("ControllerSens", 1);
     }
 
     public void SaveValuesToFile()
@@ -81,5 +85,8 @@ public class GameSettings : MonoBehaviour
 
         PlayerPrefs.SetInt("GraphicsQuality", graphicsQuality);
         PlayerPrefs.SetInt("ResolutionIndex", resolutionIndex);
+
+        PlayerPrefs.SetFloat("MouseSens", mouseSensitivity);
+        PlayerPrefs.SetFloat("ControllerSens", controllerSensitivity);
     }
 }
