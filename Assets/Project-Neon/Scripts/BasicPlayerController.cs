@@ -214,7 +214,6 @@ public class BasicPlayerController : MonoBehaviour
         //update the rotation for the rigidbody
         float horiRot = lookInput.x * movementSettings.GetHorizontalLookSpeed();
         eulerAngles.x += horiRot * Time.deltaTime;
-        //horizontalLookRot.localPosition = Vector3.zero;
         horizontalLookRot.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
         horizontalLookRot.RotateAround(horizontalLookRot.position, horizontalLookRot.up, eulerAngles.x);
 
