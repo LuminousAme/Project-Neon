@@ -46,6 +46,7 @@ public class OptionsMenu : MonoBehaviour
 
     [SerializeField] Slider mouseSens, ControlerSens;
     [SerializeField] TMP_Text mouseSensText, controllerSensText;
+    [SerializeField] Toggle grappleToogleToggle;
 
     // Start is called before the first frame update
     void Start()
@@ -72,6 +73,7 @@ public class OptionsMenu : MonoBehaviour
 
         fullscreenToggle.isOn = GameSettings.instance.fullscreen;
         stylizedTextToggle.isOn = GameSettings.instance.stylizedText;
+        grappleToogleToggle.isOn = GameSettings.instance.toogleGrapple;
 
         masterVol.value = GameSettings.instance.masterVolume;
         musicVol.value = GameSettings.instance.musicVolume;
@@ -306,6 +308,11 @@ public class OptionsMenu : MonoBehaviour
         }
 
         GameSettings.instance.stylizedText = isStylized;
+    }
+
+    public void SetIsGrappleToogle(bool isToogle)
+    {
+        GameSettings.instance.toogleGrapple = isToogle;
     }
 
     public void SetResolution(int resolutionIndex)

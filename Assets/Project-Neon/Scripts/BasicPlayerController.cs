@@ -87,6 +87,7 @@ public class BasicPlayerController : MonoBehaviour
         controls.Player.Dash.started += ctx => StartDash();
         //assign the handlegrapple function to the started event of the grapple action
         controls.Player.Grapple.started += ctx => HandleGrapplePressed();
+        controls.Player.Grapple.canceled += ctx => HandleGrappleRelease();
 
         //assign the attack donw function to the start event of the attack action
         controls.Player.Attack.started += ctx => PressedDownAttack();
@@ -419,7 +420,7 @@ public class BasicPlayerController : MonoBehaviour
         }
 
         //if the distance between the player and the hooked point is less than the minimum, stop grappling
-        if (distanceFromHookPoint <= movementSettings.GetGrappleCloseDistance()) StopGrappling();
+        //if (distanceFromHookPoint <= movementSettings.GetGrappleCloseDistance()) StopGrappling(); //playtester didn't really like this
     }
 
     private void FixedGrapplingHookPull()
@@ -503,7 +504,7 @@ public class BasicPlayerController : MonoBehaviour
 
     private void HandleGrapplePressed()
     {
-        if (isGrappling)
+        if (isGrappling && GameSettings.instance.toogleGrapple)
         {
             //end grappling
             StopGrappling();
@@ -512,6 +513,14 @@ public class BasicPlayerController : MonoBehaviour
         {
             //try to start a grapple
             TryStartGrappling();
+        }
+    }
+
+    private void HandleGrappleRelease()
+    {
+        if(isGrappling && !GameSettings.instance.toogleGrapple)
+        {
+            StopGrappling();
         }
     }
 

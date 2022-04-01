@@ -11,6 +11,7 @@ public class GameSettings : MonoBehaviour
     public bool fullscreen, stylizedText;
     public int graphicsQuality, resolutionIndex;
     public float mouseSensitivity, controllerSensitivity;
+    public bool toogleGrapple;
 
     [SerializeField] AudioMixer mixer;
     Resolution[] resolutions;
@@ -70,6 +71,9 @@ public class GameSettings : MonoBehaviour
 
         mouseSensitivity = PlayerPrefs.GetFloat("MouseSens", 1);
         controllerSensitivity = PlayerPrefs.GetFloat("ControllerSens", 1);
+
+        int toogleGrappleint = PlayerPrefs.GetInt("ToogleGrapple", 1);
+        toogleGrapple = toogleGrappleint == 1;
     }
 
     public void SaveValuesToFile()
@@ -88,5 +92,8 @@ public class GameSettings : MonoBehaviour
 
         PlayerPrefs.SetFloat("MouseSens", mouseSensitivity);
         PlayerPrefs.SetFloat("ControllerSens", controllerSensitivity);
+
+        int toggleGrappleInt = (toogleGrapple) ? 1 : 0;
+        PlayerPrefs.SetInt("ToogleGrapple", toggleGrappleInt);
     }
 }
