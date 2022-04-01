@@ -4062,6 +4062,11 @@ MonoBehaviour:
   - {fileID: 1294414678}
   matchTimeSeconds: 300
   PlayerHPRegenRate: 1
+  batColors:
+  - {r: 0, g: 1, b: 1, a: 0}
+  - {r: 1, g: 0, b: 1, a: 0}
+  - {r: 1, g: 1, b: 0, a: 0}
+  - {r: 0, g: 1, b: 0, a: 0}
 --- !u!4 &1885369815
 Transform:
   m_ObjectHideFlags: 0

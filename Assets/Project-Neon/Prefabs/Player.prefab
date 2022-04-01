@@ -60,9 +60,9 @@ MeshRenderer:
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -7098565394360792512, guid: a3999de251eee664aae01f7870628cd6, type: 3}
-  - {fileID: 9136709756125084358, guid: a3999de251eee664aae01f7870628cd6, type: 3}
-  - {fileID: 6489753704579485335, guid: a3999de251eee664aae01f7870628cd6, type: 3}
+  - {fileID: 2100000, guid: d3789cebe9e84ec4ab9f1416c6424030, type: 2}
+  - {fileID: 2100000, guid: 7a1fb0aa156f0b148ad37b9939d9617a, type: 2}
+  - {fileID: 2100000, guid: 3ca63659131095546a29a9fabf0f4e4f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -332,6 +332,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2675000111385012440}
+  - component: {fileID: 9193964674011583027}
   m_Layer: 7
   m_Name: Bat
   m_TagString: Untagged
@@ -355,6 +356,20 @@ Transform:
   m_Father: {fileID: 3989354838020972970}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 90}
+--- !u!114 &9193964674011583027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3338384213468230242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78f4eb996ce08894e94de1cdbba3f865, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  axeBlade: {fileID: 7266763436923942760}
+  bat: {fileID: 5615765328821433564}
 --- !u!1 &4902559933691382210
 GameObject:
   m_ObjectHideFlags: 0
@@ -967,7 +982,7 @@ MeshRenderer:
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 5154480859883106070, guid: a3999de251eee664aae01f7870628cd6, type: 3}
+  - {fileID: 2100000, guid: 61b97c80bf32174429c5cb62d20b768e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1531,7 +1546,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 1.7775061, y: 1}
+    m_SensorSize: {x: 1.7783018, y: 1}
     Iso: 200
     ShutterSpeed: 0.005
     Aperture: 16

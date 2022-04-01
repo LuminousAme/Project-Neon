@@ -130,6 +130,22 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3349132102437366479, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: overrideColor
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3349132102437366479, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: colorToOverrideWith.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3349132102437366479, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: colorToOverrideWith.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3349132102437366479, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: colorToOverrideWith.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4383490165763651500, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
       propertyPath: m_RootOrder
       value: 13
@@ -223,6 +239,11 @@ MonoBehaviour:
   - {fileID: 726892057}
   matchTimeSeconds: 300
   PlayerHPRegenRate: 1
+  batColors:
+  - {r: 0, g: 1, b: 1, a: 0}
+  - {r: 1, g: 0, b: 1, a: 0}
+  - {r: 1, g: 1, b: 0, a: 0}
+  - {r: 0, g: 1, b: 0, a: 0}
 --- !u!4 &126165069
 Transform:
   m_ObjectHideFlags: 0
@@ -699,6 +720,7 @@ MonoBehaviour:
   resolutionIndex: 0
   mouseSensitivity: 0
   controllerSensitivity: 0
+  toogleGrapple: 0
   mixer: {fileID: 24100000, guid: 1c41534074d26b64c9cbd758adc645d1, type: 2}
 --- !u!4 &1630901929
 Transform:

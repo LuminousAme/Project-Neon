@@ -20,6 +20,8 @@ public class MatchManager : MonoBehaviour
     Guid thisPlayerID;
     bool active;
 
+    [SerializeField] List<Color> batColors = new List<Color>();
+
     public Guid GetThisPlayerID() => thisPlayerID;
 
     public static string winnerName;
@@ -67,6 +69,7 @@ public class MatchManager : MonoBehaviour
                     state.SetUseName(true, allInRoom[i].name);
                     thisPlayerID = state.GetPlayerID();
                     players.Add(state);
+                    newPlayer.GetComponentInChildren<BatColourManager>().ApplyColour(batColors[i]);
                 }
                 //spawn remote player
                 else
@@ -76,6 +79,7 @@ public class MatchManager : MonoBehaviour
                     state.SetPlayerID(allInRoom[i].id);
                     state.SetUseName(false, allInRoom[i].name);
                     players.Add(state);
+                    newPlayer.GetComponentInChildren<BatColourManager>().ApplyColour(batColors[i]);
                 }
             }
         }
