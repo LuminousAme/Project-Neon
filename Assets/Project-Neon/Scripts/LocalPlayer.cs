@@ -22,7 +22,7 @@ public class LocalPlayer : MonoBehaviour
     }
 
     //I think I might have yaw and pitch inverted but I'll figure that out later
-    public void UpdateRotData(float yaw, float oitch) 
+    public void UpdateRotData(float yaw, float pitch) 
     {
         this.yaw = yaw;
         this.pitch = pitch;
