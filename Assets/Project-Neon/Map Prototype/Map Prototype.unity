@@ -130,6 +130,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3077846166388861818, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3077846166388861818, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 3349132102437366479, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
       propertyPath: overrideColor
       value: 1
@@ -145,6 +153,14 @@ PrefabInstance:
     - target: {fileID: 3349132102437366479, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
       propertyPath: colorToOverrideWith.r
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3812463896151289667, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3812463896151289667, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4383490165763651500, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
       propertyPath: m_RootOrder
@@ -197,6 +213,14 @@ PrefabInstance:
     - target: {fileID: 4383490165763651507, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
       propertyPath: overrideIdForDebug
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5873850106116877183, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5873850106116877183, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ee81885d034e6c44c9dafd543b7ce0d1, type: 3}

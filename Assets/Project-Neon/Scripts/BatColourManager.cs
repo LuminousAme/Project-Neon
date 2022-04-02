@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class BatColourManager : MonoBehaviour
 {
     [SerializeField] MeshRenderer axeBlade;
     [SerializeField] MeshRenderer bat;
+    [SerializeField] VisualEffect lightning, quickSwing, heavySwing;
 
     [SerializeField] bool overrideColor = false;
     [SerializeField] Color colorToOverrideWith;
@@ -22,5 +24,20 @@ public class BatColourManager : MonoBehaviour
     {
         axeBlade.material.SetColor("EmissionColor", color);
         bat.materials[1].SetColor("EmissionColor", color);
+
+        if(lightning != null)
+        {
+            lightning.SetVector4("LightingColor", colorToOverrideWith);
+        }
+
+        if(quickSwing != null)
+        {
+            quickSwing.SetVector4("SlashColour", colorToOverrideWith);
+        }
+
+        if (heavySwing != null)
+        {
+            heavySwing.SetVector4("SlashColour", colorToOverrideWith);
+        }
     }
 }

@@ -146,6 +146,7 @@ public class BasicPlayerController : MonoBehaviour
 
         //update the rotation for the camera
         lookInput = controls.Player.Look.ReadValue<Vector2>();
+        //lookInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
         //reduce the time and cooldown remaining for dashing
         if (timeRemainingInDash > 0.0) timeRemainingInDash -= Time.deltaTime;

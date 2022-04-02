@@ -17,6 +17,8 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
     private bool attackActive = false;
     [SerializeField] private Animator weaponHandAnimator;
     [SerializeField] private VisualEffect slash;
+    [SerializeField] private GameObject hitParticlePrefab;
+    [SerializeField] private Transform particleSpawnPoint;
 
     public static Action OnQuickAttack;
 
@@ -41,9 +43,12 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
             if (hurtbox != null) hurtbox.ProcessHit(player, baseDamage); //this func handles updating hp, damage dealt, and kills done by both players invovled
 
             //you'd also play any effect particle effects, animations or anything else that should happen when this attack hits someone 
+            GameObject newParticle = Instantiate(hitParticlePrefab, particleSpawnPoint.position, particleSpawnPoint.localRotation);
+            Destroy(newParticle, 0.5f);
 
             //but you can't tell if there's a kill here, however the PlayerState class has event callbacks onNewKill and onRespawn which fire off when 
             //a player gets a kill and dies respectively, both passing the playerState script so you can check the player invovled
+
         }
     }
 
