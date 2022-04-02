@@ -153,7 +153,7 @@ public class MatchManager : MonoBehaviour
                 {
                     //kill the player so they respawn at their starting position
                     if (Client.instance == null || (Client.instance != null && Client.instance.GetThisClientID() == players[i].GetPlayerID()))
-                        players[i].TakeDamage(100);
+                        players[i].TakeDamage(100, new Vector3(1000f, 1000f, 1000f));
                 }
             }
 

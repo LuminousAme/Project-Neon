@@ -4121,8 +4121,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 220d06801abeb164386064ca22e63af1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ipText: 52.7.122.170
+  ipText: 10.10.138.18
   roomCode: 
+  hitParticlePrefab: {fileID: 241669088369905945, guid: 800181717073b0243b170fe3ff3728ce, type: 3}
 --- !u!4 &2112459818
 Transform:
   m_ObjectHideFlags: 0

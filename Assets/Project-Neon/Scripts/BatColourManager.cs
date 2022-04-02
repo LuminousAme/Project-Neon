@@ -27,17 +27,17 @@ public class BatColourManager : MonoBehaviour
 
         if(lightning != null)
         {
-            lightning.SetVector4("LightingColor", colorToOverrideWith);
+            lightning.SetVector4("LightingColor", color);
         }
 
         if(quickSwing != null)
         {
-            quickSwing.SetVector4("SlashColour", colorToOverrideWith);
+            quickSwing.SetVector4("SlashColour", color);
         }
 
         if (heavySwing != null)
         {
-            heavySwing.SetVector4("SlashColour", colorToOverrideWith);
+            heavySwing.SetVector4("SlashColour", color);
         }
     }
 }

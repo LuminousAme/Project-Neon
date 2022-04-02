@@ -67,7 +67,7 @@ public class HUDManager : MonoBehaviour
             timeText.text = "";
         }
         
-        if (Input.GetKeyDown(KeyCode.F1)) player.TakeDamage(10);
+        if (Input.GetKeyDown(KeyCode.F1)) player.TakeDamage(10, new Vector3(1000f, 1000f, 1000f));
     }
 
     void HandleHPOnRespawn(PlayerState p)

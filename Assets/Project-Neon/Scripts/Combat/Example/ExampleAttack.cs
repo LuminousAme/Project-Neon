@@ -32,7 +32,7 @@ public class ExampleAttack : MonoBehaviour, IHitboxListener
     public void HitRegistered(Collider collider)
     {
         Hurtbox hurtbox = collider.GetComponent<Hurtbox>();
-        if (hurtbox != null) hurtbox.ProcessHit(player, damage); //this func handles updating hp, damage dealt, and kills done by both players invovled
+        if (hurtbox != null) hurtbox.ProcessHit(player, damage, new Vector3(1000f, 1000f, 1000f)); //this func handles updating hp, damage dealt, and kills done by both players invovled
 
         //you'd also play any effect particle effects, animations or anything else that should happen when this attack hits someone 
 

@@ -662,6 +662,8 @@ MonoBehaviour:
   PosAcceptableOffset: 0.1
   rotAdjustmentSpeed: 2
   weaponHandAnimator: {fileID: 6323992125740191626}
+  quickSwing: {fileID: 8236410275013804916}
+  heavySwing: {fileID: 8195353470043822866}
   grapplingLine: {fileID: 917075556452332792}
   quality: 500
   strength: 800

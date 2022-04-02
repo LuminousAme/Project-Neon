@@ -33,10 +33,10 @@ public class Hurtbox : MonoBehaviour
 
     public Action<PlayerState, int> onHurt;
 
-    public void ProcessHit(PlayerState attackingPlayer, int damage)
+    public void ProcessHit(PlayerState attackingPlayer, int damage, Vector3 hitPos)
     {
         int cappedDamage;
-        bool killed = player.TakeDamage(damage, out cappedDamage);
+        bool killed = player.TakeDamage(damage, out cappedDamage, hitPos);
         attackingPlayer.DealDamage(cappedDamage, killed);
         onHurt?.Invoke(attackingPlayer, cappedDamage);
     }

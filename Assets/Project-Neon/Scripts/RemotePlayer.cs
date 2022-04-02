@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class RemotePlayer : MonoBehaviour
 {
@@ -30,6 +31,9 @@ public class RemotePlayer : MonoBehaviour
     [Header("Animation")]
     //weapon
     [SerializeField] Animator weaponHandAnimator;
+    [SerializeField] VisualEffect quickSwing, heavySwing;
+
+    //grappling hook
     [SerializeField] private LineRenderer grapplingLine;
     [SerializeField] int quality;
     [SerializeField] float strength;
@@ -161,6 +165,7 @@ public class RemotePlayer : MonoBehaviour
     public void BeginQuickAttack()
     {
         weaponHandAnimator.SetTrigger("Quick Attack");
+        StartCoroutine(StartSlash(quickSwing));
     }
 
     public void BeginRaiseHeavyAttack()
@@ -171,6 +176,7 @@ public class RemotePlayer : MonoBehaviour
     public void BeginHeavyDown()
     {
         weaponHandAnimator.SetTrigger("EndHeavy");
+        StartCoroutine(StartSlash(heavySwing));
     }
 
     //will have to implement this in a bit
@@ -216,6 +222,20 @@ public class RemotePlayer : MonoBehaviour
 
                 grapplingLine.SetPosition(i, Vector3.Lerp(startPoint, endPoint, delta) + offset);
             }
+        }
+    }
+
+    IEnumerator StartSlash(VisualEffect slash)
+    {
+        yield return new WaitForSeconds(0.1f);
+        if(slash != null)
+        {
+            slash.gameObject.SetActive(true);
+            slash.Play();
+
+            yield return new WaitForSeconds(0.5f);
+            slash.Stop();
+            slash.gameObject.SetActive(false);
         }
     }
 }
