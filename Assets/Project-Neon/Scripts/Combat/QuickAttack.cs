@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.VFX;
+
 
 public class QuickAttack : MonoBehaviour, IHitboxListener
 {
@@ -14,6 +16,7 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
     private float timeElapsed = 0f, timeToComplete = 1f;
     private bool attackActive = false;
     [SerializeField] private Animator weaponHandAnimator;
+    [SerializeField] private VisualEffect slash;
 
     public static Action OnQuickAttack;
 
@@ -49,6 +52,8 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
         attackActive = true;
         weaponHandAnimator.SetTrigger("Quick Attack");
         if (Client.instance != null) Client.instance.SendDoQuickAttack();
+        StartCoroutine(startSlash());
+        //if (slash != null) slash.Play();
         OnQuickAttack?.Invoke();
 
         hitbox.shape = Hitbox.HitboxShape.BOX;
@@ -61,6 +66,11 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
     public void EndAttack()
     {
         attackActive = false;
+        if (slash != null)
+        {
+            slash.Stop();
+            slash.gameObject.SetActive(false);
+        }
         timeElapsed = 0f;
         hitbox.shape = Hitbox.HitboxShape.BOX;
         hitbox.state = Hitbox.HitboxState.OFF;
@@ -75,6 +85,21 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
         attackActive = false;
         timeElapsed = 0f;
         timeToComplete = standardAttackLenght / speedAdjustment;
+
+        if (slash != null)
+        {
+            slash.gameObject.SetActive(false);
+        }
+    }
+
+    IEnumerator startSlash()
+    {
+        yield return new WaitForSeconds(0.1f);
+        if (slash != null)
+        {
+            slash.gameObject.SetActive(true);
+            slash.Play();
+        }
     }
 
     private void Update()
