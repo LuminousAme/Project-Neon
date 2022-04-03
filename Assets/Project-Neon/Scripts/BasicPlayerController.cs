@@ -66,6 +66,9 @@ public class BasicPlayerController : MonoBehaviour
     [SerializeField] private QuickAttack quickAttack;
     [SerializeField] private HeavyAttack heavyAttack;
 
+    [Header("Animation")]
+    [SerializeField] CharacterAnimation animController;
+
     public static Action OnGrapple;
     public static Action OnDoubleJump;
     public static Action OnDash;
@@ -143,6 +146,18 @@ public class BasicPlayerController : MonoBehaviour
         Vector2 inputVec2 = controls.Player.Move.ReadValue<Vector2>();
         inputDirection = horizontalLookRot.forward * inputVec2.y + horizontalLookRot.right * inputVec2.x;
         inputDirection.Normalize();
+
+        if (inputDirection.magnitude > 0f) animController.SetMoving(true);
+        else animController.SetMoving(false);
+
+        if (grounded) animController.SetOnGround(true);
+        else animController.SetOnGround(false);
+
+        if (!grounded && currentGravity.y == movementSettings.GetGravityGoingUp()) animController.SetIsJumping(true);
+        else animController.SetIsJumping(false);
+
+        if (!grounded && currentGravity.y == movementSettings.GetGravityGoingDown()) animController.SetIsFalling(true);
+        else animController.SetIsFalling(false);
 
         //update the rotation for the camera
         lookInput = controls.Player.Look.ReadValue<Vector2>();

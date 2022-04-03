@@ -50,6 +50,10 @@ public class RemotePlayer : MonoBehaviour
     private Vector3 hookPosition, adjustedHookPosition;
     Quaternion desiredRotForGrapple;
 
+    [SerializeField] float walkSpeed = 2f;
+    [SerializeField] float ySpeedForFalling = -2f;
+    [SerializeField] float ySpeedForJumping = 2f;
+    [SerializeField] CharacterAnimation controller;
     public void SetData(Vector3 pos, Vector3 vel, float VertRot, float HoriRot)
     {
         //we can just take the velocities and speeds
@@ -101,11 +105,33 @@ public class RemotePlayer : MonoBehaviour
             position.y = yPos;
         }
 
+        Vector3 lastPos = targetRB.position;
         targetRB.position = position + velocity * timeSinceUpdate;
+        Vector3 currentPos = targetRB.position;
+        if (Vector3.Distance(new Vector3(lastPos.x, 0f, lastPos.z), new Vector3(currentPos.x, 0f, currentPos.z)) / Time.deltaTime > walkSpeed) controller.SetMoving(true);
+        else controller.SetMoving(false);
+
+        if ((currentPos.y - lastPos.y) / Time.deltaTime > ySpeedForJumping) controller.SetIsJumping(true);
+        else controller.SetIsJumping(false);
+
+        if ((currentPos.y - lastPos.y) / Time.deltaTime < ySpeedForFalling) controller.SetIsFalling(true);
+        else controller.SetIsFalling(false);
+
+        //grounded check
+        //do a raycast down
+        RaycastHit rayHit;
+        Vector3 rayDir = Vector3.down;
+        if (Physics.Raycast(transform.position, rayDir, out rayHit, 1.2f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
+        {
+            controller.SetOnGround(true);
+            Debug.Log("Remote player grounded " + rayHit.distance);
+        }
+        else controller.SetOnGround(false);
+
 
         //do not dead recokon this it makes it actively worse
         lookControl.localRotation = Quaternion.Slerp(lookControl.localRotation, vertRotTarget, Time.deltaTime * rotAdjustmentSpeed * movementSettings.GetVerticalLookSpeed());
-        horiLookControl.localRotation = Quaternion.Slerp(transform.localRotation, horiRotTarget, Time.deltaTime * rotAdjustmentSpeed  *  movementSettings.GetHorizontalLookSpeed());
+        horiLookControl.localRotation = Quaternion.Slerp(transform.localRotation, horiRotTarget, Time.deltaTime * rotAdjustmentSpeed * movementSettings.GetHorizontalLookSpeed());
 
         timeSinceUpdate += Time.deltaTime;
 
@@ -114,7 +140,7 @@ public class RemotePlayer : MonoBehaviour
         else
         {
             adjustedHookPosition = grapleRest.position;
-            desiredRotForGrapple = Quaternion.LookRotation(transform.forward);
+            desiredRotForGrapple = Quaternion.LookRotation(horiLookControl.forward);
         }
 
         acutalGraple.position = MathUlits.LerpClamped(acutalGraple.position, adjustedHookPosition, movementSettings.GetGrapplePullSpeed() * 2.0f);
@@ -184,9 +210,9 @@ public class RemotePlayer : MonoBehaviour
     {
         isGrappling = status;
 
-        if(grapplingLine != null)
+        if (grapplingLine != null)
         {
-            if(isGrappling) grapplingLine.positionCount = quality + 1;
+            if (isGrappling) grapplingLine.positionCount = quality + 1;
             else grapplingLine.positionCount = 0;
         }
 
@@ -228,7 +254,7 @@ public class RemotePlayer : MonoBehaviour
     IEnumerator StartSlash(VisualEffect slash)
     {
         yield return new WaitForSeconds(0.1f);
-        if(slash != null)
+        if (slash != null)
         {
             slash.gameObject.SetActive(true);
             slash.Play();
