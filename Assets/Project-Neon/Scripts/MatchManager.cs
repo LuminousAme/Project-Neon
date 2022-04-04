@@ -20,6 +20,8 @@ public class MatchManager : MonoBehaviour
     Guid thisPlayerID;
     bool active;
 
+    [SerializeField] List<Color> batColors = new List<Color>();
+
     public Guid GetThisPlayerID() => thisPlayerID;
 
     public static string winnerName;
@@ -67,6 +69,7 @@ public class MatchManager : MonoBehaviour
                     state.SetUseName(true, allInRoom[i].name);
                     thisPlayerID = state.GetPlayerID();
                     players.Add(state);
+                    newPlayer.GetComponentInChildren<BatColourManager>().ApplyColour(batColors[i]);
                 }
                 //spawn remote player
                 else
@@ -76,6 +79,7 @@ public class MatchManager : MonoBehaviour
                     state.SetPlayerID(allInRoom[i].id);
                     state.SetUseName(false, allInRoom[i].name);
                     players.Add(state);
+                    newPlayer.GetComponentInChildren<BatColourManager>().ApplyColour(batColors[i]);
                 }
             }
         }
@@ -98,6 +102,13 @@ public class MatchManager : MonoBehaviour
         if (!SceneManager.GetSceneByBuildIndex(5).isLoaded) SceneManager.LoadScene(5, LoadSceneMode.Additive);
 
         timeRemainingInMatch = matchTimeSeconds;
+
+        if (MusicManager.instance != null)
+        {
+            MusicManager.instance.StopCurrentTrack();
+            MusicManager.instance.PlayTrack(0, 0.3f);
+            MusicManager.instance.SetLooping(false);
+        }
 
         PlayerState.hpRegenRate = PlayerHPRegenRate;
         active = true;
@@ -149,7 +160,7 @@ public class MatchManager : MonoBehaviour
                 {
                     //kill the player so they respawn at their starting position
                     if (Client.instance == null || (Client.instance != null && Client.instance.GetThisClientID() == players[i].GetPlayerID()))
-                        players[i].TakeDamage(100);
+                        players[i].TakeDamage(100, new Vector3(1000f, 1000f, 1000f));
                 }
             }
 

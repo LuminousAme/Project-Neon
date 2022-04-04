@@ -156,6 +156,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - EmissionExposureWeight: 1
+    - EmissionIntensity: 4
     - MetalnessFloat: 0
     - RoughnessFloat: 0.5
     - UseAO: 0
@@ -278,7 +280,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - AlbedoColor: {r: 1, g: 1, b: 1, a: 0}
-    - EmissionColor: {r: 0, g: 0, b: 0, a: 0}
+    - EmissionColor: {r: 1, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}

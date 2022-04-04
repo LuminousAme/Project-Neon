@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class RemotePlayer : MonoBehaviour
 {
     [SerializeField] Rigidbody targetRB;
     [SerializeField] Transform lookControl;
+    [SerializeField] Transform horiLookControl;
     Vector3 position, velocity;
     float HoriRot;
     float VertRot;
@@ -29,6 +31,9 @@ public class RemotePlayer : MonoBehaviour
     [Header("Animation")]
     //weapon
     [SerializeField] Animator weaponHandAnimator;
+    [SerializeField] VisualEffect quickSwing, heavySwing;
+
+    //grappling hook
     [SerializeField] private LineRenderer grapplingLine;
     [SerializeField] int quality;
     [SerializeField] float strength;
@@ -44,6 +49,15 @@ public class RemotePlayer : MonoBehaviour
     [SerializeField] Transform grappleLatch, grappleLaunch, acutalGraple, grapleRest, grapleParent;
     private Vector3 hookPosition, adjustedHookPosition;
     Quaternion desiredRotForGrapple;
+
+    [SerializeField] float walkSpeed = 2f;
+    [SerializeField] float ySpeedForFalling = -2f;
+    [SerializeField] float ySpeedForJumping = 2f;
+    [SerializeField] CharacterAnimation controller;
+
+    [Header("Sound")]
+    [SerializeField] SoundEffect GrappleLaunchSFX, GrappleReelSFX;
+    [SerializeField] AudioSource grappleSoundSource, grappleReelSoundSource;
 
     public void SetData(Vector3 pos, Vector3 vel, float VertRot, float HoriRot)
     {
@@ -80,7 +94,7 @@ public class RemotePlayer : MonoBehaviour
         timeSinceUpdate = 0f;
 
         VertRot = lookControl.localRotation.eulerAngles.x;
-        HoriRot = targetRB.rotation.eulerAngles.y;
+        HoriRot = horiLookControl.localRotation.eulerAngles.y;
 
         isGrappling = false;
     }
@@ -96,11 +110,34 @@ public class RemotePlayer : MonoBehaviour
             position.y = yPos;
         }
 
+        Vector3 lastPos = targetRB.position;
         targetRB.position = position + velocity * timeSinceUpdate;
+        Vector3 currentPos = targetRB.position;
+        if (Vector3.Distance(new Vector3(lastPos.x, 0f, lastPos.z), new Vector3(currentPos.x, 0f, currentPos.z)) / Time.deltaTime > walkSpeed) controller.SetMoving(true);
+        else controller.SetMoving(false);
+
+        if ((currentPos.y - lastPos.y) / Time.deltaTime > ySpeedForJumping) controller.SetIsJumping(true);
+        else controller.SetIsJumping(false);
+
+        if ((currentPos.y - lastPos.y) / Time.deltaTime < ySpeedForFalling) controller.SetIsFalling(true);
+        else controller.SetIsFalling(false);
+
+        //grounded check
+        //do a raycast down
+        RaycastHit rayHit;
+        Vector3 rayDir = Vector3.down;
+        
+        if (Physics.Raycast(transform.position, rayDir, out rayHit, 2.5f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
+        {
+            controller.SetOnGround(true);
+            Debug.Log("Remote player grounded " + rayHit.distance);
+        }
+        else controller.SetOnGround(false);
+
 
         //do not dead recokon this it makes it actively worse
         lookControl.localRotation = Quaternion.Slerp(lookControl.localRotation, vertRotTarget, Time.deltaTime * rotAdjustmentSpeed * movementSettings.GetVerticalLookSpeed());
-        transform.localRotation = Quaternion.Slerp(transform.localRotation, horiRotTarget, Time.deltaTime * rotAdjustmentSpeed  *  movementSettings.GetHorizontalLookSpeed());
+        horiLookControl.localRotation = Quaternion.Slerp(transform.localRotation, horiRotTarget, Time.deltaTime * rotAdjustmentSpeed * movementSettings.GetHorizontalLookSpeed());
 
         timeSinceUpdate += Time.deltaTime;
 
@@ -109,7 +146,7 @@ public class RemotePlayer : MonoBehaviour
         else
         {
             adjustedHookPosition = grapleRest.position;
-            desiredRotForGrapple = Quaternion.LookRotation(transform.forward);
+            desiredRotForGrapple = Quaternion.LookRotation(horiLookControl.forward);
         }
 
         acutalGraple.position = MathUlits.LerpClamped(acutalGraple.position, adjustedHookPosition, movementSettings.GetGrapplePullSpeed() * 2.0f);
@@ -160,6 +197,7 @@ public class RemotePlayer : MonoBehaviour
     public void BeginQuickAttack()
     {
         weaponHandAnimator.SetTrigger("Quick Attack");
+        StartCoroutine(StartSlash(quickSwing));
     }
 
     public void BeginRaiseHeavyAttack()
@@ -170,6 +208,7 @@ public class RemotePlayer : MonoBehaviour
     public void BeginHeavyDown()
     {
         weaponHandAnimator.SetTrigger("EndHeavy");
+        StartCoroutine(StartSlash(heavySwing));
     }
 
     //will have to implement this in a bit
@@ -177,10 +216,24 @@ public class RemotePlayer : MonoBehaviour
     {
         isGrappling = status;
 
-        if(grapplingLine != null)
+        if (grapplingLine != null)
         {
-            if(isGrappling) grapplingLine.positionCount = quality + 1;
+            if (isGrappling) grapplingLine.positionCount = quality + 1;
             else grapplingLine.positionCount = 0;
+        }
+
+        if(isGrappling && GrappleLaunchSFX != null && grappleSoundSource != null)
+        {
+            GrappleLaunchSFX.Play(grappleSoundSource);
+            if(GrappleReelSFX != null)
+            {
+                float waitTime = (grappleSoundSource.clip.length / grappleSoundSource.pitch) + 0.05f;
+                StartCoroutine(StartGrappleReelSound(waitTime));
+            }
+        }
+        else
+        {
+            if (grappleReelSoundSource != null) grappleReelSoundSource.Stop();
         }
 
         hookPosition = target;
@@ -192,6 +245,11 @@ public class RemotePlayer : MonoBehaviour
     void GrapplingHookUpdate()
     {
         desiredRotForGrapple = Quaternion.LookRotation(acutalGraple.position - grapleRest.position);
+
+        Vector3 startPoint = grappleLaunch.position;
+        Vector3 endPoint = grappleLatch.position;
+        //stop the reel sound effect when grappling finishes
+        if (grappleReelSoundSource != null && Vector3.Distance(startPoint, endPoint) <= 0.5f) grappleReelSoundSource.Stop();
     }
 
     void DrawGrapplingHook()
@@ -216,5 +274,25 @@ public class RemotePlayer : MonoBehaviour
                 grapplingLine.SetPosition(i, Vector3.Lerp(startPoint, endPoint, delta) + offset);
             }
         }
+    }
+
+    IEnumerator StartSlash(VisualEffect slash)
+    {
+        yield return new WaitForSeconds(0.1f);
+        if (slash != null)
+        {
+            slash.gameObject.SetActive(true);
+            slash.Play();
+
+            yield return new WaitForSeconds(0.5f);
+            slash.Stop();
+            slash.gameObject.SetActive(false);
+        }
+    }
+
+    IEnumerator StartGrappleReelSound(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+        GrappleReelSFX.Play(grappleReelSoundSource);
     }
 }

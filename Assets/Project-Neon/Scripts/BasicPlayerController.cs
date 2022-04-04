@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Collections;
 
 //Basic character movement script based on the character controller from Very Very Valet
 //https://youtu.be/qdskE8PJy6Q
@@ -22,6 +23,7 @@ public class BasicPlayerController : MonoBehaviour
 
     [SerializeField] private PlayerMoveSettings movementSettings;
     [SerializeField] private Transform lookAtTarget;
+    [SerializeField] private Transform horizontalLookRot;
     private Vector2 lookInput;
     private Vector3 eulerAngles;
 
@@ -65,6 +67,13 @@ public class BasicPlayerController : MonoBehaviour
     [SerializeField] private QuickAttack quickAttack;
     [SerializeField] private HeavyAttack heavyAttack;
 
+    [Header("Animation")]
+    [SerializeField] CharacterAnimation animController;
+
+    [Header("Sound")]
+    [SerializeField] SoundEffect dashSFX, GrappleLaunchSFX, GrappleReelSFX;
+    [SerializeField] AudioSource grappleReelSource;
+
     public static Action OnGrapple;
     public static Action OnDoubleJump;
     public static Action OnDash;
@@ -86,6 +95,7 @@ public class BasicPlayerController : MonoBehaviour
         controls.Player.Dash.started += ctx => StartDash();
         //assign the handlegrapple function to the started event of the grapple action
         controls.Player.Grapple.started += ctx => HandleGrapplePressed();
+        controls.Player.Grapple.canceled += ctx => HandleGrappleRelease();
 
         //assign the attack donw function to the start event of the attack action
         controls.Player.Attack.started += ctx => PressedDownAttack();
@@ -114,7 +124,7 @@ public class BasicPlayerController : MonoBehaviour
         targetRotation = transform.rotation;
 
         airJumpsTaken = 0;
-        grounded = false;
+        grounded = true;
         coyoteTimer = 0.0f;
 
         currentGravity = Vector3.down * movementSettings.GetGravityGoingDown();
@@ -139,11 +149,24 @@ public class BasicPlayerController : MonoBehaviour
     {
         //grab the input direction from the controls and update the current input direction
         Vector2 inputVec2 = controls.Player.Move.ReadValue<Vector2>();
-        inputDirection = transform.forward * inputVec2.y + transform.right * inputVec2.x;
+        inputDirection = horizontalLookRot.forward * inputVec2.y + horizontalLookRot.right * inputVec2.x;
         inputDirection.Normalize();
+
+        if (inputDirection.magnitude > 0f) animController.SetMoving(true);
+        else animController.SetMoving(false);
+
+        if (grounded) animController.SetOnGround(true);
+        else animController.SetOnGround(false);
+
+        if (!grounded && currentGravity.y == movementSettings.GetGravityGoingUp()) animController.SetIsJumping(true);
+        else animController.SetIsJumping(false);
+
+        if (!grounded && currentGravity.y == movementSettings.GetGravityGoingDown()) animController.SetIsFalling(true);
+        else animController.SetIsFalling(false);
 
         //update the rotation for the camera
         lookInput = controls.Player.Look.ReadValue<Vector2>();
+        //lookInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
         //reduce the time and cooldown remaining for dashing
         if (timeRemainingInDash > 0.0) timeRemainingInDash -= Time.deltaTime;
@@ -172,6 +195,9 @@ public class BasicPlayerController : MonoBehaviour
             timeSinceAttackDown += Time.deltaTime;
         }
         if (timeSinceAttackRelease <= attackCooldownTime) timeSinceAttackRelease += Time.deltaTime;
+
+        //rotate the player towards their target rotation using the
+        FixedRotatePlayer();
     }
 
     //Late update is called after every gameobject has had their update called
@@ -194,8 +220,7 @@ public class BasicPlayerController : MonoBehaviour
         //apply any mommentum from the grappling hook
         FixedGrapplingHookPull();
 
-        //rotate the player towards their target rotation using the
-        FixedRotatePlayer();
+
     }
 
     private void FixedRotatePlayer()
@@ -210,6 +235,11 @@ public class BasicPlayerController : MonoBehaviour
 
         //update the rotation for the rigidbody
         float horiRot = lookInput.x * movementSettings.GetHorizontalLookSpeed();
+        eulerAngles.x += horiRot * Time.deltaTime;
+        horizontalLookRot.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        horizontalLookRot.RotateAround(horizontalLookRot.position, horizontalLookRot.up, eulerAngles.x);
+
+        /*
         Quaternion yaw = Quaternion.AngleAxis(horiRot * Time.deltaTime, transform.up);
         targetRotation = yaw * targetRotation;
 
@@ -238,9 +268,9 @@ public class BasicPlayerController : MonoBehaviour
         {
             rb.AddTorque(-rb.angularVelocity, ForceMode.VelocityChange);
             targetRotation = transform.rotation;
-        }
+        }*/
 
-        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateRotData(eulerAngles.y);
+        if (LocalPlayer.instance != null) LocalPlayer.instance.UpdateRotData(eulerAngles.y, eulerAngles.x);
     }
 
     private void FixedRaiseCapsule()
@@ -250,12 +280,8 @@ public class BasicPlayerController : MonoBehaviour
         Vector3 rayDir = Vector3.down;
 
         //if it hit something calculate the force that should be applied as a result
-        if (Physics.Raycast(transform.position, rayDir, out rayHit, movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
+        if (Physics.Raycast(transform.position, rayDir, out rayHit, 1f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
         {
-            grounded = true;
-            airJumpsTaken = 0;
-            coyoteTimer = 0.0f;
-
             float speedAlongRayDir = Vector3.Dot(rayDir, rb.velocity); //the speed that the player is moving along the ray's direction
             float otherVelAlongRayDir = 0.0f; //the speed that the object the ray has collided with is moving along the ray's direction, it is zero if it didn't hit another rigidbody
             if (rayHit.rigidbody != null)
@@ -298,6 +324,13 @@ public class BasicPlayerController : MonoBehaviour
             rb.AddForce(currentGravity, ForceMode.Acceleration);
             grounded = false;
             coyoteTimer += Time.fixedDeltaTime;
+        }
+
+        if (Physics.Raycast(transform.position, rayDir, out rayHit, 2.5f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
+        {
+            grounded = true;
+            airJumpsTaken = 0;
+            coyoteTimer = 0.0f;
         }
     }
 
@@ -380,7 +413,23 @@ public class BasicPlayerController : MonoBehaviour
             isGrappling = true;
             OnGrapple?.Invoke();
             rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
+
+            //play the sound effect
+            AudioSource newAS = null;
+            if (GrappleLaunchSFX != null) newAS = GrappleLaunchSFX.Play();
+
+            if(newAS != null && GrappleReelSFX != null && grappleReelSource != null)
+            {
+                float time = newAS.clip.length / newAS.pitch;
+                StartCoroutine(StartGrappleReelSFX(time));
+            }
         }
+    }
+
+    IEnumerator StartGrappleReelSFX(float startDelay)
+    {
+        yield return new WaitForSeconds(startDelay);
+        GrappleReelSFX.Play(grappleReelSource);
     }
 
     private void StopGrappling()
@@ -390,6 +439,7 @@ public class BasicPlayerController : MonoBehaviour
         isGrappling = false;
         timeSinceLastGrappleEnd = movementSettings.GetGrappleCooldown();
         if (Client.instance != null) Client.instance.SendGrappleStatus(false, hookPosition);
+        if (grappleReelSource != null) grappleReelSource.Stop();
         //rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
     }
 
@@ -411,7 +461,7 @@ public class BasicPlayerController : MonoBehaviour
         }
 
         //if the distance between the player and the hooked point is less than the minimum, stop grappling
-        if (distanceFromHookPoint <= movementSettings.GetGrappleCloseDistance()) StopGrappling();
+        //if (distanceFromHookPoint <= movementSettings.GetGrappleCloseDistance()) StopGrappling(); //playtester didn't really like this
     }
 
     private void FixedGrapplingHookPull()
@@ -428,6 +478,10 @@ public class BasicPlayerController : MonoBehaviour
         {
             rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
             rb.AddForce(grapplingMomentum, ForceMode.VelocityChange);
+            Vector3 startPoint = grappleLaunch.position;
+            Vector3 endPoint = grappleLatch.position;
+            //stop the reel sound effect when grappling finishes
+            if (grappleReelSource != null && Vector3.Distance(startPoint, endPoint) <= 0.5f) grappleReelSource.Stop();
 
             if (useJoint)
             {
@@ -490,12 +544,14 @@ public class BasicPlayerController : MonoBehaviour
             //numberOfDashesTaken++;
             timeRemainingInDash = movementSettings.GetDashLenght();
             OnDash?.Invoke();
+            //play the dash sound, we'll just play it locally as though it were in 2D space
+            if (dashSFX != null) dashSFX.Play();
         }
     }
 
     private void HandleGrapplePressed()
     {
-        if (isGrappling)
+        if (isGrappling && GameSettings.instance.toogleGrapple)
         {
             //end grappling
             StopGrappling();
@@ -504,6 +560,14 @@ public class BasicPlayerController : MonoBehaviour
         {
             //try to start a grapple
             TryStartGrappling();
+        }
+    }
+
+    private void HandleGrappleRelease()
+    {
+        if(isGrappling && !GameSettings.instance.toogleGrapple)
+        {
+            StopGrappling();
         }
     }
 

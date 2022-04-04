@@ -92,10 +92,12 @@ public class PlayerState : MonoBehaviour
     }
 
     //takes the passed in ammount of damage, and returns true if it killed
-    public bool TakeDamage(int damage, out int cappedDamage)
+    public bool TakeDamage(int damage, out int cappedDamage, Vector3 hitpos)
     {
         damaged = true;
         healTimer = 0;
+        float scale = (damage == 10) ? 1 : 2; 
+
         cappedDamage = Mathf.Clamp(damage, 0, (int)hp);
         hp = Mathf.Clamp(hp - damage, 0, basicData.GetMaxHealth());
         if (hp == 0)
@@ -106,21 +108,21 @@ public class PlayerState : MonoBehaviour
 
             if (Client.instance != null)
             {
-                StartCoroutine(UpdateHPOnServer());
+                StartCoroutine(UpdateHPOnServer(hitpos, scale));
             }
 
             return true;
         }
 
-        StartCoroutine(UpdateHPOnServer());
+        StartCoroutine(UpdateHPOnServer(hitpos, scale));
 
         return false;
     }
 
-    public bool TakeDamage(int damage)
+    public bool TakeDamage(int damage, Vector3 hitpos)
     {
         int useless;
-        return TakeDamage(damage, out useless);
+        return TakeDamage(damage, out useless, hitpos);
     }
 
     private void Update()
@@ -164,11 +166,11 @@ public class PlayerState : MonoBehaviour
         }
     }
 
-    IEnumerator UpdateHPOnServer()
+    IEnumerator UpdateHPOnServer(Vector3 hitPos, float scale)
     {
         yield return new WaitForSeconds(0.05f);
         {
-            Client.instance.UpdateHP(playerId, hp);
+            Client.instance.UpdateHP(playerId, hp, hitPos, scale);
         }
     }
 

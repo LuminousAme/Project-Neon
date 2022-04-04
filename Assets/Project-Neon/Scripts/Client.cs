@@ -38,6 +38,10 @@ public class Client : MonoBehaviour
     public Guid GetThisClientID() => thisClientId;
     private float timeBetweenConnectionChecks = 1f, elapsedTime = 0f;
 
+    [SerializeField] private GameObject hitParticlePrefab;
+    [SerializeField] private SoundEffect hitSFX;
+    [SerializeField] private AudioSource hitAudioSource;
+
     //starts client
     private void StartClient(int type)
     {
@@ -320,11 +324,11 @@ public class Client : MonoBehaviour
                 {
                     Guid relevantPlayer = Guid.Parse(splitData[1]);
 
-                    const int size = sizeof(float); //1 float
+                    const int size = 5 * sizeof(float); //5 floats
                     byte[] temp = new byte[size];
                     Buffer.BlockCopy(recieveBuffer, recv - size, temp, 0, size);
 
-                    float[] floatarr = new float[1];
+                    float[] floatarr = new float[5];
                     if (temp.Length == size)
                     {
                         Buffer.BlockCopy(temp, 0, floatarr, 0, temp.Length);
@@ -336,6 +340,18 @@ public class Client : MonoBehaviour
                             if (player != null)
                             {
                                 player.RemoteUpdateHP(floatarr[0]);
+                            }
+
+                            //play the particle effect where the hit happened
+                            GameObject newObj = Instantiate(hitParticlePrefab, new Vector3(floatarr[1], floatarr[2], floatarr[3]), Quaternion.identity);
+                            newObj.transform.localScale *= floatarr[4];
+                            Destroy(newObj, 0.5f);
+
+                            //play the sound effect where the hit happened
+                            if (hitSFX != null && hitAudioSource != null)
+                            {
+                                hitAudioSource.transform.position = new Vector3(floatarr[1], floatarr[2], floatarr[3]);
+                                hitSFX.Play(hitAudioSource);
                             }
                         }
                     }
@@ -579,12 +595,12 @@ public class Client : MonoBehaviour
         }
     }
 
-    public void UpdateHP(Guid player, float newHp)
+    public void UpdateHP(Guid player, float newHp, Vector3 particlePos, float particleScale)
     {
         if (isStarted)
         {
             //sending two hp to help resolve if multiple players got a hit on the same player at the same time lol
-            float[] floatarr = { newHp };
+            float[] floatarr = { newHp, particlePos.x, particlePos.y, particlePos.z, particleScale };
             byte[] temp = new byte[sizeof(float) * floatarr.Length];
             Buffer.BlockCopy(floatarr, 0, temp, 0, sizeof(float) * floatarr.Length); //should be 2 floats
 

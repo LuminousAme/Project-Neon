@@ -41,4 +41,19 @@ public static class MathUlits
         float t = InverseLerp(min, max, value);
         return Mathf.SmoothStep(min, max, t);
     }
+
+    public static float ReMapTwoRanges(float oldMinlower, float oldMaxLower, float newMinLower, float newMaxLower, 
+        float oldMinUpper, float oldMaxUpper, float newMinUpper, float newMaxUpper, float value)
+    {
+        if(value <= oldMaxLower)
+        {
+            return ReMap(oldMinlower, oldMaxLower, newMinLower, newMaxLower, value);
+        }
+        else if (value >= oldMinUpper)
+        {
+            return ReMap(oldMinUpper, oldMaxUpper, newMinUpper, newMaxUpper, value);
+        }
+
+        return value;
+    }
 }

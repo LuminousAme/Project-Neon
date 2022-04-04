@@ -44,6 +44,10 @@ public class OptionsMenu : MonoBehaviour
     [SerializeField] Toggle fullscreenToggle, stylizedTextToggle;
     [SerializeField] Slider masterVol, musicVol, sfxVol;
 
+    [SerializeField] Slider mouseSens, ControlerSens;
+    [SerializeField] TMP_Text mouseSensText, controllerSensText;
+    [SerializeField] Toggle grappleToogleToggle;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -69,10 +73,15 @@ public class OptionsMenu : MonoBehaviour
 
         fullscreenToggle.isOn = GameSettings.instance.fullscreen;
         stylizedTextToggle.isOn = GameSettings.instance.stylizedText;
+        grappleToogleToggle.isOn = GameSettings.instance.toogleGrapple;
 
         masterVol.value = GameSettings.instance.masterVolume;
         musicVol.value = GameSettings.instance.musicVolume;
         sfxVol.value = GameSettings.instance.SFXVolume;
+
+
+        mouseSens.value = MathUlits.ReMapTwoRanges(0.1f, 1f, 0f, 0.5f, 1f, 10f, 0.5f, 1f, GameSettings.instance.mouseSensitivity);
+        ControlerSens.value = MathUlits.ReMapTwoRanges(0.1f, 1f, 0f, 0.5f, 1f, 10f, 0.5f, 1f, GameSettings.instance.controllerSensitivity);
 
         for (int i = 0; i < flickerObjects.Count; i++)
         {
@@ -121,6 +130,15 @@ public class OptionsMenu : MonoBehaviour
 
         //handle existing flickers
         HandleExistingFlickers();
+
+        if(mouseSensText.gameObject.activeSelf)
+        {
+            mouseSensText.text = GameSettings.instance.mouseSensitivity.ToString();
+        }
+        if (controllerSensText.gameObject.activeSelf)
+        {
+            controllerSensText.text = GameSettings.instance.controllerSensitivity.ToString();
+        }
     }
 
 
@@ -292,10 +310,37 @@ public class OptionsMenu : MonoBehaviour
         GameSettings.instance.stylizedText = isStylized;
     }
 
+    public void SetIsGrappleToogle(bool isToogle)
+    {
+        GameSettings.instance.toogleGrapple = isToogle;
+    }
+
     public void SetResolution(int resolutionIndex)
     {
         Resolution newResolution = resolutions[resolutionIndex];
         Screen.SetResolution(newResolution.width, newResolution.height, Screen.fullScreen);
         GameSettings.instance.resolutionIndex = resolutionIndex;
+    }
+
+    public void SetMouseSensitivty(float value)
+    {
+        GameSettings.instance.mouseSensitivity = MathUlits.ReMapTwoRanges(0f, 0.5f, 0.1f, 1f, 0.5f, 1f, 1f, 10f, value);
+    }
+
+    public void SetControllerSensitivity(float value)
+    {
+        GameSettings.instance.controllerSensitivity = MathUlits.ReMapTwoRanges(0f, 0.5f, 0.1f, 1f, 0.5f, 1f, 1f, 10f, value);
+    }
+
+    public void ResetMouseSens()
+    {
+        GameSettings.instance.mouseSensitivity = 1f;
+        mouseSens.value = 0.5f;
+    }
+
+    public void ResetControllerSens()
+    {
+        GameSettings.instance.controllerSensitivity = 1f;
+        ControlerSens.value = 0.5f;
     }
 }
