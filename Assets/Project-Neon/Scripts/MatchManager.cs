@@ -103,6 +103,13 @@ public class MatchManager : MonoBehaviour
 
         timeRemainingInMatch = matchTimeSeconds;
 
+        if (MusicManager.instance != null)
+        {
+            MusicManager.instance.StopCurrentTrack();
+            MusicManager.instance.PlayTrack(0, 0.3f);
+            MusicManager.instance.SetLooping(false);
+        }
+
         PlayerState.hpRegenRate = PlayerHPRegenRate;
         active = true;
     }

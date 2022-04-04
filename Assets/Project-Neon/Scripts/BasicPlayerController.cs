@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Collections;
 
 //Basic character movement script based on the character controller from Very Very Valet
 //https://youtu.be/qdskE8PJy6Q
@@ -69,6 +70,10 @@ public class BasicPlayerController : MonoBehaviour
     [Header("Animation")]
     [SerializeField] CharacterAnimation animController;
 
+    [Header("Sound")]
+    [SerializeField] SoundEffect dashSFX, GrappleLaunchSFX, GrappleReelSFX;
+    [SerializeField] AudioSource grappleReelSource;
+
     public static Action OnGrapple;
     public static Action OnDoubleJump;
     public static Action OnDash;
@@ -119,7 +124,7 @@ public class BasicPlayerController : MonoBehaviour
         targetRotation = transform.rotation;
 
         airJumpsTaken = 0;
-        grounded = false;
+        grounded = true;
         coyoteTimer = 0.0f;
 
         currentGravity = Vector3.down * movementSettings.GetGravityGoingDown();
@@ -275,12 +280,8 @@ public class BasicPlayerController : MonoBehaviour
         Vector3 rayDir = Vector3.down;
 
         //if it hit something calculate the force that should be applied as a result
-        if (Physics.Raycast(transform.position, rayDir, out rayHit, movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
+        if (Physics.Raycast(transform.position, rayDir, out rayHit, 1f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
         {
-            grounded = true;
-            airJumpsTaken = 0;
-            coyoteTimer = 0.0f;
-
             float speedAlongRayDir = Vector3.Dot(rayDir, rb.velocity); //the speed that the player is moving along the ray's direction
             float otherVelAlongRayDir = 0.0f; //the speed that the object the ray has collided with is moving along the ray's direction, it is zero if it didn't hit another rigidbody
             if (rayHit.rigidbody != null)
@@ -323,6 +324,13 @@ public class BasicPlayerController : MonoBehaviour
             rb.AddForce(currentGravity, ForceMode.Acceleration);
             grounded = false;
             coyoteTimer += Time.fixedDeltaTime;
+        }
+
+        if (Physics.Raycast(transform.position, rayDir, out rayHit, 2.5f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
+        {
+            grounded = true;
+            airJumpsTaken = 0;
+            coyoteTimer = 0.0f;
         }
     }
 
@@ -405,7 +413,23 @@ public class BasicPlayerController : MonoBehaviour
             isGrappling = true;
             OnGrapple?.Invoke();
             rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
+
+            //play the sound effect
+            AudioSource newAS = null;
+            if (GrappleLaunchSFX != null) newAS = GrappleLaunchSFX.Play();
+
+            if(newAS != null && GrappleReelSFX != null && grappleReelSource != null)
+            {
+                float time = newAS.clip.length / newAS.pitch;
+                StartCoroutine(StartGrappleReelSFX(time));
+            }
         }
+    }
+
+    IEnumerator StartGrappleReelSFX(float startDelay)
+    {
+        yield return new WaitForSeconds(startDelay);
+        GrappleReelSFX.Play(grappleReelSource);
     }
 
     private void StopGrappling()
@@ -415,6 +439,7 @@ public class BasicPlayerController : MonoBehaviour
         isGrappling = false;
         timeSinceLastGrappleEnd = movementSettings.GetGrappleCooldown();
         if (Client.instance != null) Client.instance.SendGrappleStatus(false, hookPosition);
+        if (grappleReelSource != null) grappleReelSource.Stop();
         //rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
     }
 
@@ -453,6 +478,10 @@ public class BasicPlayerController : MonoBehaviour
         {
             rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
             rb.AddForce(grapplingMomentum, ForceMode.VelocityChange);
+            Vector3 startPoint = grappleLaunch.position;
+            Vector3 endPoint = grappleLatch.position;
+            //stop the reel sound effect when grappling finishes
+            if (grappleReelSource != null && Vector3.Distance(startPoint, endPoint) <= 0.5f) grappleReelSource.Stop();
 
             if (useJoint)
             {
@@ -515,6 +544,8 @@ public class BasicPlayerController : MonoBehaviour
             //numberOfDashesTaken++;
             timeRemainingInDash = movementSettings.GetDashLenght();
             OnDash?.Invoke();
+            //play the dash sound, we'll just play it locally as though it were in 2D space
+            if (dashSFX != null) dashSFX.Play();
         }
     }
 

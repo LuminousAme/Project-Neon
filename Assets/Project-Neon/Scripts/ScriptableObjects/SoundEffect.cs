@@ -10,15 +10,16 @@ public class SoundEffect : ScriptableObject
     //based on this video https://youtu.be/xDLqdZu0ll0
     public AudioClip[] audioClips;
     [Range(0f, 1f)]
-    public Vector2 volume = new Vector2(0.5f, 0.5f);
+    public float minVolume = 0.5f, maxVolume = 0.5f;
     [Range(0f, 3f)]
-    public Vector2 pitch = new Vector2(1f, 1f);
+    public float minPitch = 1, maxPitch = 1f;
 
     public bool useSemitones = false;
-    [Range(-10,10)]
-    public Vector2Int semitones = new Vector2Int(0, 0);
+    [Range(-10, 10)]
+    public int minSemitones = 0, maxSemitones = 0;
 
     public AudioMixerGroup targetMixerGroup;
+    private AudioSource tempSource;
 
     enum SFXPlayerOrder
     {
@@ -31,7 +32,7 @@ public class SoundEffect : ScriptableObject
     private int playIndex = 0;
 
 #if UNITY_EDITOR
-    public AudioSource previewer;
+    [HideInInspector] public AudioSource previewer;
 
     private void OnEnable()
     {
@@ -68,7 +69,7 @@ public class SoundEffect : ScriptableObject
                 playIndex = (playIndex +  audioClips.Length - 1) % audioClips.Length;
                 break;
             case SFXPlayerOrder.RANDOM:
-                Random.Range(0, audioClips.Length);
+                playIndex = Random.Range(0, audioClips.Length);
                 break;
         }
 
@@ -79,13 +80,13 @@ public class SoundEffect : ScriptableObject
     {
         if(useSemitones)
         {
-            pitch.x = Mathf.Pow(1.05946f, semitones.x);
-            pitch.y = Mathf.Pow(1.05946f, semitones.y);
+            minPitch = Mathf.Pow(1.05946f, minSemitones);
+            maxPitch = Mathf.Pow(1.05946f, maxSemitones);
         }
         else
         {
-            semitones.x = Mathf.RoundToInt(Mathf.Log10(pitch.x) / Mathf.Log10(1.05946f));
-            semitones.y = Mathf.RoundToInt(Mathf.Log10(pitch.y) / Mathf.Log10(1.05946f));
+            minSemitones = Mathf.RoundToInt(Mathf.Log10(minPitch) / Mathf.Log10(1.05946f));
+            maxSemitones = Mathf.RoundToInt(Mathf.Log10(maxPitch) / Mathf.Log10(1.05946f));
         }
     }
 
@@ -113,14 +114,22 @@ public class SoundEffect : ScriptableObject
 
         //set the source confirguation
         source.clip = GetClip();
-        source.volume = Random.Range(volume.x, volume.y);
-        source.pitch = useSemitones ? Mathf.Pow(1.05946f, Random.Range(semitones.x, semitones.y+1)) :  Random.Range(pitch.x, pitch.y);
+        source.volume = Random.Range(minVolume, maxVolume);
+        source.pitch = useSemitones ? Mathf.Pow(1.05946f, Random.Range(minSemitones, maxSemitones+1)) :  Random.Range(minPitch, maxPitch);
         source.outputAudioMixerGroup = targetMixerGroup;
 
         source.Play();
         if (newSource) Destroy(source.gameObject, source.clip.length / source.pitch);
 
-
         return source;
+    }
+
+    public AudioSource PlayDuplicate(AudioSource toDup)
+    {
+        GameObject newObj = Instantiate(toDup.gameObject);
+        AudioSource newSource = newObj.GetComponent<AudioSource>();
+        Play(newSource);
+        Destroy(newObj, newSource.clip.length / newSource.pitch);
+        return newSource;
     }
 }

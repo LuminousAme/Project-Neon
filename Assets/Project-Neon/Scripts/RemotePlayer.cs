@@ -54,6 +54,11 @@ public class RemotePlayer : MonoBehaviour
     [SerializeField] float ySpeedForFalling = -2f;
     [SerializeField] float ySpeedForJumping = 2f;
     [SerializeField] CharacterAnimation controller;
+
+    [Header("Sound")]
+    [SerializeField] SoundEffect GrappleLaunchSFX, GrappleReelSFX;
+    [SerializeField] AudioSource grappleSoundSource, grappleReelSoundSource;
+
     public void SetData(Vector3 pos, Vector3 vel, float VertRot, float HoriRot)
     {
         //we can just take the velocities and speeds
@@ -121,7 +126,8 @@ public class RemotePlayer : MonoBehaviour
         //do a raycast down
         RaycastHit rayHit;
         Vector3 rayDir = Vector3.down;
-        if (Physics.Raycast(transform.position, rayDir, out rayHit, 1.2f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
+        
+        if (Physics.Raycast(transform.position, rayDir, out rayHit, 2.5f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
         {
             controller.SetOnGround(true);
             Debug.Log("Remote player grounded " + rayHit.distance);
@@ -216,6 +222,20 @@ public class RemotePlayer : MonoBehaviour
             else grapplingLine.positionCount = 0;
         }
 
+        if(isGrappling && GrappleLaunchSFX != null && grappleSoundSource != null)
+        {
+            GrappleLaunchSFX.Play(grappleSoundSource);
+            if(GrappleReelSFX != null)
+            {
+                float waitTime = (grappleSoundSource.clip.length / grappleSoundSource.pitch) + 0.05f;
+                StartCoroutine(StartGrappleReelSound(waitTime));
+            }
+        }
+        else
+        {
+            if (grappleReelSoundSource != null) grappleReelSoundSource.Stop();
+        }
+
         hookPosition = target;
         adjustedHookPosition = hookPosition - grappleLaunch.localPosition;
         value = 0;
@@ -225,6 +245,11 @@ public class RemotePlayer : MonoBehaviour
     void GrapplingHookUpdate()
     {
         desiredRotForGrapple = Quaternion.LookRotation(acutalGraple.position - grapleRest.position);
+
+        Vector3 startPoint = grappleLaunch.position;
+        Vector3 endPoint = grappleLatch.position;
+        //stop the reel sound effect when grappling finishes
+        if (grappleReelSoundSource != null && Vector3.Distance(startPoint, endPoint) <= 0.5f) grappleReelSoundSource.Stop();
     }
 
     void DrawGrapplingHook()
@@ -263,5 +288,11 @@ public class RemotePlayer : MonoBehaviour
             slash.Stop();
             slash.gameObject.SetActive(false);
         }
+    }
+
+    IEnumerator StartGrappleReelSound(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+        GrappleReelSFX.Play(grappleReelSoundSource);
     }
 }
