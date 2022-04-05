@@ -15,6 +15,7 @@ public class HUDManager : MonoBehaviour
     [SerializeField] HealthBar healthBar;
     [SerializeField] GrappleUI GrappleUI;
     [SerializeField] DashBar dashUI;
+    [SerializeField] AttackHUD crosshair;
     //[SerializeField] DashBar dash2;
     [SerializeField] TMP_Text timeText;
 
@@ -29,6 +30,8 @@ public class HUDManager : MonoBehaviour
         scoreElapsedtime = 0f;
         GrappleUI.SetPlayer(FindObjectOfType<BasicPlayerController>());
         dashUI.SetPlayer(FindObjectOfType<BasicPlayerController>());
+        crosshair.SetPlayer(FindObjectOfType<BasicPlayerController>());
+        
     }
 
     private void OnDisable()
