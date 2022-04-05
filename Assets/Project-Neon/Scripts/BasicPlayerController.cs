@@ -627,4 +627,20 @@ public class BasicPlayerController : MonoBehaviour
     }
 
     public Vector3 GetCamEulerAngles() => eulerAngles;
+
+    public void setControlsState(bool on)
+    {
+        if (on)
+        {
+            controls.Enable();
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            controls.Disable();
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
 }
