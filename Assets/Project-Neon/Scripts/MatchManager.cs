@@ -136,6 +136,10 @@ public class MatchManager : MonoBehaviour
         BasicPlayerController controller = FindObjectOfType<BasicPlayerController>();
         if (controller != null) controller.EndMatch();
 
+        {
+            MusicManager.instance.SilenceAllOtherSounds();
+        }
+
         StartCoroutine(BeginEndMatchScene());
     }
 
