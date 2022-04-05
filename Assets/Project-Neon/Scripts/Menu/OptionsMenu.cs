@@ -212,15 +212,16 @@ public class OptionsMenu : MonoBehaviour
 
     public void BackButtonPressed()
     {
+        GameSettings.instance.SaveValuesToFile();
+
         //if the hud is loaded, just unload this scene asyncly 
-        if(SceneManager.GetSceneByBuildIndex(5).isLoaded)
+        if (SceneManager.GetSceneByBuildIndex(5).isLoaded)
         {
             SceneManager.UnloadSceneAsync(4);
         }
         //otherwise go to the 
         else
         {
-            GameSettings.instance.SaveValuesToFile();
             sceneTransition.beginTransition(0);
         }
 
