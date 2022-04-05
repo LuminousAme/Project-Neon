@@ -42,4 +42,21 @@ public class MusicManager : MonoBehaviour
     {
         musicPlayer.Stop();
     }
+
+    public void SilenceAllOtherSounds(List<AudioSource> excluding = null)
+    {
+        AudioSource[] audioSources = GetComponents<AudioSource>();
+
+        for(int i = 0; i < audioSources.Length; i++)
+        {
+            if (audioSources[i] == musicPlayer) continue;
+
+            if(excluding != null)
+            {
+                if (excluding.Contains(audioSources[i])) continue;
+            }
+
+            if (audioSources[i].isPlaying) audioSources[i].Stop();
+        }
+    }
 }
