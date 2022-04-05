@@ -19,6 +19,8 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
     [SerializeField] private GameObject hitParticlePrefab;
     [SerializeField] private Transform particleSpawnPoint;
 
+    [SerializeField] private SoundEffect hitSFX;
+
     public static Action OnHeavyAttack;
 
     //subscribe to the hitbox callback
@@ -45,6 +47,9 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
             GameObject newParticle = Instantiate(hitParticlePrefab, particleSpawnPoint.position, particleSpawnPoint.localRotation);
             newParticle.transform.localScale *= 2f;
             Destroy(newParticle, 0.5f);
+
+            //play the hit sound effect
+            if (hitSFX != null) hitSFX.Play();
 
             //but you can't tell if there's a kill here, however the PlayerState class has event callbacks onNewKill and onRespawn which fire off when 
             //a player gets a kill and dies respectively, both passing the playerState script so you can check the player invovled

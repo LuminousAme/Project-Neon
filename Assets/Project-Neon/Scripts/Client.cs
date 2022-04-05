@@ -39,6 +39,8 @@ public class Client : MonoBehaviour
     private float timeBetweenConnectionChecks = 1f, elapsedTime = 0f;
 
     [SerializeField] private GameObject hitParticlePrefab;
+    [SerializeField] private SoundEffect hitSFX;
+    [SerializeField] private AudioSource hitAudioSource;
 
     //starts client
     private void StartClient(int type)
@@ -340,10 +342,17 @@ public class Client : MonoBehaviour
                                 player.RemoteUpdateHP(floatarr[0]);
                             }
 
-                            
+                            //play the particle effect where the hit happened
                             GameObject newObj = Instantiate(hitParticlePrefab, new Vector3(floatarr[1], floatarr[2], floatarr[3]), Quaternion.identity);
                             newObj.transform.localScale *= floatarr[4];
                             Destroy(newObj, 0.5f);
+
+                            //play the sound effect where the hit happened
+                            if (hitSFX != null && hitAudioSource != null)
+                            {
+                                hitAudioSource.transform.position = new Vector3(floatarr[1], floatarr[2], floatarr[3]);
+                                hitSFX.Play(hitAudioSource);
+                            }
                         }
                     }
                 }

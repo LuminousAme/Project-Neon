@@ -21,6 +21,9 @@ public class CharacterAnimation : MonoBehaviour
     int movingKey;
     public void SetMoving(bool moving) => this.moving = moving;
 
+    [SerializeField] SoundEffect landingSFX;
+    [SerializeField] AudioSource landingAudioSource;
+
     [SerializeField] Animator animator;
 
     // Start is called before the first frame update
@@ -29,8 +32,8 @@ public class CharacterAnimation : MonoBehaviour
         isJumping = false;
         isJumpingInAnimator = false;
         isJumpingKey = Animator.StringToHash("IsJumping");
-        onGround = false;
-        onGroundInAnimator = false;
+        onGround = true;
+        onGroundInAnimator = true;
         onGroundKey = Animator.StringToHash("IsGrounded");
         isFalling = false;
         isFallingInAnimator = false;
@@ -53,12 +56,17 @@ public class CharacterAnimation : MonoBehaviour
         {
             animator.SetBool(onGroundKey, onGround);
             onGroundInAnimator = onGround;
+            if (onGround && landingSFX != null && landingAudioSource != null)
+            {
+                landingSFX.Play(landingAudioSource);
+            }
         }
 
         if(isFalling != isFallingInAnimator)
         {
             animator.SetBool(isFallingKey, isFalling);
             isFallingInAnimator = isFalling;
+
         }
 
         if(moving != movingInAnimator)
