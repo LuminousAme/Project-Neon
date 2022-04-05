@@ -35,9 +35,9 @@ public class HUDManager : MonoBehaviour
         playerController = FindObjectOfType<BasicPlayerController>();
         GrappleUI.SetPlayer(playerController);
         dashUI.SetPlayer(playerController);
+        crosshair.SetPlayer(playerController);
         pausePanel.GetComponent<PauseMenu>().SetHUD(this);
         pausePanel.SetActive(false);
-        crosshair.SetPlayer(FindObjectOfType<BasicPlayerController>());
     }
 
     private void OnDisable()
@@ -102,10 +102,5 @@ public class HUDManager : MonoBehaviour
     {
         playerController.setControlsState(!paused);
         pausePanel.SetActive(paused);
-
-        if(paused)
-        {
-
-        }
     }
 }

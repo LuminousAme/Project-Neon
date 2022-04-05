@@ -37,8 +37,8 @@ public class AttackHUD : MonoBehaviour
 
         //endPositionR = new Vector3(startPositionR.x - right.transform.localScale.x * 5.3f, startPositionR.y, 0);
         //endPositionL = new Vector3(startPositionL.x + left.transform.localScale.x * 5.3f, startPositionL.y, 0);
-        endPositionR = new Vector3(startPositionR.x - (distanceR * 1.05f) - (right.transform.localScale.x * 2), startPositionR.y, 0);
-        endPositionL = new Vector3(startPositionL.x + (distanceL * 1.05f) + (left.transform.localScale.x * 2), startPositionL.y, 0);
+        endPositionR = new Vector3(startPositionR.x - (distanceR * 1.3f) - (right.transform.localScale.x * 2), startPositionR.y, 0);
+        endPositionL = new Vector3(startPositionL.x + (distanceL * 1.3f) + (left.transform.localScale.x * 2), startPositionL.y, 0);
     }
 
     // Update is called once per frame
