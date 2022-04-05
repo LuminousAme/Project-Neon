@@ -32,13 +32,13 @@ public class AttackHUD : MonoBehaviour
         startPositionR = right.transform.localPosition;
         startPositionL = left.transform.localPosition;
 
-        // endPositionR = new Vector3(startPositionR.x - 2f, startPositionR.y, 0);
-        endPositionR = new Vector3(startPositionR.x - right.transform.localScale.x * 5.3f, startPositionR.y, 0);
-        // endPositionL = new Vector3(startPositionL.x + 2f, startPositionL.y, 0);
-        endPositionL = new Vector3(startPositionL.x + left.transform.localScale.x * 5.3f, startPositionL.y, 0);
+        distanceL = Vector3.Distance(startPositionL, centerUI.transform.localPosition);
+        distanceR = Vector3.Distance(startPositionR, centerUI.transform.localPosition);
 
-        distanceL = Vector3.Distance(startPositionL, centerUI.transform.position);
-        distanceR = Vector3.Distance(startPositionR, centerUI.transform.position);
+        //endPositionR = new Vector3(startPositionR.x - right.transform.localScale.x * 5.3f, startPositionR.y, 0);
+        //endPositionL = new Vector3(startPositionL.x + left.transform.localScale.x * 5.3f, startPositionL.y, 0);
+        endPositionR = new Vector3(startPositionR.x - (distanceR * 1.05f) - (right.transform.localScale.x * 2), startPositionR.y, 0);
+        endPositionL = new Vector3(startPositionL.x + (distanceL * 1.05f) + (left.transform.localScale.x * 2), startPositionL.y, 0);
     }
 
     // Update is called once per frame
