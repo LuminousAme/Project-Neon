@@ -1,7 +1,6 @@
-using System.Collections.Generic;
-using UnityEngine;
 using System;
 using System.Collections;
+using UnityEngine;
 
 //Basic character movement script based on the character controller from Very Very Valet
 //https://youtu.be/qdskE8PJy6Q
@@ -68,11 +67,12 @@ public class BasicPlayerController : MonoBehaviour
     [SerializeField] private HeavyAttack heavyAttack;
 
     [Header("Animation")]
-    [SerializeField] CharacterAnimation animController;
+    [SerializeField] private CharacterAnimation animController;
 
     [Header("Sound")]
-    [SerializeField] SoundEffect dashSFX, GrappleLaunchSFX, GrappleReelSFX;
-    [SerializeField] AudioSource grappleReelSource;
+    [SerializeField] private SoundEffect dashSFX, GrappleLaunchSFX, GrappleReelSFX;
+
+    [SerializeField] private AudioSource grappleReelSource;
 
     public static Action OnGrapple;
     public static Action OnDoubleJump;
@@ -219,8 +219,6 @@ public class BasicPlayerController : MonoBehaviour
 
         //apply any mommentum from the grappling hook
         FixedGrapplingHookPull();
-
-
     }
 
     private void FixedRotatePlayer()
@@ -418,7 +416,7 @@ public class BasicPlayerController : MonoBehaviour
             AudioSource newAS = null;
             if (GrappleLaunchSFX != null) newAS = GrappleLaunchSFX.Play();
 
-            if(newAS != null && GrappleReelSFX != null && grappleReelSource != null)
+            if (newAS != null && GrappleReelSFX != null && grappleReelSource != null)
             {
                 float time = newAS.clip.length / newAS.pitch;
                 StartCoroutine(StartGrappleReelSFX(time));
@@ -426,7 +424,7 @@ public class BasicPlayerController : MonoBehaviour
         }
     }
 
-    IEnumerator StartGrappleReelSFX(float startDelay)
+    private IEnumerator StartGrappleReelSFX(float startDelay)
     {
         yield return new WaitForSeconds(startDelay);
         GrappleReelSFX.Play(grappleReelSource);
@@ -565,7 +563,7 @@ public class BasicPlayerController : MonoBehaviour
 
     private void HandleGrappleRelease()
     {
-        if(isGrappling && !GameSettings.instance.toogleGrapple)
+        if (isGrappling && !GameSettings.instance.toogleGrapple)
         {
             StopGrappling();
         }
@@ -590,6 +588,14 @@ public class BasicPlayerController : MonoBehaviour
     {
         return numberOfDashesTaken;
     }
+
+    public bool GetAttackDown()
+    {
+        return attackDown;
+    }
+
+    public float GetHeavyAttackTime() => beginHeavyAttackTime;
+    public float GetAttackDownTime() => timeSinceAttackDown;
 
     public void PressedDownAttack()
     {

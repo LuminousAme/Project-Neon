@@ -16,6 +16,7 @@ public class HUDManager : MonoBehaviour
     [SerializeField] HealthBar healthBar;
     [SerializeField] GrappleUI GrappleUI;
     [SerializeField] DashBar dashUI;
+    [SerializeField] AttackHUD crosshair;
     //[SerializeField] DashBar dash2;
     [SerializeField] TMP_Text timeText;
     [SerializeField] GameObject pausePanel;
@@ -36,6 +37,7 @@ public class HUDManager : MonoBehaviour
         dashUI.SetPlayer(playerController);
         pausePanel.GetComponent<PauseMenu>().SetHUD(this);
         pausePanel.SetActive(false);
+        crosshair.SetPlayer(FindObjectOfType<BasicPlayerController>());
     }
 
     private void OnDisable()
