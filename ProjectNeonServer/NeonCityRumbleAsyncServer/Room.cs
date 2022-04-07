@@ -16,6 +16,8 @@ namespace NeonCityRumbleAsyncServer
         List<Player> playersInThisRoom = new List<Player>();
         byte[] recBuffer = new byte[1024];
 
+        List<Player> toRemove = new List<Player>();
+
         //create a mutex for the room
         private Mutex mutex;
 
@@ -36,43 +38,78 @@ namespace NeonCityRumbleAsyncServer
 
         public void JoinRoom(Player joiningPlayer)
         {
-            playersInThisRoom.Add(joiningPlayer);
-            joiningPlayer.TcpSocket.BeginReceive(recBuffer, 0, recBuffer.Length, 0, new AsyncCallback(TcpRecieveCallBack), joiningPlayer.TcpSocket);
+            try
+            {
+                playersInThisRoom.Add(joiningPlayer);
+                joiningPlayer.connectedRoom = this;
+
+                string replyMsg = "5$" + RoomCode;
+                byte[] toSendReply = Encoding.ASCII.GetBytes(replyMsg);
+
+                joiningPlayer.TcpSocket.BeginSend(toSendReply, 0, toSendReply.Length, 0, new AsyncCallback(TcpSendCallBack), joiningPlayer.TcpSocket);
+
+                joiningPlayer.TcpSocket.BeginReceive(recBuffer, 0, recBuffer.Length, 0, new AsyncCallback(TcpRecieveCallBack), joiningPlayer.TcpSocket);
+            }
+            catch (SocketException se)
+            {
+                if (se.SocketErrorCode != SocketError.WouldBlock)
+                {
+                    Console.WriteLine(se.ToString());
+                }
+            }
         }
 
         private void TcpRecieveCallBack(IAsyncResult result)
         {
             if (mutex.WaitOne())
             {
-                Socket client = (Socket)result.AsyncState;
-                int rec = client.EndReceive(result);
-                byte[] data = new byte[rec];
-                Array.Copy(recBuffer, data, rec);
-
-                string recMsg = Encoding.ASCII.GetString(data);
-                string[] splitRecMsg = recMsg.Split('$');
-                //check if it's a disconnect message
-                if (splitRecMsg[0] == "-2")
+                try
                 {
-                    //if it is, identify the player
-                    Player disconnectingPlayer = playersInThisRoom.Find(p => p.TcpSocket == client);
-
-                    if (disconnectingPlayer != null)
+                    Socket client = (Socket)result.AsyncState;
+                    int rec = client.EndReceive(result);
+                    if (rec > 0)
                     {
-                        playersInThisRoom.Remove(disconnectingPlayer);
-                        UpdateAllPlayers();
+                        byte[] data = new byte[rec];
+                        Array.Copy(recBuffer, data, rec);
+
+                        string recMsg = Encoding.ASCII.GetString(data);
+                        string[] splitRecMsg = recMsg.Split('$');
+                        //check if it's a disconnect message
+                        if (splitRecMsg[0] == "-2")
+                        {
+                            //if it is, identify the player
+                            Player disconnectingPlayer = playersInThisRoom.Find(p => p.TcpSocket == client);
+
+                            if (disconnectingPlayer != null)
+                            {
+                                playersInThisRoom.Remove(disconnectingPlayer);
+                                NeonCityRumbleServer.RemovePlayer(disconnectingPlayer);
+                                UpdateAllPlayers();
+                            }
+                        }
+                        //if it's not send the message to all of the other players
+                        else
+                        {
+                            foreach (Player player in playersInThisRoom)
+                            {
+                                if (player.TcpSocket == client) continue;
+
+                                player.TcpSendBuffer.AddRange(data);
+                            }
+                            client.BeginReceive(recBuffer, 0, recBuffer.Length, 0, new AsyncCallback(TcpRecieveCallBack), client);
+                        }
+                    }
+                    else
+                    {
+                        client.BeginReceive(recBuffer, 0, recBuffer.Length, 0, new AsyncCallback(TcpRecieveCallBack), client);
                     }
                 }
-                //if it's not send the message to all of the other players
-                else
+                catch (SocketException se)
                 {
-                    foreach (Player player in playersInThisRoom)
+                    if (se.SocketErrorCode != SocketError.WouldBlock)
                     {
-                        if (player.TcpSocket == client) continue;
-
-                        player.sendBuffer.AddRange(data);
+                        Console.WriteLine(se.ToString());
                     }
-                    client.BeginReceive(recBuffer, 0, recBuffer.Length, 0, new AsyncCallback(TcpRecieveCallBack), client);
                 }
 
                 mutex.ReleaseMutex();
@@ -85,31 +122,97 @@ namespace NeonCityRumbleAsyncServer
             client.EndSend(result);
         }
 
+        public void UdpMessageRecieved(Player sendingPlayer, byte[] data)
+        {
+            if (mutex.WaitOne())
+            {
+                foreach (Player player in playersInThisRoom)
+                {
+                    if (player == sendingPlayer) continue;
+
+                    player.UdpSendBuffer.AddRange(data);
+                }
+
+                mutex.ReleaseMutex();
+            }
+        }
+
         private void SendLoop()
         {
             while (true)
             {
                 if (mutex.WaitOne())
                 {
-                    foreach (Player player in playersInThisRoom)
+                    try
                     {
-                        //if it's been a second since the last send, make sure to send a ping message
-                        if(player.stopwatch.ElapsedMilliseconds >= 1000)
+                        //check for disconnects
                         {
-                            string pingStr = "4";
-                            byte[] pingBuffer = Encoding.ASCII.GetBytes(pingStr);
-                            player.sendBuffer.AddRange(pingBuffer);
+                            //if any of the players have disconnected add to the list of players to remove
+                            List<Player> toRemove = new List<Player>();
+                            for (int i = 0; i < playersInThisRoom.Count; i++)
+                            {
+                                if (!playersInThisRoom[i].TcpSocket.IsConnected())
+                                {
+                                    toRemove.Add(playersInThisRoom[i]);
+                                }
+                            }
+
+                            //go over all of the players to remove, and remove them from both list
+                            //when this scope exits there shouldn't be any remaining references to the player object
+                            foreach (Player player in toRemove)
+                            {
+                                playersInThisRoom.Remove(player);
+                                NeonCityRumbleServer.RemovePlayer(player);
+                            }
+
+                            if(toRemove.Count > 0)
+                            {
+                                UpdateAllPlayers();
+                            }
                         }
 
-                        //if there's anything to send, then send it
-                        if(player.sendBuffer.Count >= 0)
+                        //tcp
                         {
-                            player.TcpSocket.BeginSend(player.sendBuffer.ToArray(), 0, player.sendBuffer.Count, 0, new AsyncCallback(TcpSendCallBack), player.TcpSocket);
-                            //and restart the timer since the last time a message was sent
-                            player.stopwatch.Restart();
+                            foreach (Player player in playersInThisRoom)
+                            {
+                                //if it's been a second since the last send, make sure to send a ping message
+                                if (player.stopwatch.ElapsedMilliseconds >= 1000)
+                                {
+                                    string pingStr = "4";
+                                    byte[] pingBuffer = Encoding.ASCII.GetBytes(pingStr);
+                                    player.TcpSendBuffer.AddRange(pingBuffer);
+                                }
+
+                                //if there's anything to send, then send it
+                                if (player.TcpSendBuffer.Count > 0)
+                                {
+                                    player.TcpSocket.BeginSend(player.TcpSendBuffer.ToArray(), 0, player.TcpSendBuffer.Count, 0, new AsyncCallback(TcpSendCallBack), player.TcpSocket);
+                                    player.TcpSendBuffer.Clear();
+                                    //and restart the timer since the last time a message was sent
+                                    player.stopwatch.Restart();
+                                }
+                            }
                         }
 
-                        player.sendBuffer.Clear();
+                        //udp
+                        {
+                            foreach (Player player in playersInThisRoom)
+                            {
+                                if(player.udpEndPoint != null && player.UdpSendBuffer.Count > 0)
+                                {
+                                    NeonCityRumbleServer.UdpSendMessage(player.udpEndPoint, player.UdpSendBuffer.ToArray());
+                                    player.UdpSendBuffer.Clear();
+                                }
+                            }
+                        }
+
+                    }
+                    catch (SocketException se)
+                    {
+                        if (se.SocketErrorCode != SocketError.WouldBlock)
+                        {
+                            Console.WriteLine(se.ToString());
+                        }
                     }
 
                     mutex.ReleaseMutex();
@@ -122,20 +225,30 @@ namespace NeonCityRumbleAsyncServer
         //send the updated list of all connected players to each of the clients in this room
         public void UpdateAllPlayers()
         {
-            string toSendMsg = "3";
-
-            foreach (Player player in playersInThisRoom)
+            try
             {
-                string name = player.name;
-                string id = player.id.ToString();
-                toSendMsg += "$" + player.id.ToString() + "$" + player.name;
+                string toSendMsg = "3";
+
+                foreach (Player player in playersInThisRoom)
+                {
+                    string name = player.name;
+                    string id = player.id.ToString();
+                    toSendMsg += "$" + player.id.ToString() + "$" + player.name;
+                }
+
+                byte[] toSendBuffer = Encoding.ASCII.GetBytes(toSendMsg);
+
+                foreach (Player player in playersInThisRoom)
+                {
+                    player.TcpSocket.BeginSend(toSendBuffer, 0, toSendBuffer.Length, 0, new AsyncCallback(TcpSendCallBack), player.TcpSocket);
+                }
             }
-
-            byte[] toSendBuffer = Encoding.ASCII.GetBytes(toSendMsg);
-
-            foreach (Player player in playersInThisRoom)
+            catch (SocketException se)
             {
-                player.TcpSocket.BeginSend(toSendBuffer, 0, toSendBuffer.Length, 0, new AsyncCallback(TcpSendCallBack), player.TcpSocket);
+                if (se.SocketErrorCode != SocketError.WouldBlock)
+                {
+                    Console.WriteLine(se.ToString());
+                }
             }
         }
     }

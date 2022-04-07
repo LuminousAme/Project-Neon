@@ -1,0 +1,6 @@
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NCRTestClient\bin\Release\NCRTestClient.exe.config
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NCRTestClient\bin\Release\NCRTestClient.exe
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NCRTestClient\bin\Release\NCRTestClient.pdb
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NCRTestClient\obj\Release\NCRTestClient.csprojAssemblyReference.cache
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NCRTestClient\obj\Release\NCRTestClient.exe
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NCRTestClient\obj\Release\NCRTestClient.pdb
