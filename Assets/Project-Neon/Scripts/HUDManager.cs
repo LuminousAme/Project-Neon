@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using System.Linq;
 using System;
+using UnityEngine.SceneManagement;
 
 public class HUDManager : MonoBehaviour
 {
@@ -18,6 +19,9 @@ public class HUDManager : MonoBehaviour
     [SerializeField] AttackHUD crosshair;
     //[SerializeField] DashBar dash2;
     [SerializeField] TMP_Text timeText;
+    [SerializeField] GameObject pausePanel;
+
+    BasicPlayerController playerController;
 
     private void OnEnable()
     {
@@ -28,10 +32,12 @@ public class HUDManager : MonoBehaviour
         fakeScore = player.GetBounty();
         actualScore = player.GetBounty();
         scoreElapsedtime = 0f;
-        GrappleUI.SetPlayer(FindObjectOfType<BasicPlayerController>());
-        dashUI.SetPlayer(FindObjectOfType<BasicPlayerController>());
-        crosshair.SetPlayer(FindObjectOfType<BasicPlayerController>());
-        
+        playerController = FindObjectOfType<BasicPlayerController>();
+        GrappleUI.SetPlayer(playerController);
+        dashUI.SetPlayer(playerController);
+        crosshair.SetPlayer(playerController);
+        pausePanel.GetComponent<PauseMenu>().SetHUD(this);
+        pausePanel.SetActive(false);
     }
 
     private void OnDisable()
@@ -69,12 +75,32 @@ public class HUDManager : MonoBehaviour
         {
             timeText.text = "";
         }
-        
-        if (Input.GetKeyDown(KeyCode.F1)) player.TakeDamage(10, new Vector3(1000f, 1000f, 1000f));
+
+        //if (Input.GetKeyDown(KeyCode.F1)) player.TakeDamage(10, new Vector3(1000f, 1000f, 1000f));
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            //if the pause menu is on but the options menu is off
+            if(pausePanel.activeSelf && (!SceneManager.GetSceneByBuildIndex(4).isLoaded))
+            {
+                //just close the pause menu
+                ChangePauseState(false);
+            }
+            //otherwise, if the pause menu is not on, open it
+            else if (!pausePanel.activeSelf) {
+                ChangePauseState(true);
+            }
+        }
     }
 
     void HandleHPOnRespawn(PlayerState p)
     {
         if(p == player) healthBar.HardSetHealth(player.GetHP());
+    }
+
+    public void ChangePauseState(bool paused)
+    {
+        playerController.setControlsState(!paused);
+        pausePanel.SetActive(paused);
     }
 }

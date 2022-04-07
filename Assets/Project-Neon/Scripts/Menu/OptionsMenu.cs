@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class OptionsMenu : MonoBehaviour
 {
@@ -212,7 +213,18 @@ public class OptionsMenu : MonoBehaviour
     public void BackButtonPressed()
     {
         GameSettings.instance.SaveValuesToFile();
-        sceneTransition.beginTransition(0);
+
+        //if the hud is loaded, just unload this scene asyncly 
+        if (SceneManager.GetSceneByBuildIndex(5).isLoaded)
+        {
+            SceneManager.UnloadSceneAsync(4);
+        }
+        //otherwise go to the 
+        else
+        {
+            sceneTransition.beginTransition(0);
+        }
+
     }
 
     public void GraphicsButtonPressed()
