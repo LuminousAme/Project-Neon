@@ -73,4 +73,10 @@ public static class ExtensionMethods
     {
         f = ((f % 360f) + 360f) % 360f;
     }
+
+    public static float[] ToArray(this Vector3 v)
+    {
+        float[] arr = { v.x, v.y, v.z };
+        return arr;
+    }
 }

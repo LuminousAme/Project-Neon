@@ -1,0 +1,6 @@
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NeonCityRumbleAsyncServer\bin\Release\NeonCityRumbleAsyncServer.exe.config
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NeonCityRumbleAsyncServer\bin\Release\NeonCityRumbleAsyncServer.exe
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NeonCityRumbleAsyncServer\bin\Release\NeonCityRumbleAsyncServer.pdb
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NeonCityRumbleAsyncServer\obj\Release\NeonCityRumbleAsyncServer.csprojAssemblyReference.cache
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NeonCityRumbleAsyncServer\obj\Release\NeonCityRumbleAsyncServer.exe
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\NeonCityRumbleAsyncServer\obj\Release\NeonCityRumbleAsyncServer.pdb
