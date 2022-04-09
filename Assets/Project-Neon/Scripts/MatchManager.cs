@@ -166,6 +166,13 @@ public class MatchManager : MonoBehaviour
                     if (Client.instance == null || (Client.instance != null && Client.instance.GetThisClientID() == players[i].GetPlayerID()))
                         players[i].TakeDamage(100, new Vector3(1000f, 1000f, 1000f));
                 }
+
+                if (players[i].GetHP() <= 0)
+                {
+                    //kill the player so they respawn at their starting position
+                    if (Client.instance == null || (Client.instance != null && Client.instance.GetThisClientID() == players[i].GetPlayerID()))
+                        RespawnPlayer(players[i]);
+                }
             }
 
             if (multiplayer) timeRemainingInMatch -= Time.deltaTime;
