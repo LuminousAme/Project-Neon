@@ -170,6 +170,7 @@ public class PlayerState : MonoBehaviour
 
     public void RemoteUpdateHP(float newHP)
     {
+        if (hp < newHP && newHP > 95f) onRespawn?.Invoke(this);
         hp = newHP;
     }
 }
