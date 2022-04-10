@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerState : MonoBehaviour
@@ -28,6 +26,7 @@ public class PlayerState : MonoBehaviour
     public static event HandleNewKill onNewKill;
 
     public delegate void HandleLocalHPChange(PlayerState player);
+
     public static event HandleLocalHPChange onHPChange;
 
     public float GetHP() => hp;
@@ -138,6 +137,10 @@ public class PlayerState : MonoBehaviour
             //uncomment this when we figure out how to make it work with netcode
             //hp = Mathf.Clamp(hp + hpRegenRate * Time.deltaTime, 0, basicData.GetMaxHealth());
         }
+        //if (Input.GetKeyDown(KeyCode.F4))
+        //{
+        //    TakeDamage(10, new Vector3(1000f, 1000f, 1000f));
+        //}
     }
 
     //adds to the total ammount of damage dealth by this player
