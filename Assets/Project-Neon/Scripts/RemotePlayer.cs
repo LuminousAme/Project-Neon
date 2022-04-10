@@ -77,7 +77,7 @@ public class RemotePlayer : MonoBehaviour
         //for the acutal values we want to do some smoothly damping though
         NewPositionRecieved(pos);
 
-        Debug.Log("updated!");
+        //Debug.Log("updated!");
         timeSinceUpdate = 0f;
     }
 
@@ -130,7 +130,6 @@ public class RemotePlayer : MonoBehaviour
         if (Physics.Raycast(transform.position, rayDir, out rayHit, 2.5f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
         {
             controller.SetOnGround(true);
-            Debug.Log("Remote player grounded " + rayHit.distance);
         }
         else controller.SetOnGround(false);
 

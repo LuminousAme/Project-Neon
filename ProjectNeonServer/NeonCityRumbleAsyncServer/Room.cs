@@ -45,17 +45,15 @@ namespace NeonCityRumbleAsyncServer
 
                 string replyMsg = "5$" + RoomCode;
                 byte[] toSendReply = Encoding.ASCII.GetBytes(replyMsg);
+                toSendReply = ServerHelperFunctions.AddLenghtToFront(toSendReply);
 
                 joiningPlayer.TcpSocket.BeginSend(toSendReply, 0, toSendReply.Length, 0, new AsyncCallback(TcpSendCallBack), joiningPlayer.TcpSocket);
 
                 joiningPlayer.TcpSocket.BeginReceive(recBuffer, 0, recBuffer.Length, 0, new AsyncCallback(TcpRecieveCallBack), joiningPlayer.TcpSocket);
             }
-            catch (SocketException se)
+            catch
             {
-                if (se.SocketErrorCode != SocketError.WouldBlock)
-                {
-                    Console.WriteLine(se.ToString());
-                }
+                //ignore any excpetions
             }
         }
 
@@ -75,7 +73,7 @@ namespace NeonCityRumbleAsyncServer
                         string recMsg = Encoding.ASCII.GetString(data);
                         string[] splitRecMsg = recMsg.Split('$');
                         //check if it's a disconnect message
-                        if (splitRecMsg[0] == "-2")
+                        if (splitRecMsg[2] == "-2")
                         {
                             //if it is, identify the player
                             Player disconnectingPlayer = playersInThisRoom.Find(p => p.TcpSocket == client);
@@ -92,7 +90,12 @@ namespace NeonCityRumbleAsyncServer
                         {
                             foreach (Player player in playersInThisRoom)
                             {
-                                if (player.TcpSocket == client) continue;
+                                if (player.TcpSocket == client && splitRecMsg[2] != "8")
+                                {
+                                    if (splitRecMsg.Length > 4 && splitRecMsg[2] == "7") player.ready = (splitRecMsg[4] == "0") ? false : true;
+
+                                    continue;
+                                }
 
                                 player.TcpSendBuffer.AddRange(data);
                             }
@@ -104,12 +107,9 @@ namespace NeonCityRumbleAsyncServer
                         client.BeginReceive(recBuffer, 0, recBuffer.Length, 0, new AsyncCallback(TcpRecieveCallBack), client);
                     }
                 }
-                catch (SocketException se)
+                catch
                 {
-                    if (se.SocketErrorCode != SocketError.WouldBlock)
-                    {
-                        Console.WriteLine(se.ToString());
-                    }
+                    //ignore any excpetions
                 }
 
                 mutex.ReleaseMutex();
@@ -165,7 +165,7 @@ namespace NeonCityRumbleAsyncServer
                                 NeonCityRumbleServer.RemovePlayer(player);
                             }
 
-                            if(toRemove.Count > 0)
+                            if (toRemove.Count > 0)
                             {
                                 UpdateAllPlayers();
                             }
@@ -180,6 +180,7 @@ namespace NeonCityRumbleAsyncServer
                                 {
                                     string pingStr = "4";
                                     byte[] pingBuffer = Encoding.ASCII.GetBytes(pingStr);
+                                    pingBuffer = ServerHelperFunctions.AddLenghtToFront(pingBuffer);
                                     player.TcpSendBuffer.AddRange(pingBuffer);
                                 }
 
@@ -198,7 +199,7 @@ namespace NeonCityRumbleAsyncServer
                         {
                             foreach (Player player in playersInThisRoom)
                             {
-                                if(player.udpEndPoint != null && player.UdpSendBuffer.Count > 0)
+                                if (player.udpEndPoint != null && player.UdpSendBuffer.Count > 0)
                                 {
                                     NeonCityRumbleServer.UdpSendMessage(player.udpEndPoint, player.UdpSendBuffer.ToArray());
                                     player.UdpSendBuffer.Clear();
@@ -207,12 +208,9 @@ namespace NeonCityRumbleAsyncServer
                         }
 
                     }
-                    catch (SocketException se)
+                    catch
                     {
-                        if (se.SocketErrorCode != SocketError.WouldBlock)
-                        {
-                            Console.WriteLine(se.ToString());
-                        }
+                        //ignore any excpetions
                     }
 
                     mutex.ReleaseMutex();
@@ -233,22 +231,21 @@ namespace NeonCityRumbleAsyncServer
                 {
                     string name = player.name;
                     string id = player.id.ToString();
-                    toSendMsg += "$" + player.id.ToString() + "$" + player.name;
+                    toSendMsg += "$" + player.name + "$" + player.id.ToString() + "$";
+                    toSendMsg += (player.ready) ? "1" : "0";
                 }
 
                 byte[] toSendBuffer = Encoding.ASCII.GetBytes(toSendMsg);
+                toSendBuffer = ServerHelperFunctions.AddLenghtToFront(toSendBuffer);
 
                 foreach (Player player in playersInThisRoom)
                 {
                     player.TcpSocket.BeginSend(toSendBuffer, 0, toSendBuffer.Length, 0, new AsyncCallback(TcpSendCallBack), player.TcpSocket);
                 }
             }
-            catch (SocketException se)
+            catch
             {
-                if (se.SocketErrorCode != SocketError.WouldBlock)
-                {
-                    Console.WriteLine(se.ToString());
-                }
+                //ignore any excpetions
             }
         }
     }

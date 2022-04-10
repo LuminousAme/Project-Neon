@@ -49,7 +49,7 @@ public class AttackHUD : MonoBehaviour
             //Debug.Log("HUD");
             rightUI.transform.localPosition = Vector3.Lerp(startPositionR, endPositionR, player.GetAttackDownTime() / player.GetHeavyAttackTime());
             leftUI.transform.localPosition = Vector3.Lerp(startPositionL, endPositionL, player.GetAttackDownTime() / player.GetHeavyAttackTime());
-            Debug.Log(startPositionR.ToString());
+            //Debug.Log(startPositionR.ToString());
         }
         else
         {

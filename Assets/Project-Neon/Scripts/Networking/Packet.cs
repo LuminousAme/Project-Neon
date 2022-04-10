@@ -135,7 +135,7 @@ public class Packet
 
     public byte[] Pack()
     {
-        AddInt(packetType);
+        AddCommandString(packetType.ToString());
         AddCommandString(termination.ToString());
         return buffer.ToArray();
     }
@@ -162,6 +162,59 @@ public class Packet
         return packets;
     }
 
+    public byte[] PackFront()
+    {
+        int lenght = buffer.Count;
+        string AddFront = "$" + lenght.ToString() + "$";
+
+        byte[] toAddFront = Encoding.ASCII.GetBytes(AddFront);
+
+        //insert it at the beginning of the list
+        buffer.InsertRange(0, toAddFront);
+        return buffer.ToArray();
+    }
+
+    public List<Packet> UnPackFront()
+    {
+        List<Packet> packets = new List<Packet>();
+
+        List<byte> ModifyBuffer = new List<byte>();
+        ModifyBuffer.AddRange(readableBuffer);
+        string currentBufferData = Encoding.ASCII.GetString(ModifyBuffer.ToArray());
+        string[] splitData = currentBufferData.Split('$');
+
+        do
+        {
+            //if we can find the lenght of the packet
+            int len;
+            if (int.TryParse(splitData[1], out len))
+            {
+                //then remove the lenght at the beginning
+                string removeStr = "$" + splitData[1] + "$";
+                int removeLen = Encoding.ASCII.GetBytes(removeStr).Length;
+                ModifyBuffer.RemoveRange(0, removeLen);
+
+                //if there's not enough data left, just exit
+                if (len > ModifyBuffer.Count) break;
+
+                //now do the copy
+                Packet newPacket = new Packet(ModifyBuffer.GetRange(0, len).ToArray());
+                packets.Add(newPacket);
+
+                //and remove that data from the modify buffer
+                ModifyBuffer.RemoveRange(0, len);
+
+                //and get the data for the next iteration
+                currentBufferData = Encoding.ASCII.GetString(ModifyBuffer.ToArray());
+                splitData = currentBufferData.Split('$');
+            }
+            else break;
+        }
+        while (ModifyBuffer.Count > 0);
+
+        return packets;
+    }
+
     public int GetPacketType()
     {
         int inverseOffset = sizeof(char) + sizeof(int);
@@ -169,6 +222,18 @@ public class Packet
 
         return ReadInt(index);
     }
+
+    public byte[] RemoveExtraElements()
+    {
+        byte[] extra = Encoding.ASCII.GetBytes("0");
+        int extraData = extra.Length;
+        byte[] newData = new byte[buffer.Count - extraData];
+
+        Array.Copy(buffer.ToArray(), 0, newData, 0, newData.Length);
+        return newData;
+    } 
+
+    public byte[] GetDataRaw() => buffer.ToArray();
 
     public void Clear()
     {

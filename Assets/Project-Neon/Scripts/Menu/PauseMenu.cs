@@ -33,7 +33,9 @@ public class PauseMenu : MonoBehaviour
 
     public void OnClickQuit()
     {
-        //implment later, need to figure it out cause it's weird with the match manager and client and everything
+        //disconnect from the game
+        if (AsyncClient.instance != null) AsyncClient.instance.SendDisconnect();
+
         for (int i = 0; i < buttons.Length; i++)
         {
             buttons[i].UnClick();

@@ -61,7 +61,7 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
         attackActive = true;
         attackReleased = false;
         weaponHandAnimator.SetTrigger("BeginHeavy");
-        if (Client.instance != null) Client.instance.SendStartHeavyAttack();
+        if (AsyncClient.instance != null) AsyncClient.instance.SendStartHeavyAttack();
 
         hitbox.shape = Hitbox.HitboxShape.BOX;
         hitbox.state = Hitbox.HitboxState.ACTIVE;
@@ -75,7 +75,7 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
     {
         attackReleased = true;
         weaponHandAnimator.SetTrigger("EndHeavy");
-        if (Client.instance != null) Client.instance.SendEndHeavyAttack();
+        if (AsyncClient.instance != null) AsyncClient.instance.SendEndHeavyAttack();
         OnHeavyAttack?.Invoke();
         timeElapsed = 0f;
         StartCoroutine(startSlash());

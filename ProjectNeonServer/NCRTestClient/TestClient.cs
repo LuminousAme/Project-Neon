@@ -31,6 +31,12 @@ namespace NCRTestClient
 
         static void Main(string[] args)
         {
+            string testStr = "$5$ABCD";
+            string[] splitTest = testStr.Split('$');
+
+            for (int i = 0; i < splitTest.Length; i++) Console.WriteLine($"Sring {i.ToString()}: {splitTest[i]}");
+
+            /*
             RoomCode = Console.ReadLine();
 
             serverIp = IPAddress.Parse("10.10.138.18");
@@ -58,7 +64,7 @@ namespace NCRTestClient
 
             Thread sendThread = new Thread(new ThreadStart(SendLoop));
             sendThread.Name = "Send Thread";
-            sendThread.Start();
+            sendThread.Start();*/
 
             Console.ReadLine();
         }
