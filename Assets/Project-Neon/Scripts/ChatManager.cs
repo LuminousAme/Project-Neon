@@ -24,49 +24,55 @@ public class ChatManager : MonoBehaviour
 
     private void Update()
     {
-        if (selectionStatus && chatInput.IsActive() && chatInput.text != "" && Input.GetKeyDown(KeyCode.Return))
+        if(chatInput != null)
         {
-            AddMessageToChat(thisClientDisplayName, chatInput.text);
-            if (AsyncClient.instance != null) AsyncClient.instance.SendMessageToOtherPlayers(chatInput.text);
-            chatInput.text = "";
-            chatInput.ActivateInputField();
-            chatInput.Select();
-        }
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            chatInput.ActivateInputField();
-            chatInput.Select();
-            ChangeSelectionStatus(true);
-            onStartType?.Invoke();
-        }
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            chatInput.ReleaseSelection();
-            chatInput.DeactivateInputField();
-            ChangeSelectionStatus(false);
-            onStopType?.Invoke();
+            if (selectionStatus && chatInput.IsActive() && chatInput.text != "" && Input.GetKeyDown(KeyCode.Return))
+            {
+                AddMessageToChat(thisClientDisplayName, chatInput.text);
+                if (AsyncClient.instance != null) AsyncClient.instance.SendMessageToOtherPlayers(chatInput.text);
+                chatInput.text = "";
+                chatInput.ActivateInputField();
+                chatInput.Select();
+            }
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                chatInput.ActivateInputField();
+                chatInput.Select();
+                ChangeSelectionStatus(true);
+                onStartType?.Invoke();
+            }
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                chatInput.ReleaseSelection();
+                chatInput.DeactivateInputField();
+                ChangeSelectionStatus(false);
+                onStopType?.Invoke();
+            }
         }
     }
 
     public void ChangeSelectionStatus(bool status)
     {
-        selectionStatus = status;
+        if(chatInput != null)
+        {
+            selectionStatus = status;
 
-        if(selectionStatus == false)
-        {
-            chatInput.text = "";
-            if(shouldLockCursor)
+            if (selectionStatus == false)
             {
-                Cursor.visible = false;
-                Cursor.lockState = CursorLockMode.Locked;
+                chatInput.text = "";
+                if (shouldLockCursor)
+                {
+                    Cursor.visible = false;
+                    Cursor.lockState = CursorLockMode.Locked;
+                }
             }
-        }
-        else
-        {
-            if (Cursor.lockState == CursorLockMode.Locked)
+            else
             {
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
+                if (Cursor.lockState == CursorLockMode.Locked)
+                {
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
+                }
             }
         }
     }

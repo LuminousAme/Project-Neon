@@ -14,6 +14,7 @@ namespace NeonCityRumbleAsyncServer
     {
         public string name;
         public Guid id;
+        public bool ready;
 
         public Room connectedRoom;
 
@@ -34,16 +35,14 @@ namespace NeonCityRumbleAsyncServer
             {
                 //connect the tcp client
                 TcpSocket = connectingSocket;
+                ready = false;
 
                 //begin recieving from it
                 TcpSocket.BeginReceive(recBuffer, 0, recBuffer.Length, 0, new AsyncCallback(JoinOrCreateRoomCallback), TcpSocket);
             }
-            catch (SocketException se)
+            catch
             {
-                if (se.SocketErrorCode != SocketError.WouldBlock)
-                {
-                    Console.WriteLine(se.ToString());
-                }
+                //ignore any excpetions
             }
         }
 
@@ -56,13 +55,9 @@ namespace NeonCityRumbleAsyncServer
                 TcpSocket.Shutdown(SocketShutdown.Both);
                 TcpSocket.Close();
             }
-            catch (SocketException se)
+            catch
             {
-                if(se.SocketErrorCode != SocketError.WouldBlock) Console.WriteLine(se.ToString());
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
+                //ignore any excpetions
             }
         }
 
@@ -140,12 +135,9 @@ namespace NeonCityRumbleAsyncServer
                     connectedRoom.UpdateAllPlayers();
                 }
             }
-            catch (SocketException se)
+            catch
             {
-                if (se.SocketErrorCode != SocketError.WouldBlock)
-                {
-                    Console.WriteLine(se.ToString());
-                }
+                //ignore any excpetions
             }
         }
 
@@ -156,12 +148,9 @@ namespace NeonCityRumbleAsyncServer
                 Socket client = (Socket)result.AsyncState;
                 client.EndSend(result);
             }
-            catch (SocketException se)
+            catch
             {
-                if (se.SocketErrorCode != SocketError.WouldBlock)
-                {
-                    Console.WriteLine(se.ToString());
-                }
+                //ignore any excpetions
             }
         }
 

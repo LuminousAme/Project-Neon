@@ -77,12 +77,9 @@ namespace NeonCityRumbleAsyncServer
 
                 TcpServer.BeginAccept(new AsyncCallback(InitalConnectCallback), null);
             }
-            catch (SocketException se)
+            catch
             {
-                if (se.SocketErrorCode != SocketError.WouldBlock)
-                {
-                    Console.WriteLine(se.ToString());
-                }
+                //ignore any excpetions
             }
         }
 
@@ -143,12 +140,9 @@ namespace NeonCityRumbleAsyncServer
                     }
                 }
             }
-            catch (SocketException se)
+            catch 
             {
-                if (se.SocketErrorCode != SocketError.WouldBlock)
-                {
-                    Console.WriteLine(se.ToString());
-                }
+                //ignore any exceptions
             }
 
             UdpServer.BeginReceiveFrom(UdpRecBuffer, 0, UdpRecBuffer.Length, 0, ref UdpRemoteEP, new AsyncCallback(UdpRecieveCallBack), UdpServer);
@@ -160,12 +154,9 @@ namespace NeonCityRumbleAsyncServer
             {
                 UdpServer.BeginSendTo(data, 0, data.Length, 0, targetEP, new AsyncCallback(UdpSendCallBack), UdpServer);
             }
-            catch (SocketException se)
+            catch 
             {
-                if (se.SocketErrorCode != SocketError.WouldBlock)
-                {
-                    Console.WriteLine(se.ToString());
-                }
+                //ignore any excpetions
             }
         }
 
@@ -175,12 +166,9 @@ namespace NeonCityRumbleAsyncServer
             {
                 UdpServer.EndSendTo(result);
             }
-            catch (SocketException se)
+            catch
             {
-                if(se.SocketErrorCode != SocketError.WouldBlock)
-                {
-                    Console.WriteLine(se.ToString());
-                }
+                //ignore any excpetions
             }
         }
 

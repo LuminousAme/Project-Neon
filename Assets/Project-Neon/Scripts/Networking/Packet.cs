@@ -195,11 +195,7 @@ public class Packet
                 ModifyBuffer.RemoveRange(0, removeLen);
 
                 //if there's not enough data left, just exit
-                if (len > ModifyBuffer.Count)
-                {
-                    Debug.Log("Packet lenght mistmatch: " + len.ToString() + ": " + Encoding.ASCII.GetString(ModifyBuffer.ToArray()));
-                    break;
-                }
+                if (len > ModifyBuffer.Count) break;
 
                 //now do the copy
                 Packet newPacket = new Packet(ModifyBuffer.GetRange(0, len).ToArray());
@@ -212,11 +208,7 @@ public class Packet
                 currentBufferData = Encoding.ASCII.GetString(ModifyBuffer.ToArray());
                 splitData = currentBufferData.Split('$');
             }
-            else
-            {
-                Debug.Log("Could not parse packet lenght");
-                break;
-            }
+            else break;
         }
         while (ModifyBuffer.Count > 0);
 

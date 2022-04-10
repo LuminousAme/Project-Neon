@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System;
+using UnityEngine.SceneManagement;
 
 public class AsyncClient : MonoBehaviour
 {
@@ -111,7 +112,6 @@ public class AsyncClient : MonoBehaviour
     public void SendTcpPacket(Packet packet)
     {
         byte[] data = packet.PackFront();
-        //Debug.Log("Tcp: " + Encoding.ASCII.GetString(data));
         TcpSendQueue.AddRange(data);
     }
 
@@ -120,12 +120,10 @@ public class AsyncClient : MonoBehaviour
         try
         {
             byte[] data = packet.PackFront();
-            //Debug.Log("Udp: " + Encoding.ASCII.GetString(data));
             UdpClient.BeginSendTo(data, 0, data.Length, 0, udpRemoteEP, new AsyncCallback(UdpSendCallBack), UdpClient);
         }
-        catch (Exception e)
+        catch
         {
-            Debug.Log(e.ToString());
             //ignore any excpetions
         }
     }
@@ -217,7 +215,6 @@ public class AsyncClient : MonoBehaviour
                 Array.Copy(TcpRecBuffer, data, rec);
 
                 string datastr = Encoding.ASCII.GetString(data);
-                Debug.Log("Tcp: " + datastr);
 
                 Packet recievedPacket = new Packet(data);
                 TcpPacketsToBeProcessed.AddRange(recievedPacket.UnPackFront());
@@ -255,7 +252,6 @@ public class AsyncClient : MonoBehaviour
                 Array.Copy(UdpRecBuffer, data, rec);
 
                 string datastr = Encoding.ASCII.GetString(data);
-                //Debug.Log("Udp: " + datastr);
 
                 Packet recievedPacket = new Packet(data);
 
@@ -277,8 +273,6 @@ public class AsyncClient : MonoBehaviour
             byte[] data = packet.GetDataRaw();
             string datastr = Encoding.ASCII.GetString(data);
 
-            Debug.Log("Packet Str: " + datastr);
-
             //otherwise we need to figure out what data the packet contains and how to use it
             string[] splitData = datastr.Split('$');
 
@@ -292,7 +286,7 @@ public class AsyncClient : MonoBehaviour
             if (splitData[0] == "3")
             {
                 List<Player> newPlayerList = new List<Player>();
-                for (int i = 1; i < splitData.Length; i = i + 2)
+                for (int i = 1; i < splitData.Length; i = i + 3)
                 {
                     Guid newID = Guid.Parse(splitData[i + 1]);
                     newPlayerList.Add(new Player(splitData[i], newID));
@@ -308,6 +302,7 @@ public class AsyncClient : MonoBehaviour
                         Player newplayer = new Player();
                         newplayer.name = splitData[i];
                         newplayer.id = Guid.Parse(splitData[i + 1]);
+                        newplayer.ready = (splitData[i + 2] == "0") ? false : true;
                         players.Add(newplayer);
                     }
                 }
@@ -326,13 +321,18 @@ public class AsyncClient : MonoBehaviour
                         }
                     }
 
-                    foreach (var player in noLongerHere)
+                    foreach (Player player in noLongerHere)
                     {
                         //handle removing players mid game here
 
                         //send a message about the disconnect
                         ChatManager chat = FindObjectOfType<ChatManager>();
                         if (chat != null) chat.AddMessageToChat("Server", $"{player.name} has disconnected");
+
+                        if (MatchManager.instance != null)
+                        {
+                            MatchManager.instance.DisconnectPlayer(player);
+                        }
 
                         players.Remove(player);
                     }
@@ -754,6 +754,29 @@ public class AsyncClient : MonoBehaviour
             posRotUpdatePacket.AddBytes(temp3);
             SendUdpPacket(posRotUpdatePacket);
         }
+    }
+
+    public void SendDisconnect()
+    {
+        if (isStarted)
+        {
+            string toSend = "-2$";
+
+            byte[] newBuffer = Encoding.ASCII.GetBytes(toSend);
+
+            Packet disconnectPacket = new Packet();
+            disconnectPacket.AddBytes(newBuffer);
+            SendTcpPacket(disconnectPacket);
+
+            StartCoroutine(WaitThenDisconnect());
+        }
+    }
+
+    IEnumerator WaitThenDisconnect()
+    {
+        yield return new WaitForSeconds(0.5f);
+        Disconnect();
+        SceneManager.LoadScene(0);
     }
 
     public void Disconnect()

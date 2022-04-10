@@ -256,7 +256,6 @@ public class LobbyMenu : MonoBehaviour
             if(AsyncClient.instance.GetAllPlayersReady())
             {
                 AsyncClient.instance.LaunchGameForAll();
-                StartGame();
             }
         }
     }

@@ -194,6 +194,16 @@ public class MatchManager : MonoBehaviour
         }
     }
 
+    public void DisconnectPlayer(Player player)
+    {
+        if(players.Exists(p => p.GetPlayerID() == player.id))
+        {
+            PlayerState toremove = players.Find(p => p.GetPlayerID() == player.id);
+            players.Remove(toremove);
+            Destroy(toremove.gameObject);
+        }
+    }
+
     public float GetTimeRemaining() => timeRemainingInMatch;
 
     public List<PlayerState> GetPlayersSortedByScore()

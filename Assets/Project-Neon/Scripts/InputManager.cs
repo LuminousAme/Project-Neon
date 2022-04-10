@@ -104,4 +104,6 @@ public static class InputManager
                 action.ApplyBindingOverride(i, PlayerPrefs.GetString(action.actionMap + action.name + i));
         }
     }
+
+    public static void RestartControls() => controls = new PlayerControls();
 }
