@@ -20,6 +20,7 @@ public class Health : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             DamagePlayer(10);
+
         }
     }
 
