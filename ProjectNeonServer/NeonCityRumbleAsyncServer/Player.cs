@@ -92,6 +92,7 @@ namespace NeonCityRumbleAsyncServer
                         //handle telling the player it connected wrong
                         string reply = "9$" + id.ToString();
                         byte[] replyBuffer = Encoding.ASCII.GetBytes(reply);
+                        replyBuffer = ServerHelperFunctions.AddLenghtToFront(replyBuffer);
 
                         TcpSocket.BeginSend(replyBuffer, 0, replyBuffer.Length, 0, new AsyncCallback(ReplySendCallBack), TcpSocket);
                     }
@@ -123,6 +124,7 @@ namespace NeonCityRumbleAsyncServer
                             //handle telling the player it connected wrong
                             string reply = "-1";
                             byte[] replyBuffer = Encoding.ASCII.GetBytes(reply);
+                            replyBuffer = ServerHelperFunctions.AddLenghtToFront(replyBuffer);
 
                             TcpSocket.BeginSend(replyBuffer, 0, replyBuffer.Length, 0, new AsyncCallback(ReplySendCallBack), TcpSocket);
 

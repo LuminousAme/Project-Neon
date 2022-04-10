@@ -54,14 +54,14 @@ public class MatchManager : MonoBehaviour
         if (instance == null) instance = this;
         else Destroy(this.gameObject);
 
-        if(Client.instance != null)
+        if(AsyncClient.instance != null)
         {
             multiplayer = true;
-            List<Player> allInRoom = Client.instance.GetPlayers();
+            List<Player> allInRoom = AsyncClient.instance.GetPlayers();
             for(int i = 0; i < allInRoom.Count; i++)
             {
                 //spawn the local player
-                if(allInRoom[i].id == Client.instance.GetThisClientID())
+                if(allInRoom[i].id == AsyncClient.instance.GetThisClientID())
                 {
                     GameObject newPlayer = Instantiate(localPlayerPrefab, initialSpawns[i].position, initialSpawns[i].rotation);
                     PlayerState state = newPlayer.GetComponent<PlayerState>();
@@ -151,7 +151,7 @@ public class MatchManager : MonoBehaviour
         //change the scene
         if (SceneManager.GetSceneByBuildIndex(5).isLoaded) SceneManager.UnloadSceneAsync(5);
         SceneManager.LoadScene(7, LoadSceneMode.Additive);
-        if (Client.instance != null) Client.instance.Disconnect();
+        if (AsyncClient.instance != null) AsyncClient.instance.Disconnect();
     }
 
     private void Update()
@@ -163,7 +163,7 @@ public class MatchManager : MonoBehaviour
                 if (players[i].transform.position.y <= deathHeight)
                 {
                     //kill the player so they respawn at their starting position
-                    if (Client.instance == null || (Client.instance != null && Client.instance.GetThisClientID() == players[i].GetPlayerID()))
+                    if (AsyncClient.instance == null || (AsyncClient.instance != null && AsyncClient.instance.GetThisClientID() == players[i].GetPlayerID()))
                         players[i].TakeDamage(100, new Vector3(1000f, 1000f, 1000f));
                 }
             }
@@ -209,7 +209,7 @@ public class MatchManager : MonoBehaviour
         List<PlayerState> sortedPlayers = newPlayerStateList.OrderByDescending(p => p.GetBounty()).ToList();
 
         string roomCode = "test room";
-        if (Client.instance != null) roomCode = Client.instance.roomCode;
+        if (AsyncClient.instance != null) roomCode = AsyncClient.instance.roomCode;
         DataSaver.WriteGameResult(roomCode, sortedPlayers);
 
         return sortedPlayers;
@@ -218,7 +218,7 @@ public class MatchManager : MonoBehaviour
     private void RecordQuickAttack()
     {
         string roomCode = "test room";
-        if (Client.instance != null) roomCode = Client.instance.roomCode;
+        if (AsyncClient.instance != null) roomCode = AsyncClient.instance.roomCode;
 
         DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Quick Attack", timeRemainingInMatch);
     }
@@ -226,7 +226,7 @@ public class MatchManager : MonoBehaviour
     private void RecordHeavyAttack()
     {
         string roomCode = "test room";
-        if (Client.instance != null) roomCode = Client.instance.roomCode;
+        if (AsyncClient.instance != null) roomCode = AsyncClient.instance.roomCode;
 
         DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Heavy Attack", timeRemainingInMatch);
     }
@@ -234,7 +234,7 @@ public class MatchManager : MonoBehaviour
     private void RecordDash()
     {
         string roomCode = "test room";
-        if (Client.instance != null) roomCode = Client.instance.roomCode;
+        if (AsyncClient.instance != null) roomCode = AsyncClient.instance.roomCode;
 
         DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Dash", timeRemainingInMatch);
     }
@@ -242,7 +242,7 @@ public class MatchManager : MonoBehaviour
     private void RecordGrapple()
     {
         string roomCode = "test room";
-        if (Client.instance != null) roomCode = Client.instance.roomCode;
+        if (AsyncClient.instance != null) roomCode = AsyncClient.instance.roomCode;
 
         DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Grapple", timeRemainingInMatch);
     }
@@ -250,7 +250,7 @@ public class MatchManager : MonoBehaviour
     private void RecordDoubleJump()
     {
         string roomCode = "test room";
-        if (Client.instance != null) roomCode = Client.instance.roomCode;
+        if (AsyncClient.instance != null) roomCode = AsyncClient.instance.roomCode;
 
         DataSaver.WriteData(roomCode, players.Find(p => p.GetPlayerID() == thisPlayerID).GetDisplayName(), "Double Jump", timeRemainingInMatch);
     }

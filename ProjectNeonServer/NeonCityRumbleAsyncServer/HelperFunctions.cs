@@ -60,5 +60,21 @@ namespace NeonCityRumbleAsyncServer
 
             s.IOControl(IOControlCode.KeepAliveValues, values, outvalues);
         }
+
+        public static byte[] AddLenghtToFront(byte[] source)
+        {
+            //make a list out of the array
+            List<byte> buffer = new List<byte>();
+            buffer.AddRange(source);
+
+            //get the lenght and make a string to add to it
+            int lenght = buffer.Count;
+            string AddFront = "$" + lenght.ToString() + "$";
+            byte[] toAddFront = Encoding.ASCII.GetBytes(AddFront);
+
+            //insert it at the beginning of the list
+            buffer.InsertRange(0, toAddFront);
+            return buffer.ToArray();
+        }
     }
 }

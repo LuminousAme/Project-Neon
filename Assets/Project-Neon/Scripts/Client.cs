@@ -655,22 +655,3 @@ public class Client : MonoBehaviour
     }
 }
 
-public class Player
-{
-    public string name = "";
-    public bool ready = false;
-    public Guid id;
-
-    public Player()
-    {
-        name = "";
-        ready = false;
-    }
-
-    public Player(string name, Guid id)
-    {
-        this.name = name;
-        this.id = id;
-        ready = false;
-    }
-}

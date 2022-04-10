@@ -132,11 +132,9 @@ namespace NeonCityRumbleAsyncServer
                     string recMsg = Encoding.ASCII.GetString(data);
                     string[] splitRecMsg = recMsg.Split('$');
 
-                    //Console.WriteLine("Udp message recieved: " + recMsg);
-
                     Guid sendingPlayer;
 
-                    if (Guid.TryParse(splitRecMsg[0], out sendingPlayer))
+                    if (splitRecMsg.Length > 2 && Guid.TryParse(splitRecMsg[2], out sendingPlayer))
                     {
                         if (allplayers.Exists(p => p.id == sendingPlayer))
                         {

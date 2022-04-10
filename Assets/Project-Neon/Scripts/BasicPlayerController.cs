@@ -379,7 +379,7 @@ public class BasicPlayerController : MonoBehaviour
             adjustedHookPosition = hookPosition - grappleLaunch.localPosition;
             value = 0;
             acutalVelocity = velocity;
-            if (Client.instance != null) Client.instance.SendGrappleStatus(true, hookPosition);
+            if (AsyncClient.instance != null) AsyncClient.instance.SendGrappleStatus(true, hookPosition);
 
             //code that handles setting up the joint and stuff, uncomment later
             {
@@ -436,7 +436,7 @@ public class BasicPlayerController : MonoBehaviour
         if (grapplingHookJoint != null) Destroy(grapplingHookJoint);
         isGrappling = false;
         timeSinceLastGrappleEnd = movementSettings.GetGrappleCooldown();
-        if (Client.instance != null) Client.instance.SendGrappleStatus(false, hookPosition);
+        if (AsyncClient.instance != null) AsyncClient.instance.SendGrappleStatus(false, hookPosition);
         if (grappleReelSource != null) grappleReelSource.Stop();
         //rb.AddForce(-rb.velocity, ForceMode.VelocityChange);
     }

@@ -27,7 +27,7 @@ public class ChatManager : MonoBehaviour
         if (selectionStatus && chatInput.IsActive() && chatInput.text != "" && Input.GetKeyDown(KeyCode.Return))
         {
             AddMessageToChat(thisClientDisplayName, chatInput.text);
-            if (Client.instance != null) Client.instance.SendMessageToOtherPlayers(chatInput.text);
+            if (AsyncClient.instance != null) AsyncClient.instance.SendMessageToOtherPlayers(chatInput.text);
             chatInput.text = "";
             chatInput.ActivateInputField();
             chatInput.Select();

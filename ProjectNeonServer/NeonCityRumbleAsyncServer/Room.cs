@@ -45,6 +45,7 @@ namespace NeonCityRumbleAsyncServer
 
                 string replyMsg = "5$" + RoomCode;
                 byte[] toSendReply = Encoding.ASCII.GetBytes(replyMsg);
+                toSendReply = ServerHelperFunctions.AddLenghtToFront(toSendReply);
 
                 joiningPlayer.TcpSocket.BeginSend(toSendReply, 0, toSendReply.Length, 0, new AsyncCallback(TcpSendCallBack), joiningPlayer.TcpSocket);
 
@@ -75,7 +76,7 @@ namespace NeonCityRumbleAsyncServer
                         string recMsg = Encoding.ASCII.GetString(data);
                         string[] splitRecMsg = recMsg.Split('$');
                         //check if it's a disconnect message
-                        if (splitRecMsg[0] == "-2")
+                        if (splitRecMsg[1] == "-2")
                         {
                             //if it is, identify the player
                             Player disconnectingPlayer = playersInThisRoom.Find(p => p.TcpSocket == client);
@@ -180,6 +181,7 @@ namespace NeonCityRumbleAsyncServer
                                 {
                                     string pingStr = "4";
                                     byte[] pingBuffer = Encoding.ASCII.GetBytes(pingStr);
+                                    pingBuffer = ServerHelperFunctions.AddLenghtToFront(pingBuffer);
                                     player.TcpSendBuffer.AddRange(pingBuffer);
                                 }
 
@@ -233,10 +235,11 @@ namespace NeonCityRumbleAsyncServer
                 {
                     string name = player.name;
                     string id = player.id.ToString();
-                    toSendMsg += "$" + player.id.ToString() + "$" + player.name;
+                    toSendMsg += "$" + player.name +  "$" + player.id.ToString();
                 }
 
                 byte[] toSendBuffer = Encoding.ASCII.GetBytes(toSendMsg);
+                toSendBuffer = ServerHelperFunctions.AddLenghtToFront(toSendBuffer);
 
                 foreach (Player player in playersInThisRoom)
                 {

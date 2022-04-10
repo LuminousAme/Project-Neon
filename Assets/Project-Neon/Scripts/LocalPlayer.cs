@@ -39,12 +39,12 @@ public class LocalPlayer : MonoBehaviour
     private void Update()
     {
         UpdateData();
-        if (Client.instance != null)
+        if (AsyncClient.instance != null)
         {
             elapsedTime += Time.deltaTime;
             if(elapsedTime >= updateServerTime)
             {
-                Client.instance.SendPosRotUpdate(position, velocity, yaw, pitch);
+                AsyncClient.instance.SendPosRotUpdate(position, velocity, yaw, pitch);
                 elapsedTime = 0.0f;
             }
         }
