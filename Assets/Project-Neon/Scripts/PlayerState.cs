@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using TMPro;
 
 public class PlayerState : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class PlayerState : MonoBehaviour
     private Guid playerId;
     [SerializeField] private bool overrideIdForDebug = false;
     public static float hpRegenRate = 1f;
+
+    [SerializeField] TMP_Text text;
 
     public delegate void HandleRespawn(PlayerState player);
 
@@ -54,6 +57,8 @@ public class PlayerState : MonoBehaviour
         this.useSavedName = useSavedName;
         if (!this.useSavedName) playerName = name;
         else ReadNameFromFile();
+
+        if (text != null) text.text = playerName;
     }
 
     private void Awake()
