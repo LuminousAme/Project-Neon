@@ -110,9 +110,10 @@ namespace NeonCityRumbleAsyncServer
 
                         Room joiningRoom;
                         NeonCityRumbleServer.FindRoomByCode(codeToJoin, out joiningRoom);
+                        bool RoomAlreadyFull = false;
                         if (joiningRoom != null)
                         {
-                            joiningRoom.JoinRoom(this);
+                            RoomAlreadyFull = joiningRoom.JoinRoom(this);
                         }
                         else
                         {
@@ -125,6 +126,15 @@ namespace NeonCityRumbleAsyncServer
 
                             //return since we didn't connect to the room properly, probably also want to handle removing the player from the list in the core server I think but we'll see
                             return;
+                        }
+                        if(RoomAlreadyFull)
+                        {
+                            //handle telling the player the room is already full
+                            string reply = "-3";
+                            byte[] replyBuffer = Encoding.ASCII.GetBytes(reply);
+                            replyBuffer = ServerHelperFunctions.AddLenghtToFront(replyBuffer);
+
+                            TcpSocket.BeginSend(replyBuffer, 0, replyBuffer.Length, 0, new AsyncCallback(ReplySendCallBack), TcpSocket);
                         }
                     }
 

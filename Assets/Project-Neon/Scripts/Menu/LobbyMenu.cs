@@ -32,11 +32,12 @@ public class LobbyMenu : MonoBehaviour
     int lastIndex;
 
     [SerializeField] GameObject createOrJoinPanel, inRoomPanel;
-    [SerializeField] List<FontManager> playerList = new List<FontManager>();
     [SerializeField] MenuButton readyButton, joinButton, createButton, backButton;
     [SerializeField] TMP_InputField lobbyCode;
     [SerializeField] TMP_Text ipLobby, ipLobbyUnlit;
     [SerializeField] List<TMP_Text> playerNames = new List<TMP_Text>();
+
+    [SerializeField] TMP_Text badConnectText;
 
     // Start is called before the first frame update
     void Start()
@@ -186,6 +187,8 @@ public class LobbyMenu : MonoBehaviour
     {
         if (inRoomPanel.activeSelf)
         {
+            readyButton.UnClick();
+            readyButton.OnStopHover();
             inRoomPanel.SetActive(false);
             createOrJoinPanel.SetActive(true);
             LeaveLobby();
@@ -210,10 +213,12 @@ public class LobbyMenu : MonoBehaviour
 
     public void JoinLobby()
     {
+        if (badConnectText != null) badConnectText.text = "";
+
         string targetLobby = lobbyCode.text;
         if (AsyncClient.instance != null)
         {
-            AsyncClient.instance.roomCode = targetLobby;
+            AsyncClient.instance.roomCode = targetLobby.ToUpper();
             AsyncClient.instance.EnterGame(1);
         }
         // lobbyCode.text = "";
@@ -224,6 +229,8 @@ public class LobbyMenu : MonoBehaviour
 
     public void CreateLobby()
     {
+        if (badConnectText != null) badConnectText.text = "";
+
         if (AsyncClient.instance != null) AsyncClient.instance.EnterGame(0);
         EnterLobby();
     }
@@ -278,5 +285,17 @@ public class LobbyMenu : MonoBehaviour
     public void SetRoomCode(string newCode)
     {
         if (AsyncClient.instance != null) AsyncClient.instance.roomCode = newCode;
+    }
+
+    public void SetBadConnectMessage(string msg)
+    {
+        if (badConnectText != null) badConnectText.text = msg;
+
+        if (inRoomPanel.activeSelf)
+        {
+            inRoomPanel.SetActive(false);
+            createOrJoinPanel.SetActive(true);
+            LeaveLobby();
+        }
     }
 }
