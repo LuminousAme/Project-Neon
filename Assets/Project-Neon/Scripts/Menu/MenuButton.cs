@@ -14,6 +14,7 @@ public class MenuButton : MonoBehaviour
     [SerializeField] TMP_Text selectedText;
     [SerializeField] TMP_Text clickedText;
     [SerializeField] TMP_Text unlitText;
+    [SerializeField] SoundEffect clickSFX;
     public int currentlyOn = 3;
     [HideInInspector] public bool hovering = false, lightOff = true;
     public bool neverOff = false;
@@ -100,6 +101,7 @@ public class MenuButton : MonoBehaviour
     {
         ClickedActive();
         clicked = true;
+        if (clickSFX != null) clickSFX.Play();
         onClick.Invoke();
     }
 

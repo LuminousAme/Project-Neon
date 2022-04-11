@@ -56,8 +56,8 @@ public class RemotePlayer : MonoBehaviour
     [SerializeField] CharacterAnimation controller;
 
     [Header("Sound")]
-    [SerializeField] SoundEffect GrappleLaunchSFX, GrappleReelSFX;
-    [SerializeField] AudioSource grappleSoundSource, grappleReelSoundSource;
+    [SerializeField] SoundEffect GrappleLaunchSFX, GrappleReelSFX, SwingSFX;
+    [SerializeField] AudioSource grappleSoundSource, grappleReelSoundSource, SwingSoundSource;
 
     public void SetData(Vector3 pos, Vector3 vel, float VertRot, float HoriRot)
     {
@@ -283,6 +283,7 @@ public class RemotePlayer : MonoBehaviour
         {
             slash.gameObject.SetActive(true);
             slash.Play();
+            SwingSFX.Play(SwingSoundSource);
 
             yield return new WaitForSeconds(0.5f);
             slash.Stop();

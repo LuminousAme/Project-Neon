@@ -17,8 +17,8 @@ public class CharacterAnimation : MonoBehaviour
     int movingKey;
     public void SetMoving(bool moving) => this.moving = moving;
 
-    [SerializeField] SoundEffect landingSFX;
-    [SerializeField] AudioSource landingAudioSource;
+    [SerializeField] SoundEffect landingSFX, walkingSFX;
+    [SerializeField] AudioSource landingAudioSource, walkingAudioSource;
 
     [SerializeField] Animator animator;
 
@@ -67,5 +67,11 @@ public class CharacterAnimation : MonoBehaviour
         {
             animator.SetBool(isFallingKey, true);
         }
+
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Walk/Run"))
+        {
+            walkingSFX.Play(walkingAudioSource);
+        }
+        else if (walkingAudioSource.isPlaying) walkingAudioSource.Stop();
     }
 }

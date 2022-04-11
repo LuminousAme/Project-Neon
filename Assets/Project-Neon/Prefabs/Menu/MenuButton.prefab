@@ -67,8 +67,11 @@ MonoBehaviour:
   selectedText: {fileID: 6575571272538864456}
   clickedText: {fileID: 5266113933741760656}
   unlitText: {fileID: 346198256914891635}
+  clickSFX: {fileID: 11400000, guid: f88cf2b1f7193da4dacd3252f46e298c, type: 2}
+  currentlyOn: 3
   hovering: 0
   lightOff: 0
+  neverOff: 0
   onClick:
     m_PersistentCalls:
       m_Calls: []

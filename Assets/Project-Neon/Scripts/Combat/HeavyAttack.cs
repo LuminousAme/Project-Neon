@@ -19,7 +19,7 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
     [SerializeField] private GameObject hitParticlePrefab;
     [SerializeField] private Transform particleSpawnPoint;
 
-    [SerializeField] private SoundEffect hitSFX;
+    [SerializeField] private SoundEffect hitSFX, KillSFX, SwingSFX;
 
     public static Action OnHeavyAttack;
 
@@ -27,12 +27,14 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
     private void OnEnable()
     {
         attackIndex = hitbox.AddListener(this);
+        PlayerState.onNewKill += OnKill;
     }
 
     //unsubscribe from the hitbox callback
     private void OnDisable()
     {
         hitbox.RemoveListenerAtIndex(attackIndex);
+        PlayerState.onNewKill -= OnKill;
     }
 
     public void HitRegistered(Collider collider)
@@ -92,6 +94,7 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
         {
             slash.gameObject.SetActive(true);
             slash.Play();
+            if (SwingSFX != null) SwingSFX.Play();
         }
     }
 
@@ -139,4 +142,12 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
 
     public bool GetAttackActive() => attackActive;
     public bool GetAttackReleased() => attackReleased;
+
+    private void OnKill(PlayerState killingPlayer)
+    {
+        if (killingPlayer == player && KillSFX != null)
+        {
+            KillSFX.Play();
+        }
+    }
 }
