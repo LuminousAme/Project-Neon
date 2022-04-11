@@ -59,7 +59,7 @@ public class DebugController : MonoBehaviour
         SET_IP_ADDRESS = new DebugCommand<string>("set_ip_address", "Sets the IP Address of the Server", "set_ip_address <ip>", (newIP) =>
         {
             //use new ip to update the ip address here
-            if (Client.instance != null) Client.instance.ipText = newIP;
+            if (AsyncClient.instance != null) AsyncClient.instance.ipText = newIP;
         });
 
         commandList.Add(SET_IP_ADDRESS);

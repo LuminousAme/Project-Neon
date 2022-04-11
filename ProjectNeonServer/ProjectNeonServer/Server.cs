@@ -266,7 +266,6 @@ namespace ProjectNeonServer
                     }
                 }
 
-
                 //listening for data from each of the clients and forwarding it to other clients
                 foreach(var roomdata in allRooms)
                 {

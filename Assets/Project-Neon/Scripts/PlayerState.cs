@@ -1,7 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class PlayerState : MonoBehaviour
 {
@@ -19,6 +18,8 @@ public class PlayerState : MonoBehaviour
     [SerializeField] private bool overrideIdForDebug = false;
     public static float hpRegenRate = 1f;
 
+    [SerializeField] TMP_Text text;
+
     public delegate void HandleRespawn(PlayerState player);
 
     public static event HandleRespawn onRespawn;
@@ -28,6 +29,7 @@ public class PlayerState : MonoBehaviour
     public static event HandleNewKill onNewKill;
 
     public delegate void HandleLocalHPChange(PlayerState player);
+
     public static event HandleLocalHPChange onHPChange;
 
     public float GetHP() => hp;
@@ -55,6 +57,8 @@ public class PlayerState : MonoBehaviour
         this.useSavedName = useSavedName;
         if (!this.useSavedName) playerName = name;
         else ReadNameFromFile();
+
+        if (text != null) text.text = playerName;
     }
 
     private void Awake()
@@ -88,7 +92,7 @@ public class PlayerState : MonoBehaviour
 
     public void ReadNameFromFile()
     {
-        if(useSavedName) playerName = PlayerPrefs.GetString("DisplayName", "Hunter");
+        if (useSavedName) playerName = PlayerPrefs.GetString("DisplayName", "Hunter");
     }
 
     //takes the passed in ammount of damage, and returns true if it killed
@@ -96,7 +100,7 @@ public class PlayerState : MonoBehaviour
     {
         damaged = true;
         healTimer = 0;
-        float scale = (damage == 10) ? 1 : 2; 
+        float scale = (damage == 10) ? 1 : 2;
 
         cappedDamage = Mathf.Clamp(damage, 0, (int)hp);
         hp = Mathf.Clamp(hp - damage, 0, basicData.GetMaxHealth());
@@ -106,15 +110,12 @@ public class PlayerState : MonoBehaviour
             onRespawn?.Invoke(this);
             timesDied++;
 
-            if (Client.instance != null)
-            {
-                StartCoroutine(UpdateHPOnServer(hitpos, scale));
-            }
+            if (AsyncClient.instance != null) AsyncClient.instance.UpdateHP(playerId, hp, hitpos, scale);
 
             return true;
         }
 
-        StartCoroutine(UpdateHPOnServer(hitpos, scale));
+        if (AsyncClient.instance != null) AsyncClient.instance.UpdateHP(playerId, hp, hitpos, scale);
 
         return false;
     }
@@ -128,7 +129,7 @@ public class PlayerState : MonoBehaviour
     private void Update()
     {
         healTimer = healTimer + Time.deltaTime;
-        Debug.Log(damaged);
+        //Debug.Log(damaged);
         //if the player hasn't been damaged for the  delay amount then they are not longer damaged and can heal
         if (healTimer >= healDelay)
         {
@@ -141,6 +142,10 @@ public class PlayerState : MonoBehaviour
             //uncomment this when we figure out how to make it work with netcode
             //hp = Mathf.Clamp(hp + hpRegenRate * Time.deltaTime, 0, basicData.GetMaxHealth());
         }
+        //if (Input.GetKeyDown(KeyCode.F4))
+        //{
+        //    TakeDamage(10, new Vector3(1000f, 1000f, 1000f));
+        //}
     }
 
     //adds to the total ammount of damage dealth by this player
@@ -154,24 +159,7 @@ public class PlayerState : MonoBehaviour
         }
 
         //update the other clients with our score
-        StartCoroutine(UpdateBountyOnServer());
-    }
-
-    IEnumerator UpdateBountyOnServer()
-    {
-        yield return new WaitForSeconds(0.1f);
-        if (Client.instance != null)
-        {
-            Client.instance.UpdateScore(playerId, killsObtained, damageDealt);
-        }
-    }
-
-    IEnumerator UpdateHPOnServer(Vector3 hitPos, float scale)
-    {
-        yield return new WaitForSeconds(0.05f);
-        {
-            Client.instance.UpdateHP(playerId, hp, hitPos, scale);
-        }
+        if (AsyncClient.instance != null) AsyncClient.instance.UpdateScore(playerId, killsObtained, damageDealt);
     }
 
     public int GetBounty()
@@ -187,6 +175,7 @@ public class PlayerState : MonoBehaviour
 
     public void RemoteUpdateHP(float newHP)
     {
+        if (hp < newHP && newHP > 95f) onRespawn?.Invoke(this);
         hp = newHP;
     }
 }

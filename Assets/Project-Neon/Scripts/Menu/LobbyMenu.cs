@@ -32,11 +32,12 @@ public class LobbyMenu : MonoBehaviour
     int lastIndex;
 
     [SerializeField] GameObject createOrJoinPanel, inRoomPanel;
-    [SerializeField] List<FontManager> playerList = new List<FontManager>();
     [SerializeField] MenuButton readyButton, joinButton, createButton, backButton;
     [SerializeField] TMP_InputField lobbyCode;
     [SerializeField] TMP_Text ipLobby, ipLobbyUnlit;
     [SerializeField] List<TMP_Text> playerNames = new List<TMP_Text>();
+
+    [SerializeField] TMP_Text badConnectText;
 
     // Start is called before the first frame update
     void Start()
@@ -95,9 +96,9 @@ public class LobbyMenu : MonoBehaviour
         {
             GetLobbyCode();
 
-            if (Client.instance != null)
+            if (AsyncClient.instance != null)
             {
-                List<Player> players = Client.instance.GetPlayers();
+                List<Player> players = AsyncClient.instance.GetPlayers();
                 for (int i = 0; i < players.Count; i++)
                 {
                     if (i >= 4) break;
@@ -106,7 +107,7 @@ public class LobbyMenu : MonoBehaviour
                     if (players[i].ready) playerNames[i].GetComponent<FontManager>().ChangeFontColor(1);
                     else playerNames[i].GetComponent<FontManager>().ChangeFontColor(0);
                 }
-                Debug.Log("Number of players: " + players.Count);
+                //Debug.Log("Number of players: " + players.Count);
                 for(int i = 3; i > players.Count-1; i--)
                 {
                     playerNames[i].gameObject.SetActive(false);
@@ -186,6 +187,8 @@ public class LobbyMenu : MonoBehaviour
     {
         if (inRoomPanel.activeSelf)
         {
+            readyButton.UnClick();
+            readyButton.OnStopHover();
             inRoomPanel.SetActive(false);
             createOrJoinPanel.SetActive(true);
             LeaveLobby();
@@ -205,16 +208,18 @@ public class LobbyMenu : MonoBehaviour
         joinButton.OnStopHover();
         createButton.UnClick();
         createButton.OnStopHover();
-        Client.instance.Disconnect();
+        AsyncClient.instance.Disconnect();
     }
 
     public void JoinLobby()
     {
+        if (badConnectText != null) badConnectText.text = "";
+
         string targetLobby = lobbyCode.text;
-        if (Client.instance != null)
+        if (AsyncClient.instance != null)
         {
-            Client.instance.roomCode = targetLobby;
-            Client.instance.EnterGame(1);
+            AsyncClient.instance.roomCode = targetLobby.ToUpper();
+            AsyncClient.instance.EnterGame(1);
         }
         // lobbyCode.text = "";
         //acutally use that target lobby to connect to the lobby
@@ -224,7 +229,9 @@ public class LobbyMenu : MonoBehaviour
 
     public void CreateLobby()
     {
-        if (Client.instance != null) Client.instance.EnterGame(0);
+        if (badConnectText != null) badConnectText.text = "";
+
+        if (AsyncClient.instance != null) AsyncClient.instance.EnterGame(0);
         EnterLobby();
     }
 
@@ -240,9 +247,9 @@ public class LobbyMenu : MonoBehaviour
     public void GetLobbyCode()
     {
         string newCode = "";
-        if (Client.instance != null)
+        if (AsyncClient.instance != null)
         {
-            newCode = Client.instance.roomCode;
+            newCode = AsyncClient.instance.roomCode;
         }
 
         ipLobby.text = newCode;
@@ -251,12 +258,11 @@ public class LobbyMenu : MonoBehaviour
 
     public void LaunchGame()
     {
-        if (Client.instance != null)
+        if (AsyncClient.instance != null)
         {
-            if(Client.instance.GetAllPlayersReady())
+            if(AsyncClient.instance.GetAllPlayersReady())
             {
-                Client.instance.LaunchGameForAll();
-                StartGame();
+                AsyncClient.instance.LaunchGameForAll();
             }
         }
     }
@@ -271,13 +277,25 @@ public class LobbyMenu : MonoBehaviour
         if(readyButton.GetClicked())
         {
             readyButton.UnClick();
-            if (Client.instance != null) Client.instance.SetReady(false);
+            if (AsyncClient.instance != null) AsyncClient.instance.SetReady(false);
         }
-        else if (Client.instance != null) Client.instance.SetReady(true);
+        else if (AsyncClient.instance != null) AsyncClient.instance.SetReady(true);
     }
 
     public void SetRoomCode(string newCode)
     {
-        if (Client.instance != null) Client.instance.roomCode = newCode;
+        if (AsyncClient.instance != null) AsyncClient.instance.roomCode = newCode;
+    }
+
+    public void SetBadConnectMessage(string msg)
+    {
+        if (badConnectText != null) badConnectText.text = msg;
+
+        if (inRoomPanel.activeSelf)
+        {
+            inRoomPanel.SetActive(false);
+            createOrJoinPanel.SetActive(true);
+            LeaveLobby();
+        }
     }
 }
