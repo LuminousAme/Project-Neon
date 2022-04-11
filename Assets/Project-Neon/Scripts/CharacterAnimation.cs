@@ -5,19 +5,15 @@ using UnityEngine;
 public class CharacterAnimation : MonoBehaviour
 {
     bool isJumping;
-    bool isJumpingInAnimator;
     int isJumpingKey;
     public void SetIsJumping(bool isJumping) => this.isJumping = isJumping;
     bool onGround;
-    bool onGroundInAnimator;
     int onGroundKey;
     public void SetOnGround(bool onGround) => this.onGround = onGround;
     bool isFalling;
-    bool isFallingInAnimator;
     int isFallingKey;
     public void SetIsFalling(bool isFalling) => this.isFalling = isFalling;
     bool moving;
-    bool movingInAnimator;
     int movingKey;
     public void SetMoving(bool moving) => this.moving = moving;
 
@@ -30,49 +26,46 @@ public class CharacterAnimation : MonoBehaviour
     void Start()
     {
         isJumping = false;
-        isJumpingInAnimator = false;
         isJumpingKey = Animator.StringToHash("IsJumping");
-        onGround = true;
-        onGroundInAnimator = true;
+        onGround = false;
         onGroundKey = Animator.StringToHash("IsGrounded");
         isFalling = false;
-        isFallingInAnimator = false;
         isFallingKey = Animator.StringToHash("IsFalling");
         moving = false;
-        movingInAnimator = false;
         movingKey = Animator.StringToHash("IsMoving");
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(isJumping != isJumpingInAnimator)
+        if (isJumping != animator.GetBool(isJumpingKey))
         {
             animator.SetBool(isJumpingKey, isJumping);
-            isJumpingInAnimator = isJumping;
         }
 
-        if(onGround != onGroundInAnimator)
+        if(onGround != animator.GetBool(onGroundKey))
         {
             animator.SetBool(onGroundKey, onGround);
-            onGroundInAnimator = onGround;
             if (onGround && landingSFX != null && landingAudioSource != null)
             {
                 landingSFX.Play(landingAudioSource);
             }
         }
 
-        if(isFalling != isFallingInAnimator)
+        if(isFalling != animator.GetBool(isFallingKey))
         {
             animator.SetBool(isFallingKey, isFalling);
-            isFallingInAnimator = isFalling;
-
         }
 
-        if(moving != movingInAnimator)
+        if(moving != animator.GetBool(movingKey))
         {
             animator.SetBool(movingKey, moving);
-            movingInAnimator = moving;
+        }
+
+        //special case
+        if(onGround && !isJumping && !isFalling && animator.GetCurrentAnimatorStateInfo(0).IsName("Jump Launch"))
+        {
+            animator.SetBool(isFallingKey, true);
         }
     }
 }

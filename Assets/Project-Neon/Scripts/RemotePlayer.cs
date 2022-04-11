@@ -66,6 +66,7 @@ public class RemotePlayer : MonoBehaviour
 
         //convert to 0-360 angle range
         VertRot.AngleDegreeRange();
+        VertRot = Mathf.Clamp(VertRot, -80f, 50f);
         HoriRot.AngleDegreeRange();
 
         this.VertRot = Mathf.Clamp(VertRot, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
