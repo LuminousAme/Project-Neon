@@ -33,7 +33,7 @@ MonoBehaviour:
   numberOfDashes: 2
   grappleableMask:
     serializedVersion: 2
-    m_Bits: 55
+    m_Bits: 777
   maxGrappleRange: 100
   grappleJointSpring: 6
   grappleJointDamp: 6
