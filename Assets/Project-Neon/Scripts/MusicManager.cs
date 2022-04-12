@@ -8,6 +8,8 @@ public class MusicManager : MonoBehaviour
     [SerializeField] List<AudioClip> tracks = new List<AudioClip>();
     AudioSource musicPlayer;
 
+    [HideInInspector] public int CurrentTrackIndex = -1;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,8 +27,9 @@ public class MusicManager : MonoBehaviour
 
     public void PlayTrack(int index, float volume = 0.5f)
     {
-        if(index < tracks.Count)
+        if(index < tracks.Count && index >= 0)
         {
+            CurrentTrackIndex = index;
             musicPlayer.clip = tracks[index];
             musicPlayer.volume = volume;
             musicPlayer.Play();
@@ -41,6 +44,7 @@ public class MusicManager : MonoBehaviour
     public void StopCurrentTrack()
     {
         musicPlayer.Stop();
+        CurrentTrackIndex = -1;
     }
 
     public void SilenceAllOtherSounds(List<AudioSource> excluding = null)
@@ -58,5 +62,15 @@ public class MusicManager : MonoBehaviour
 
             if (audioSources[i].isPlaying) audioSources[i].Stop();
         }
+    }
+
+    private void OnDestroy()
+    {
+        CurrentTrackIndex = -1;
+    }
+
+    private void OnApplicationQuit()
+    {
+        CurrentTrackIndex = -1;
     }
 }

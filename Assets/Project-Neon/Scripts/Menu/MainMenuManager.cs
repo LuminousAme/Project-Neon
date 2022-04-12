@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -40,9 +41,14 @@ public class MainMenuManager : MonoBehaviour
     float timeElapsedLogo = 0f;
     int lastLogoIndex = -1;
 
+    static bool hasStartedOnce = false;
+    float timeSinceComing = 0f;
+
     // Start is called before the first frame update
     void Start()
     {
+        timeSinceComing = 0f;
+
         string name = PlayerPrefs.GetString("DisplayName", "");
         nameField.text = name;
 
@@ -83,6 +89,29 @@ public class MainMenuManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (MusicManager.instance != null)
+        {
+            if (MusicManager.instance.CurrentTrackIndex != 1)
+            {
+                MusicManager.instance.StopCurrentTrack();
+                MusicManager.instance.SilenceAllOtherSounds();
+                MusicManager.instance.PlayTrack(1, 0.25f);
+            }
+        }
+
+        if (!hasStartedOnce)
+        {
+            hasStartedOnce = true;
+            SceneManager.LoadScene(9);
+        }
+
+        timeSinceComing += Time.deltaTime;
+        if(timeSinceComing >= 60f)
+        {
+            timeSinceComing = 0f;
+            sceneTransition.beginTransition(9);
+        }
+
         if (startFinished)
         {
             //handle starting new flickers
