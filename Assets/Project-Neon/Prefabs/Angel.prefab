@@ -243,7 +243,7 @@ MonoBehaviour:
     m_MaintainTargetPositionOffset: 0
     m_MaintainTargetRotationOffset: 0
   m_SourceObjectsGUIToggle: 1
-  m_SettingsGUIToggle: 0
+  m_SettingsGUIToggle: 1
 --- !u!1 &873631596392687391
 GameObject:
   m_ObjectHideFlags: 0
@@ -1918,7 +1918,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   landingSFX: {fileID: 0}
+  walkingSFX: {fileID: 0}
   landingAudioSource: {fileID: 0}
+  walkingAudioSource: {fileID: 0}
   animator: {fileID: 5801209439338783887}
 --- !u!114 &7922727665916248562
 MonoBehaviour:

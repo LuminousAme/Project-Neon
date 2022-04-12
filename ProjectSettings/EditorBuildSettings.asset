@@ -32,4 +32,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project-Neon/Scenes/Promotional Trailer Scene.unity
     guid: b18926a7afec272478cfa498c3c443e2
+  - enabled: 1
+    path: Assets/Project-Neon/Scenes/Cutscene.unity
+    guid: 409a5d30c41997b4fa56fdad0de30114
   m_configObjects: {}

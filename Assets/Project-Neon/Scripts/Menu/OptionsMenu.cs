@@ -106,7 +106,7 @@ public class OptionsMenu : MonoBehaviour
     {
         if(firstFrame)
         {
-            graphicsButton.OnClick();
+            graphicsButton.ClickWithoutSound();
             firstFrame = false;
         }
         if (startFinished)

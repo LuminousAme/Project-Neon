@@ -105,6 +105,13 @@ public class MenuButton : MonoBehaviour
         onClick.Invoke();
     }
 
+    public void ClickWithoutSound()
+    {
+        ClickedActive();
+        clicked = true;
+        onClick.Invoke();
+    }
+
     void changeFont()
     {   
         if(alwaysFont1 && currentFontIndex != 1)

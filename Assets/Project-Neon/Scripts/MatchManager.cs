@@ -170,7 +170,7 @@ public class MatchManager : MonoBehaviour
                 if (players[i].GetHP() <= 0)
                 {
                     //kill the player so they respawn at their starting position
-                    if (Client.instance == null || (Client.instance != null && Client.instance.GetThisClientID() == players[i].GetPlayerID()))
+                    if (AsyncClient.instance == null || (AsyncClient.instance != null && AsyncClient.instance.GetThisClientID() == players[i].GetPlayerID()))
                         RespawnPlayer(players[i]);
                 }
             }

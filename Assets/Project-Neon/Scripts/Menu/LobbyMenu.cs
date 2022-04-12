@@ -33,8 +33,8 @@ public class LobbyMenu : MonoBehaviour
 
     [SerializeField] GameObject createOrJoinPanel, inRoomPanel;
     [SerializeField] MenuButton readyButton, joinButton, createButton, backButton;
-    [SerializeField] TMP_InputField lobbyCode;
-    [SerializeField] TMP_Text ipLobby, ipLobbyUnlit;
+    [SerializeField] TMP_InputField lobbyCode, customIPField;
+    [SerializeField] TMP_Text codeLobbyText, codeLobbyTextUnlit, customIPText, customIPUnlit;
     [SerializeField] List<TMP_Text> playerNames = new List<TMP_Text>();
 
     [SerializeField] TMP_Text badConnectText;
@@ -44,6 +44,8 @@ public class LobbyMenu : MonoBehaviour
     {
         createOrJoinPanel.SetActive(true);
         inRoomPanel.SetActive(false);
+
+        GetCustomIP();
 
         startFinished = false;
         timeToStartFinish = 0.0f;
@@ -95,6 +97,7 @@ public class LobbyMenu : MonoBehaviour
         if(inRoomPanel.activeSelf)
         {
             GetLobbyCode();
+
 
             if (AsyncClient.instance != null)
             {
@@ -194,6 +197,7 @@ public class LobbyMenu : MonoBehaviour
             LeaveLobby();
             backButton.UnClick();
             backButton.OnStopHover();
+            GetCustomIP();
         }
         else
         {
@@ -240,8 +244,8 @@ public class LobbyMenu : MonoBehaviour
         inRoomPanel.SetActive(true);
         createOrJoinPanel.SetActive(false);
         readyButton.lightOff = false;
-        ipLobby.text = "Lobby Code: " + lobbyCode.text;
-        ipLobbyUnlit.text = "Lobby Code: " + lobbyCode.text;
+        codeLobbyText.text = "Lobby Code: " + lobbyCode.text;
+        codeLobbyTextUnlit.text = "Lobby Code: " + lobbyCode.text;
     }
 
     public void GetLobbyCode()
@@ -252,8 +256,16 @@ public class LobbyMenu : MonoBehaviour
             newCode = AsyncClient.instance.roomCode;
         }
 
-        ipLobby.text = newCode;
-        ipLobbyUnlit.text = newCode;
+        codeLobbyText.text = newCode;
+        codeLobbyTextUnlit.text = newCode;
+    }
+
+    public void GetCustomIP()
+    {
+        string ip = GameSettings.instance.customServerIP;
+        customIPText.text = ip;
+        customIPUnlit.text = ip;
+        customIPField.text = ip;
     }
 
     public void LaunchGame()
@@ -285,6 +297,12 @@ public class LobbyMenu : MonoBehaviour
     public void SetRoomCode(string newCode)
     {
         if (AsyncClient.instance != null) AsyncClient.instance.roomCode = newCode;
+    }
+
+    public void SetCustomIP(string customIP)
+    {
+        GameSettings.instance.customServerIP = customIP;
+        GameSettings.instance.SaveValuesToFile();
     }
 
     public void SetBadConnectMessage(string msg)

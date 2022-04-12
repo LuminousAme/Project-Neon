@@ -133,7 +133,21 @@ public class AsyncClient : MonoBehaviour
         thisClientName = PlayerPrefs.GetString("DisplayName");
         this.type = type;
         elapsedTime = 0f;
+
         serverIp = IPAddress.Parse(ipText);
+
+        try
+        {
+            if (string.IsNullOrEmpty(GameSettings.instance.customServerIP) || !IPAddress.TryParse(GameSettings.instance.customServerIP, out serverIp))
+            {
+                serverIp = IPAddress.Parse(ipText);
+            }
+        }
+        catch
+        {
+            serverIp = IPAddress.Parse(ipText);
+        }
+
 
         TcpClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         TcpClient.SetKeepAliveValues(1500, 500);

@@ -5,6 +5,16 @@ using UnityEngine;
 public class ScreenFaceController : MonoBehaviour
 {
     [SerializeField] MeshRenderer meshRenderer;
+    [SerializeField] Texture startingTexture;
+
+    private void Start()
+    {
+        if(startingTexture != null)
+        {
+            UpdateTexture(startingTexture);
+        }
+    }
+
 
     public void UpdateTexture(Texture newText)
     {
