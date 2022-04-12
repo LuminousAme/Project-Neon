@@ -28,10 +28,6 @@ public class PlayerState : MonoBehaviour
 
     public static event HandleNewKill onNewKill;
 
-    public delegate void HandleLocalHPChange(PlayerState player);
-
-    public static event HandleLocalHPChange onHPChange;
-
     public float GetHP() => hp;
 
     // public int GetHP() => hp;

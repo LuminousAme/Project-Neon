@@ -16,6 +16,8 @@ public class GameSettings : MonoBehaviour
     [SerializeField] AudioMixer mixer;
     Resolution[] resolutions;
 
+    public string customServerIP;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -74,6 +76,8 @@ public class GameSettings : MonoBehaviour
 
         int toogleGrappleint = PlayerPrefs.GetInt("ToogleGrapple", 1);
         toogleGrapple = toogleGrappleint == 1;
+
+        customServerIP = PlayerPrefs.GetString("CustomIP", "");
     }
 
     public void SaveValuesToFile()
@@ -95,5 +99,7 @@ public class GameSettings : MonoBehaviour
 
         int toggleGrappleInt = (toogleGrapple) ? 1 : 0;
         PlayerPrefs.SetInt("ToogleGrapple", toggleGrappleInt);
+
+        PlayerPrefs.SetString("CustomIP", customServerIP);
     }
 }
