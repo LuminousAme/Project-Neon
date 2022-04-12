@@ -67,7 +67,7 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
 
         hitbox.shape = Hitbox.HitboxShape.BOX;
         hitbox.state = Hitbox.HitboxState.ACTIVE;
-        hitbox.boxHalfSize = new Vector3(1f, 0.3f, 0.5f);
+        hitbox.boxHalfSize = new Vector3(1f, 0.4f, 0.5f);
         hitbox.transform.localPosition = new Vector3(0f, 0.3f, -0.1f);
 
         alreadyHitThisAttack.Clear();
@@ -83,7 +83,7 @@ public class HeavyAttack : MonoBehaviour, IHitboxListener
         StartCoroutine(startSlash());
 
         hitbox.shape = Hitbox.HitboxShape.BOX;
-        hitbox.boxHalfSize = new Vector3(1f, 1.2f, 0.8f);
+        hitbox.boxHalfSize = new Vector3(1.2f, 1.4f, 1.4f);
         hitbox.transform.localPosition = new Vector3(0f, -1f, 1.5f);
     }
 
