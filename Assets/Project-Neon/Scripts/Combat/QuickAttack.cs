@@ -70,7 +70,7 @@ public class QuickAttack : MonoBehaviour, IHitboxListener
 
         hitbox.shape = Hitbox.HitboxShape.BOX;
         hitbox.state = Hitbox.HitboxState.ACTIVE;
-        hitbox.boxHalfSize = new Vector3(0.6f, 0.5f, 0.8f);
+        hitbox.boxHalfSize = new Vector3(0.8f, 0.6f, 1f);
         hitbox.transform.localPosition = new Vector3(0f, -0.1f, 1.5f);
         alreadyHitThisAttack.Clear();
     }
