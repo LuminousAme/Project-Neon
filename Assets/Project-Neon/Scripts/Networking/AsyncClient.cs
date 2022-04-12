@@ -282,6 +282,19 @@ public class AsyncClient : MonoBehaviour
                 Guid.TryParse(splitData[1], out thisClientId);
             }
 
+            //could not find room
+            if (splitData[0] == "-1")
+            {
+                LobbyMenu lobby = FindObjectOfType<LobbyMenu>();
+                if (lobby != null) lobby.SetBadConnectMessage("Could not find that room code");
+            }
+
+            if (splitData[0] == "-3")
+            {
+                LobbyMenu lobby = FindObjectOfType<LobbyMenu>();
+                if (lobby != null) lobby.SetBadConnectMessage("Sorry that room is already full");
+            }
+
             //update the player list
             if (splitData[0] == "3")
             {

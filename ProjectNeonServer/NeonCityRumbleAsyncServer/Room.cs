@@ -36,8 +36,10 @@ namespace NeonCityRumbleAsyncServer
             mutex.Dispose();
         }
 
-        public void JoinRoom(Player joiningPlayer)
+        public bool JoinRoom(Player joiningPlayer)
         {
+            if (playersInThisRoom.Count >= 4) return true;
+
             try
             {
                 playersInThisRoom.Add(joiningPlayer);
@@ -55,6 +57,8 @@ namespace NeonCityRumbleAsyncServer
             {
                 //ignore any excpetions
             }
+
+            return false;
         }
 
         private void TcpRecieveCallBack(IAsyncResult result)

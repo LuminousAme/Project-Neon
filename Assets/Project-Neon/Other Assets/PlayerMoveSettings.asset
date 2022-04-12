@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 788f3f75daada2a4c97e3640d33eebb5, type: 3}
   m_Name: PlayerMoveSettings
   m_EditorClassIdentifier: 
-  rideHeight: 1.5
+  rideHeight: 1.25
   rideSpringStr: 160
   rideSpringDamp: 50
   walkableMask:
@@ -33,7 +33,7 @@ MonoBehaviour:
   numberOfDashes: 2
   grappleableMask:
     serializedVersion: 2
-    m_Bits: 55
+    m_Bits: 777
   maxGrappleRange: 100
   grappleJointSpring: 6
   grappleJointDamp: 6
@@ -45,5 +45,5 @@ MonoBehaviour:
   grapplingCoolDown: 2
   horizontalLookSpeed: 200
   verticalLookSpeed: 200
-  vertMaxAngle: 80
+  vertMaxAngle: 65
   vertMinAngle: -80
