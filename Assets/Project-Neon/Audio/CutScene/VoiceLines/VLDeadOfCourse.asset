@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fb735127bf1cbd4f947773cbdd08af3, type: 3}
+  m_Name: VLDeadOfCourse
+  m_EditorClassIdentifier: 
+  audioClips:
+  - {fileID: 8300000, guid: e713599b49e26474eb1c6900f79e7041, type: 3}
+  minVolume: 0.5
+  maxVolume: 0.5
+  minPitch: 1
+  maxPitch: 1
+  useSemitones: 0
+  minSemitones: 0
+  maxSemitones: 0
+  targetMixerGroup: {fileID: -3682711311781301245, guid: 1c41534074d26b64c9cbd758adc645d1, type: 2}
+  clipPlayOrder: 0
+  previewer: {fileID: 0}
