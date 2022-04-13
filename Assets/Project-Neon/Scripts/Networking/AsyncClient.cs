@@ -143,8 +143,9 @@ public class AsyncClient : MonoBehaviour
                 serverIp = IPAddress.Parse(ipText);
             }
         }
-        catch
+        catch (Exception e)
         {
+            Debug.Log(e.ToString());
             serverIp = IPAddress.Parse(ipText);
         }
 
