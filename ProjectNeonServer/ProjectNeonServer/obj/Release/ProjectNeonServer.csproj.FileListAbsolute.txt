@@ -1,0 +1,12 @@
+C:\Users\zkimc\source\repos\ProjectNeonServer\ProjectNeonServer\bin\Release\ProjectNeonServer.exe.config
+C:\Users\zkimc\source\repos\ProjectNeonServer\ProjectNeonServer\bin\Release\ProjectNeonServer.exe
+C:\Users\zkimc\source\repos\ProjectNeonServer\ProjectNeonServer\bin\Release\ProjectNeonServer.pdb
+C:\Users\zkimc\source\repos\ProjectNeonServer\ProjectNeonServer\obj\Release\ProjectNeonServer.csprojAssemblyReference.cache
+C:\Users\zkimc\source\repos\ProjectNeonServer\ProjectNeonServer\obj\Release\ProjectNeonServer.exe
+C:\Users\zkimc\source\repos\ProjectNeonServer\ProjectNeonServer\obj\Release\ProjectNeonServer.pdb
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\ProjectNeonServer\bin\Release\ProjectNeonServer.exe.config
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\ProjectNeonServer\bin\Release\ProjectNeonServer.exe
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\ProjectNeonServer\bin\Release\ProjectNeonServer.pdb
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\ProjectNeonServer\obj\Release\ProjectNeonServer.csprojAssemblyReference.cache
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\ProjectNeonServer\obj\Release\ProjectNeonServer.exe
+C:\Users\zkimc\Documents\Gitkraken\Project-Neon\ProjectNeonServer\ProjectNeonServer\obj\Release\ProjectNeonServer.pdb

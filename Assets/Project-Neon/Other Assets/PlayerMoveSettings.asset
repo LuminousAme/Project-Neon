@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 788f3f75daada2a4c97e3640d33eebb5, type: 3}
+  m_Name: PlayerMoveSettings
+  m_EditorClassIdentifier: 
+  rideHeight: 1.25
+  rideSpringStr: 160
+  rideSpringDamp: 50
+  walkableMask:
+    serializedVersion: 2
+    m_Bits: 1
+  rotationSpringDamp: 4
+  baseMaxSpeed: 12
+  baseAcceleration: 200
+  baseMaxAccelForce: 150
+  baseJumpHeight: 8
+  horiDistanceToPeak: 6
+  horiDistanceWhileFalling: 6
+  airjumps: 1
+  coyoteTime: 0.35
+  AdditionalSpeedForDash: 150
+  DashLenght: 0.2
+  DashCooldown: 2
+  numberOfDashes: 2
+  grappleableMask:
+    serializedVersion: 2
+    m_Bits: 777
+  maxGrappleRange: 100
+  grappleJointSpring: 6
+  grappleJointDamp: 6
+  grappleJointMassScale: 1
+  grappleCloseDistance: 1
+  grapplePullSpeed: 1800
+  grappleDrag: 3
+  grapplingHoriInputForce: 10
+  grapplingCoolDown: 2
+  horizontalLookSpeed: 200
+  verticalLookSpeed: 200
+  vertMaxAngle: 65
+  vertMinAngle: -80
