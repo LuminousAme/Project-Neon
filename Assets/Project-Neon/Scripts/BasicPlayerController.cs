@@ -630,6 +630,23 @@ public class BasicPlayerController : MonoBehaviour
         }
     }
 
+    public void VRLightAttack()
+    {
+        quickAttack.BeginAttack();
+    }
+
+    public void VRHeavyAttack()
+    {
+        heavyAttack.BeginAttack();
+        StartCoroutine(VRFinishHeavyAttack());
+    }
+
+    IEnumerator VRFinishHeavyAttack()
+    {
+        yield return new WaitForSeconds(0.25f);
+        heavyAttack.ReleaseAttack();
+    }
+
     private void OnDrawGizmosSelected()
     {
         if (movementSettings != null)

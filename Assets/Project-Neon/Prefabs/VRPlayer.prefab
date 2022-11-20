@@ -2672,6 +2672,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8184975433012478994}
   - component: {fileID: 8184975433012478995}
+  - component: {fileID: 5850634917802088825}
   m_Layer: 3
   m_Name: VRPlayer
   m_TagString: Untagged
@@ -2760,6 +2761,24 @@ MonoBehaviour:
   GrappleReelSFX: {fileID: 11400000, guid: 6aff6c730798eae47a47cd18e4a5ba12, type: 2}
   grappleReelSource: {fileID: 6646649417698233132}
   mainCamera: {fileID: 5905571741200342546}
+--- !u!114 &5850634917802088825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8184975433012478992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edd3bf1c5ce4aca4694cf7c9e2e34825, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackHand: {fileID: 4997798356000916243}
+  cam: {fileID: 5905571741200342546}
+  attackTarget: {fileID: 8179037803349326209}
+  lightDistance: 1
+  heavyDistance: 0.25
+  heavytimeleeway: 1
 --- !u!1 &8487663691968477295
 GameObject:
   m_ObjectHideFlags: 0
