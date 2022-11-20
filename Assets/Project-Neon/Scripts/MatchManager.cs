@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Linq;
 using System;
+using Unity.XR.CoreUtils;
 
 public class MatchManager : MonoBehaviour
 {
@@ -54,17 +55,17 @@ public class MatchManager : MonoBehaviour
         if (instance == null) instance = this;
         else Destroy(this.gameObject);
 
-        if(AsyncClient.instance != null)
+        if (AsyncClient.instance != null)
         {
             multiplayer = true;
             List<Player> allInRoom = AsyncClient.instance.GetPlayers();
-            for(int i = 0; i < allInRoom.Count; i++)
+            for (int i = 0; i < allInRoom.Count; i++)
             {
                 //spawn the local player
-                if(allInRoom[i].id == AsyncClient.instance.GetThisClientID())
+                if (allInRoom[i].id == AsyncClient.instance.GetThisClientID())
                 {
                     GameObject newPlayer = Instantiate(localPlayerPrefab, initialSpawns[i].position, initialSpawns[i].rotation);
-                    PlayerState state = newPlayer.GetComponent<PlayerState>();
+                    PlayerState state = newPlayer.GetComponentInChildren<PlayerState>();
                     state.SetPlayerID(allInRoom[i].id);
                     state.SetUseName(true, allInRoom[i].name);
                     thisPlayerID = state.GetPlayerID();
@@ -127,10 +128,10 @@ public class MatchManager : MonoBehaviour
     {
         active = false;
 
-        for(int i = 0; i < players.Count; i++)
+        for (int i = 0; i < players.Count; i++)
         {
             //force a score update on the server
-            if(players[i].GetPlayerID() == thisPlayerID) players[i].DealDamage(0, false);
+            if (players[i].GetPlayerID() == thisPlayerID) players[i].DealDamage(0, false);
         }
 
         BasicPlayerController controller = FindObjectOfType<BasicPlayerController>();
@@ -156,7 +157,7 @@ public class MatchManager : MonoBehaviour
 
     private void Update()
     {
-        if(active)
+        if (active)
         {
             for (int i = 0; i < players.Count; i++)
             {
@@ -189,9 +190,9 @@ public class MatchManager : MonoBehaviour
 
     private void RespawnPlayer(PlayerState player)
     {
-        for(int i = 0; i < players.Count; i++)
+        for (int i = 0; i < players.Count; i++)
         {
-            if(player.GetPlayerID() == players[i].GetPlayerID())
+            if (player.GetPlayerID() == players[i].GetPlayerID())
             {
                 players[i].transform.position = startingPositions[i];
                 Rigidbody rb = players[i].GetComponent<Rigidbody>();
@@ -203,7 +204,7 @@ public class MatchManager : MonoBehaviour
 
     public void DisconnectPlayer(Player player)
     {
-        if(players.Exists(p => p.GetPlayerID() == player.id))
+        if (players.Exists(p => p.GetPlayerID() == player.id))
         {
             PlayerState toremove = players.Find(p => p.GetPlayerID() == player.id);
             players.Remove(toremove);
@@ -217,7 +218,7 @@ public class MatchManager : MonoBehaviour
     {
         List<PlayerState> newPlayerStateList = new List<PlayerState>();
 
-        for(int i = 0; i < players.Count; i++)
+        for (int i = 0; i < players.Count; i++)
         {
             newPlayerStateList.Add(players[i]);
         }

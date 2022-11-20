@@ -635,7 +635,7 @@ public class BasicPlayerController : MonoBehaviour
         if (movementSettings != null)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawRay(rb.position, Vector3.down * movementSettings.GetRideHeight());
+            //Gizmos.DrawRay(rb.position, Vector3.down * movementSettings.GetRideHeight());
             Gizmos.color = Color.white;
         }
     }
