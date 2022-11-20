@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 //Basic character movement script based on the character controller from Very Very Valet
 //https://youtu.be/qdskE8PJy6Q

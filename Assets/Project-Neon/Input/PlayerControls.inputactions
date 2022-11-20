@@ -11,7 +11,8 @@
                     "id": "55585e7b-653f-46ba-84d5-8efebc8c506f",
                     "expectedControlType": "Vector2",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Jump",
@@ -19,7 +20,8 @@
                     "id": "01bd2e4d-b6c4-43a7-a7fd-f451dc2124a1",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Look",
@@ -27,7 +29,8 @@
                     "id": "56c9f613-45c0-4980-8fed-90c163b9cede",
                     "expectedControlType": "Vector2",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Dash",
@@ -35,7 +38,8 @@
                     "id": "01049905-0b65-45ad-8096-d7c3a195d295",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Grapple",
@@ -43,7 +47,8 @@
                     "id": "7ad625ed-fba3-4e84-ab5d-71f2fc8ba195",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Attack",
@@ -51,7 +56,8 @@
                     "id": "9df09099-f1bf-4f39-8384-4df6e1c7f678",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Block",
@@ -59,7 +65,8 @@
                     "id": "7793938d-411e-4359-bf99-39d962a475b7",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -131,6 +138,17 @@
                 },
                 {
                     "name": "",
+                    "id": "5c6762a8-61f0-4169-9be5-211a63799d47",
+                    "path": "<XRController>{LeftHand}/primary2DAxis",
+                    "interactions": "",
+                    "processors": "StickDeadzone",
+                    "groups": "XR",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "518f202e-3d89-4d62-8c70-d0b41272a61f",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -147,6 +165,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "GamePad",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "82091579-8eb5-4bc5-9dd3-3ac8a9d1b1ed",
+                    "path": "<XRController>{LeftHand}/triggerButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
                     "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -197,6 +226,28 @@
                 },
                 {
                     "name": "",
+                    "id": "0843a020-2a0c-46ce-90a2-7b5a2abadd09",
+                    "path": "<XRController>{LeftHand}/gripButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "538046ac-f928-41cc-8743-cd57a568e2ad",
+                    "path": "<XRController>{RightHand}/gripButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "7a8c661c-61ba-4006-b463-99b4504eb46f",
                     "path": "<Mouse>/rightButton",
                     "interactions": "",
@@ -213,6 +264,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "GamePad",
+                    "action": "Grapple",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bf044344-b8dd-4041-8341-dbe8c46a9da0",
+                    "path": "<XRController>{RightHand}/triggerButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
                     "action": "Grapple",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -287,6 +349,17 @@
             "devices": [
                 {
                     "devicePath": "<Gamepad>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        },
+        {
+            "name": "XR",
+            "bindingGroup": "XR",
+            "devices": [
+                {
+                    "devicePath": "<XRController>",
                     "isOptional": false,
                     "isOR": false
                 }
