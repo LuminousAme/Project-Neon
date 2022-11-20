@@ -4,7 +4,6 @@ using UnityEngine;
 
 //Basic character movement script based on the character controller from Very Very Valet
 //https://youtu.be/qdskE8PJy6Q
-[RequireComponent(typeof(Rigidbody))]
 public class BasicPlayerController : MonoBehaviour
 {
     private Rigidbody rb;
@@ -78,6 +77,8 @@ public class BasicPlayerController : MonoBehaviour
     public static Action OnDoubleJump;
     public static Action OnDash;
 
+    [SerializeField] Transform mainCamera;
+
     private void Awake()
     {
         //create the player controls asset, and enable the default player controls
@@ -121,7 +122,7 @@ public class BasicPlayerController : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        rb = this.GetComponent<Rigidbody>();
+        rb = transform.GetChild(0).GetComponent<Rigidbody>();
         targetRotation = transform.rotation;
 
         airJumpsTaken = 0;
@@ -182,7 +183,7 @@ public class BasicPlayerController : MonoBehaviour
         }
 
         acutalGraple.position = MathUlits.LerpClamped(acutalGraple.position, adjustedHookPosition, movementSettings.GetGrapplePullSpeed() * 2.0f);
-        grapleParent.rotation = Quaternion.Slerp(grapleParent.rotation, desiredRotForGrapple, Time.deltaTime * 5f);
+        //grapleParent.rotation = Quaternion.Slerp(grapleParent.rotation, desiredRotForGrapple, Time.deltaTime * 5f);
 
         //reduce the cooldown remaing for the grappling hook
         if (timeSinceLastGrappleEnd > 0.0f && !isGrappling) timeSinceLastGrappleEnd -= Time.deltaTime;
@@ -225,18 +226,28 @@ public class BasicPlayerController : MonoBehaviour
     private void FixedRotatePlayer()
     {
         //handle rotation from player input
+        /*
         float vertRot = -lookInput.y * movementSettings.GetVerticalLookSpeed();
         eulerAngles.y += vertRot * Time.deltaTime;
         eulerAngles.y = Mathf.Clamp(eulerAngles.y, movementSettings.GetVertMinAngle(), movementSettings.GetVertMaxAngle());
         lookAtTarget.localPosition = new Vector3(0.0f, 0.0f, 1.0f);
         lookAtTarget.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-        lookAtTarget.RotateAround(lookAtTarget.parent.position, lookAtTarget.right, eulerAngles.y);
+        lookAtTarget.RotateAround(lookAtTarget.parent.position, lookAtTarget.right, eulerAngles.y);*/
 
         //update the rotation for the rigidbody
+        /*
         float horiRot = lookInput.x * movementSettings.GetHorizontalLookSpeed();
         eulerAngles.x += horiRot * Time.deltaTime;
         horizontalLookRot.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-        horizontalLookRot.RotateAround(horizontalLookRot.position, horizontalLookRot.up, eulerAngles.x);
+        horizontalLookRot.RotateAround(horizontalLookRot.position, horizontalLookRot.up, eulerAngles.x);*/
+
+        Vector3 rawforward = mainCamera.forward;
+        Vector3 forward = new Vector3(rawforward.x, 0f, rawforward.z).normalized;
+
+        horizontalLookRot.LookAt(horizontalLookRot.position + forward, Vector3.up);
+        mainCamera.LookAt(mainCamera.position + rawforward);
+
+        eulerAngles = mainCamera.rotation.eulerAngles;
 
         /*
         Quaternion yaw = Quaternion.AngleAxis(horiRot * Time.deltaTime, transform.up);
@@ -372,7 +383,7 @@ public class BasicPlayerController : MonoBehaviour
     {
         //check if we even hit something we can grapple too
         RaycastHit rayHit;
-        if (Physics.Raycast(lookAtTarget.parent.position, lookAtTarget.forward, out rayHit,
+        if (Physics.Raycast(grappleLaunch.position, grappleLaunch.forward, out rayHit,
             movementSettings.GetMaxGrappleRange(), movementSettings.GetGrappleableMask()))
         {
             //if we did set the point we hit to the anchor point
