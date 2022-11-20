@@ -35,4 +35,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project-Neon/Scenes/Cutscene.unity
     guid: 409a5d30c41997b4fa56fdad0de30114
-  m_configObjects: {}
+  m_configObjects:
+    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: abc025df73a027d4c8738d1da30e53e2, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 3f82ce58e763ca74baf64e7a0ff61c0c, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: bbb5bd82f20d49a43acb43fe92d6749c, type: 2}
