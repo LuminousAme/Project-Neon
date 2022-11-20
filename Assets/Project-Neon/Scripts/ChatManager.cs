@@ -97,6 +97,23 @@ public class ChatManager : MonoBehaviour
     {
         return selectionStatus;
     }
+
+    public void WriteMessageVR()
+    {
+        UIKeyboard.instance.gameObject.SetActive(true);
+        UIKeyboard.OnConfirmText += FinishedWriteMessageVR;
+    }
+
+    public void FinishedWriteMessageVR(string msg)
+    {
+        UIKeyboard.instance.gameObject.SetActive(false);
+        UIKeyboard.OnConfirmText -= FinishedWriteMessageVR;
+        if(msg.Length > 0)
+        {
+            AddMessageToChat(thisClientDisplayName, msg);
+            if (AsyncClient.instance != null) AsyncClient.instance.SendMessageToOtherPlayers(msg);
+        }
+    }
 }
 
 public class Message

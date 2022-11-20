@@ -316,4 +316,30 @@ public class LobbyMenu : MonoBehaviour
             LeaveLobby();
         }
     }
+
+    public void VREditIpAddress()
+    {
+        UIKeyboard.instance.gameObject.SetActive(true);
+        UIKeyboard.OnConfirmText += VREndIPEdit;
+    }
+
+    public void VREndIPEdit(string ip)
+    {
+        customIPField.text = ip;
+        SetCustomIP(ip);
+        UIKeyboard.OnConfirmText -= VREndIPEdit;
+    }
+
+    public void VREditRoomCode()
+    {
+        UIKeyboard.instance.gameObject.SetActive(true);
+        UIKeyboard.OnConfirmText += VREndRomeCodeEdit;
+    }
+
+    public void VREndRomeCodeEdit(string code)
+    {
+        lobbyCode.text = code;
+        SetRoomCode(code);
+        UIKeyboard.OnConfirmText -= VREndRomeCodeEdit;
+    }
 }
