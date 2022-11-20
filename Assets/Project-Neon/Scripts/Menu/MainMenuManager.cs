@@ -102,14 +102,14 @@ public class MainMenuManager : MonoBehaviour
         if (!hasStartedOnce)
         {
             hasStartedOnce = true;
-            SceneManager.LoadScene(9);
+            //SceneManager.LoadScene(9);
         }
 
         timeSinceComing += Time.deltaTime;
         if(timeSinceComing >= 60f)
         {
             timeSinceComing = 0f;
-            sceneTransition.beginTransition(9);
+            //sceneTransition.beginTransition(9);
         }
 
         if (startFinished)
