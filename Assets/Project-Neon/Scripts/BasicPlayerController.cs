@@ -291,7 +291,7 @@ public class BasicPlayerController : MonoBehaviour
         Vector3 rayDir = Vector3.down;
 
         //if it hit something calculate the force that should be applied as a result
-        if (Physics.Raycast(transform.position, rayDir, out rayHit, 1f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
+        if (Physics.Raycast(rb.position, rayDir, out rayHit, 1f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
         {
             float speedAlongRayDir = Vector3.Dot(rayDir, rb.velocity); //the speed that the player is moving along the ray's direction
             float otherVelAlongRayDir = 0.0f; //the speed that the object the ray has collided with is moving along the ray's direction, it is zero if it didn't hit another rigidbody
@@ -337,7 +337,7 @@ public class BasicPlayerController : MonoBehaviour
             coyoteTimer += Time.fixedDeltaTime;
         }
 
-        if (Physics.Raycast(transform.position, rayDir, out rayHit, 2.5f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
+        if (Physics.Raycast(rb.position, rayDir, out rayHit, 2.5f * movementSettings.GetRideHeight(), movementSettings.GetWalkableMask()))
         {
             grounded = true;
             airJumpsTaken = 0;
@@ -384,7 +384,7 @@ public class BasicPlayerController : MonoBehaviour
     {
         //check if we even hit something we can grapple too
         RaycastHit rayHit;
-        if (Physics.Raycast(grappleLaunch.position, grappleLaunch.forward, out rayHit,
+        if (Physics.Raycast(grappleLaunch.position, -grappleLaunch.up, out rayHit,
             movementSettings.GetMaxGrappleRange(), movementSettings.GetGrappleableMask()))
         {
             //if we did set the point we hit to the anchor point
@@ -410,7 +410,7 @@ public class BasicPlayerController : MonoBehaviour
                     grapplingHookJoint.massScale = movementSettings.GetGrappleJointMassScale();
 
                     //setting the starting distances to grapple between
-                    float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
+                    float distanceFromHookPoint = Vector3.Distance(rb.position, hookPosition);
                     grapplingHookJoint.maxDistance = distanceFromHookPoint * 0.8f;
                     grapplingHookJoint.minDistance = distanceFromHookPoint * 0.25f;
                     //grapplingHookJoint.minDistance = movementSettings.GetGrappleCloseDistance();
@@ -464,7 +464,7 @@ public class BasicPlayerController : MonoBehaviour
         desiredRotForGrapple = Quaternion.LookRotation(acutalGraple.position - grapleRest.position);
 
         //adjust the area that you can swing in
-        float distanceFromHookPoint = Vector3.Distance(this.transform.position, hookPosition);
+        float distanceFromHookPoint = Vector3.Distance(rb.position, hookPosition);
         if (grapplingHookJoint != null)
         {
             grapplingHookJoint.maxDistance = distanceFromHookPoint * 0.8f;
@@ -479,7 +479,7 @@ public class BasicPlayerController : MonoBehaviour
     {
         if (isGrappling)
         {
-            Vector3 GrappleDir = hookPosition - this.transform.position;
+            Vector3 GrappleDir = hookPosition - rb.position;
             grapplingMomentum = GrappleDir.normalized * movementSettings.GetGrapplePullSpeed() * Time.fixedDeltaTime;
             isRidingMommentum = true;
         }
@@ -635,7 +635,7 @@ public class BasicPlayerController : MonoBehaviour
         if (movementSettings != null)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawRay(transform.position, Vector3.down * movementSettings.GetRideHeight());
+            Gizmos.DrawRay(rb.position, Vector3.down * movementSettings.GetRideHeight());
             Gizmos.color = Color.white;
         }
     }
