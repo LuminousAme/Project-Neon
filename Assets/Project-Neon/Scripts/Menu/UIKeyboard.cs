@@ -20,7 +20,7 @@ public class UIKeyboard : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(this);
-            //gameObject.SetActive(false);
+            gameObject.SetActive(false);
         }
         else
         {

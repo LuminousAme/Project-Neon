@@ -305,6 +305,19 @@ public class MainMenuManager : MonoBehaviour
         nameField.transform.localScale = scale;
     }
 
+    public void VRNameEdit()
+    {
+        UIKeyboard.instance.gameObject.SetActive(true);
+        UIKeyboard.OnConfirmText += VREndNameEdit;
+    }
+
+    public void VREndNameEdit(string name)
+    {
+        nameField.text = name;
+        FinishedEditing(name);
+        UIKeyboard.OnConfirmText -= VREndNameEdit;
+    }
+
     public void FinishedEditing(string name)
     {
         PlayerPrefs.SetString("DisplayName", name);
