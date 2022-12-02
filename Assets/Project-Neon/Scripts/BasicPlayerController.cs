@@ -39,6 +39,7 @@ public class BasicPlayerController : MonoBehaviour
     private Vector3 grapplingMomentum;
     [SerializeField] private LineRenderer grapplingLine;
     [SerializeField] private Transform grappleLatch, grappleLaunch, acutalGraple, grapleRest, grapleParent;
+    [SerializeField] private Transform grappleAim;
     [SerializeField] private bool useJoint = true;
     private Quaternion desiredRotForGrapple;
 
@@ -384,7 +385,7 @@ public class BasicPlayerController : MonoBehaviour
     {
         //check if we even hit something we can grapple too
         RaycastHit rayHit;
-        if (Physics.Raycast(grappleLaunch.position, -grappleLaunch.up, out rayHit,
+        if (Physics.Raycast(grappleAim.position, grappleAim.forward, out rayHit,
             movementSettings.GetMaxGrappleRange(), movementSettings.GetGrappleableMask()))
         {
             //if we did set the point we hit to the anchor point

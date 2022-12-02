@@ -35,7 +35,7 @@ public class OptionsMenu : MonoBehaviour
     int lastIndex;
     bool firstFrame;
 
-    [SerializeField] MenuButton graphicsButton, audioButton, controlsButton, gamepadButton;
+    [SerializeField] MenuButton graphicsButton, audioButton, controlsButton, gamepadButton, vrButton;
     [SerializeField] GameObject graphicsPanel, audioPanel, controlsPanel, gamepadPanel;
 
     [SerializeField] AudioMixer mixer;
@@ -48,6 +48,9 @@ public class OptionsMenu : MonoBehaviour
     [SerializeField] Slider mouseSens, ControlerSens;
     [SerializeField] TMP_Text mouseSensText, controllerSensText;
     [SerializeField] Toggle grappleToogleToggle;
+
+    [SerializeField] GameObject VRPanel;
+    [SerializeField] Toggle VrFovToggle;
 
     // Start is called before the first frame update
     void Start()
@@ -75,6 +78,7 @@ public class OptionsMenu : MonoBehaviour
         fullscreenToggle.isOn = GameSettings.instance.fullscreen;
         stylizedTextToggle.isOn = GameSettings.instance.stylizedText;
         grappleToogleToggle.isOn = GameSettings.instance.toogleGrapple;
+        VrFovToggle.isOn = GameSettings.instance.vrFOV;
 
         masterVol.value = GameSettings.instance.masterVolume;
         musicVol.value = GameSettings.instance.musicVolume;
@@ -229,51 +233,77 @@ public class OptionsMenu : MonoBehaviour
 
     public void GraphicsButtonPressed()
     {
+        graphicsButton.FakeClick();
         audioButton.UnClick();
         controlsButton.UnClick();
         gamepadButton.UnClick();
+        vrButton.UnClick();
 
         graphicsPanel.SetActive(true);
         audioPanel.SetActive(false);
         controlsPanel.SetActive(false);
         gamepadPanel.SetActive(false);
+        VRPanel.SetActive(false);
     }
 
     public void AudioButtonPressed()
     {
+        audioButton.FakeClick();
         graphicsButton.UnClick();
         controlsButton.UnClick();
         gamepadButton.UnClick();
+        vrButton.UnClick();
 
         graphicsPanel.SetActive(false);
         audioPanel.SetActive(true);
         controlsPanel.SetActive(false);
         gamepadPanel.SetActive(false);
+        VRPanel.SetActive(false);
     }
 
     public void ControlsButtonPressed()
     {
+        controlsButton.FakeClick();
         graphicsButton.UnClick();
         audioButton.UnClick();
         gamepadButton.UnClick();
-
+        vrButton.UnClick();
 
         graphicsPanel.SetActive(false);
         audioPanel.SetActive(false);
         controlsPanel.SetActive(true);
         gamepadPanel.SetActive(false);
+        VRPanel.SetActive(false);
     }
 
     public void GamepadButtonPressed()
     {
+        gamepadButton.FakeClick();
         graphicsButton.UnClick();
         audioButton.UnClick();
         controlsButton.UnClick();
+        vrButton.UnClick();
 
         graphicsPanel.SetActive(false);
         audioPanel.SetActive(false);
         controlsPanel.SetActive(false);
         gamepadPanel.SetActive(true);
+        VRPanel.SetActive(false);
+    }
+
+    public void VRButtonPressed()
+    {
+        vrButton.FakeClick();
+        graphicsButton.UnClick();
+        audioButton.UnClick();
+        controlsButton.UnClick();
+        gamepadButton.UnClick();
+
+        graphicsPanel.SetActive(false);
+        audioPanel.SetActive(false);
+        controlsPanel.SetActive(false);
+        gamepadPanel.SetActive(false);
+        VRPanel.SetActive(true);
     }
 
     public void SetMasterVolume(float volume)
@@ -325,6 +355,11 @@ public class OptionsMenu : MonoBehaviour
     public void SetIsGrappleToogle(bool isToogle)
     {
         GameSettings.instance.toogleGrapple = isToogle;
+    }
+
+    public void SetVRFovToggle(bool isToggle)
+    {
+        GameSettings.instance.vrFOV = isToggle;
     }
 
     public void SetResolution(int resolutionIndex)

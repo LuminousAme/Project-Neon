@@ -112,6 +112,11 @@ public class MenuButton : MonoBehaviour
         onClick.Invoke();
     }
 
+    public void FakeClick()
+    {
+        ClickedActive();
+    }
+
     void changeFont()
     {   
         if(alwaysFont1 && currentFontIndex != 1)

@@ -258,7 +258,7 @@ Transform:
   - {fileID: 2082997953854698106}
   - {fileID: 4307674274657806220}
   m_Father: {fileID: 4489671093010443478}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1722876590047746258
 GameObject:
@@ -735,9 +735,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3503468941910964217}
   - {fileID: 7904302689557315976}
   - {fileID: 7072921837455084995}
+  - {fileID: 3503468941910964217}
   m_Father: {fileID: 8487663691968477289}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -852,7 +852,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4057512570053097147}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -860,7 +860,7 @@ Transform:
   - {fileID: 242999446264664302}
   - {fileID: 2635936288934404287}
   m_Father: {fileID: 4489671093010443478}
-  m_RootOrder: 0
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4228609427231326948
 GameObject:
@@ -1145,6 +1145,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 243430858114381441}
   - {fileID: 8487663691968477289}
   m_Father: {fileID: 1397610590046555692}
   m_RootOrder: 2
@@ -1694,7 +1695,7 @@ Transform:
   m_Children:
   - {fileID: 7034779015100592402}
   m_Father: {fileID: 4489671093010443478}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2419163558898040807
 MeshFilter:
@@ -2327,6 +2328,37 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!1 &7039360700369702824
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 243430858114381441}
+  m_Layer: 3
+  m_Name: GrappleAim
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &243430858114381441
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7039360700369702824}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.079, z: 0.436}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4770825974685257275}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7367695296939629941
 GameObject:
   m_ObjectHideFlags: 0
@@ -2719,6 +2751,7 @@ MonoBehaviour:
   acutalGraple: {fileID: 3503468941910964217}
   grapleRest: {fileID: 7904302689557315976}
   grapleParent: {fileID: 4489671093010443478}
+  grappleAim: {fileID: 243430858114381441}
   useJoint: 1
   quality: 500
   strength: 800
@@ -2811,7 +2844,7 @@ Transform:
   m_Children:
   - {fileID: 4489671093010443478}
   m_Father: {fileID: 4770825974685257275}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!120 &8487663691968477294
 LineRenderer:

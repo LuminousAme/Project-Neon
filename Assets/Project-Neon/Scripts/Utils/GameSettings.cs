@@ -12,6 +12,7 @@ public class GameSettings : MonoBehaviour
     public int graphicsQuality, resolutionIndex;
     public float mouseSensitivity, controllerSensitivity;
     public bool toogleGrapple;
+    public bool vrFOV;
 
     [SerializeField] AudioMixer mixer;
     Resolution[] resolutions;
@@ -77,6 +78,9 @@ public class GameSettings : MonoBehaviour
         int toogleGrappleint = PlayerPrefs.GetInt("ToogleGrapple", 1);
         toogleGrapple = toogleGrappleint == 1;
 
+        int toggleVRFOVint = PlayerPrefs.GetInt("vrFOV", 0);
+        vrFOV = toggleVRFOVint == 1;
+
         customServerIP = PlayerPrefs.GetString("CustomIP", "");
     }
 
@@ -99,6 +103,9 @@ public class GameSettings : MonoBehaviour
 
         int toggleGrappleInt = (toogleGrapple) ? 1 : 0;
         PlayerPrefs.SetInt("ToogleGrapple", toggleGrappleInt);
+
+        int toggleVRFOVint = (vrFOV) ? 1 : 0;
+        PlayerPrefs.SetInt("vrFOV", toggleVRFOVint);
 
         PlayerPrefs.SetString("CustomIP", customServerIP);
     }
